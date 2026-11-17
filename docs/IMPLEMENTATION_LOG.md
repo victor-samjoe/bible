@@ -1,5 +1,11 @@
 ﻿
 ## 2026-11-17 — Editorial e CLI
+## 2026-11-17 — Transparência de IA e preparação de lojas
+
+- Ação: aviso reutilizável de análise gerada com apoio de IA e curadoria dedicada, com orientação para conferir fontes, exibido nas telas de destaque, catálogo, tema e estudo; backlog BKF ajustado para consulta interna de agentes, sem autoridade editorial. Criado checklist de prontidão Google Play/App Store sem criar contas, efetuar cobranças ou enviar builds.
+- Arquivos: `app/_components/ai-disclaimer.tsx`, páginas de estudos/tema/início, `app/globals.css`, `docs/BKF_EXECUTION_BACKLOG.md`, `docs/STORE_PUBLICATION_READINESS.md`, `tsconfig.json`.
+- Verificações: `npm run lint` passou; `npm run typecheck` passou; `npm run test` passou (35 testes em 6 arquivos); `git diff --check` passou.
+- Limites: o aviso não transforma conteúdo em verificado; publicação editorial segue dependente de fontes, revisão humana e direitos. Publicação em lojas continua dependente de contas, assinatura, projetos nativos e política de privacidade.
 
 - Ação: schemas Zod, validação editorial e fluxo local de rascunhos; publicação bloqueada sem infraestrutura de autorização e persistência auditada.
 - Arquivos: `src/domain/editorial/schema.ts`, `src/domain/editorial/validation.ts`, `src/cli/index.ts`, `src/cli/workflow.ts`, `src/content/editorial/pending-example.json`, `tests/editorial.test.ts`.
