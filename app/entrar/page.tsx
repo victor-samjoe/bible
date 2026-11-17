@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function LoginPage(){return <main className="page"><p className="eyebrow">CONTA</p><h1>Entre com segurança.</h1><div className="notice">O login por link mágico/OTP será ativado depois que o provedor de autenticação estiver configurado. Não coletamos senhas nesta demonstração.</div><p><Link className="text-link" href="/">Voltar ao início →</Link></p></main>}

@@ -1,0 +1,3 @@
+# Copiar para .dev.vars (ignorado pelo Git). Usado apenas por `next dev`
+# e `opennextjs-cloudflare preview`. Em producao use `wrangler secret put`.
+NEXTJS_ENV=development

@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function CopyrightPage(){return <main className="page legal"><Link className="text-link" href="/">← Início</Link><p className="eyebrow">DIREITOS AUTORAIS</p><h1>Fontes e permissões importam.</h1><p>Textos bíblicos, obras, traduções, notas e edições só podem ser exibidos conforme sua licença ou permissão aplicável. A plataforma mantém registro editorial de titularidade, restrições e atribuição.</p></main>}

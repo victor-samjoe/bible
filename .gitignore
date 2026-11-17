@@ -1,0 +1,17 @@
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+.env*
+!.env.example
+npm-debug.log*
+.DS_Store
+
+# Cloudflare Workers
+.open-next/
+.wrangler/
+.dev.vars
+worker-configuration.d.ts

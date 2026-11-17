@@ -1,0 +1,1724 @@
+# PROMPT MESTRE — BEREIANOS KNOWLEDGE FACTORY
+
+**Projeto:** Bíblia Sagrada Bereianos  
+**Empresa:** SamJoE Tech  
+**Subsistema:** Bereianos Knowledge Factory (BKF)  
+**Tipo:** Sistema interno de pesquisa, análise, curadoria e publicação de conhecimento teológico  
+**Prioridade:** Alta  
+**Integração:** SamJoE Core + AI Gateway + MCP + plataforma web  
+**Execução:** Agentes via CLI, scripts locais, processos em lote e automações programadas
+
+---
+
+# 1. MISSÃO DO AGENTE DESENVOLVEDOR
+
+Você será responsável por projetar e implementar a **Bereianos Knowledge Factory (BKF)**, uma fábrica de conhecimento teológico que alimentará o aplicativo Bíblia Sagrada Bereianos.
+
+O sistema deve permitir a ingestão, catalogação, preservação, pesquisa e análise de obras integrais de autores históricos, documentos conciliares, confissões de fé, fontes patrísticas e materiais teológicos.
+
+Essas fontes devem ser utilizadas por agentes de inteligência artificial executados em ambiente interno, preferencialmente por CLI, para produzir análises estruturadas, verificáveis e reutilizáveis.
+
+Os documentos produzidos serão disponibilizados ao aplicativo por meio de um serviço de conhecimento e ferramentas MCP.
+
+**A BKF não é um chatbot. É uma infraestrutura editorial automatizada, auditável, incremental e preparada para operar continuamente.**
+
+Sua função é transformar fontes históricas em conhecimento pesquisável, preservando rigor exegético, fidelidade documental, neutralidade metodológica, contexto histórico e direitos autorais.
+
+## 1.1. Objetivo estratégico
+
+A fábrica deverá permitir que a SamJoE:
+
+1. Construa progressivamente uma biblioteca teológica de grande escala.
+2. Analise milhares de obras sem precisar relê-las integralmente a cada consulta.
+3. Produza estudos sobre passagens bíblicas, doutrinas, acontecimentos e personagens históricos.
+4. Cruze informações entre autores, tradições e períodos.
+5. Identifique convergências, divergências e desenvolvimentos históricos.
+6. Gere documentos finais em formato padronizado.
+7. Publique somente materiais aprovados.
+8. Disponibilize conhecimento estruturado para os agentes MCP.
+9. Reduza custos de inferência do aplicativo por pré-processamento.
+10. Mantenha uma linha de produção editorial contínua, com rastreabilidade e possibilidade de revisão.
+
+## 1.2. Princípios fundamentais
+
+- Nenhuma referência bibliográfica pode ser inventada.
+- Nenhuma citação literal pode ser gerada a partir da memória do modelo.
+- Nenhuma doutrina deve ser atribuída a um autor sem evidência verificável.
+- A interpretação do agente deve estar separada do texto original.
+- O contexto histórico deve acompanhar a análise.
+- Diferentes tradições devem ser representadas fielmente, sem falsa equivalência.
+- Contradições documentais não devem ser ocultadas.
+- A ausência de evidência não deve ser tratada como evidência de ausência.
+- O banco de conhecimento deve preservar procedência, integridade e histórico de revisões.
+- O sistema deve admitir explicitamente quando não é possível chegar a uma conclusão.
+- O acervo completo deve permanecer independente do modelo de IA utilizado.
+
+---
+
+# 2. ARQUITETURA GERAL
+
+Implementar os componentes abaixo, adaptando nomes e tecnologias ao ambiente existente.
+
+## 2.1. Source Acquisition Engine
+
+Responsável pela aquisição de fontes.
+
+Capacidades:
+
+- Cadastro de repositórios históricos.
+- Download de arquivos autorizados.
+- Importação manual de documentos.
+- Importação por URL quando permitida.
+- Identificação de formatos.
+- Extração de metadados.
+- Verificação de integridade.
+- Registro da origem.
+- Registro de direitos e licenças.
+- Identificação de versões e duplicações.
+- Agendamento de novas buscas em repositórios autorizados.
+
+Formatos prioritários:
+
+- TXT
+- Markdown
+- HTML
+- XML / TEI
+- EPUB
+- PDF pesquisável
+- DOCX
+
+PDFs digitalizados poderão receber tratamento separado para extração visual ou OCR, com validação obrigatória da qualidade e possibilidade de correção manual.
+
+Não usar raspagem indiscriminada. Respeitar termos de uso, limites de acesso e políticas dos repositórios.
+
+## 2.2. Corpus Repository
+
+Armazenar os documentos originais integralmente, quando houver autorização para isso.
+
+A arquitetura deve oferecer dois tipos de armazenamento:
+
+**Armazenamento de objetos/arquivos:**
+- Sistema local.
+- Google Drive.
+- Supabase Storage ou Cloudflare R2, se conveniente.
+- Possibilidade de provedores adicionais.
+
+**Armazenamento estruturado:**
+- PostgreSQL, preferencialmente no Supabase existente.
+- Índices de pesquisa textual.
+- Índices vetoriais quando necessários.
+- Relacionamentos entre autores, obras, capítulos, conceitos e evidências.
+
+Separar obrigatoriamente:
+
+1. Arquivo original imutável.
+2. Texto extraído.
+3. Texto normalizado.
+4. Segmentação estrutural.
+5. Metadados bibliográficos.
+6. Índices de pesquisa.
+7. Anotações editoriais.
+8. Análises produzidas.
+9. Versões publicadas.
+
+O Drive deverá ser tratado como possível armazenamento e mecanismo de sincronização, não como banco de pesquisa semântica.
+
+Preferir armazenamento local/objetos para grandes corpora e banco indexado para consultas.
+
+## 2.3. Research Engine
+
+Motor de investigação e recuperação de evidências.
+
+Deve possuir:
+
+- Pesquisa lexical.
+- Pesquisa por autor.
+- Pesquisa por obra.
+- Pesquisa por capítulo ou seção.
+- Pesquisa por passagem bíblica.
+- Pesquisa por doutrina.
+- Pesquisa por período histórico.
+- Pesquisa semântica.
+- Busca híbrida.
+- Pesquisa de citações e referências cruzadas.
+- Recuperação de contexto anterior e posterior.
+- Comparação entre diferentes edições.
+- Identificação de relações entre obras.
+
+Não enviar uma obra inteira para o LLM quando a pesquisa puder ser realizada por recuperação seletiva.
+
+Entretanto, a análise de uma obra completa deve ter uma etapa sistemática de cobertura integral de suas seções, com sínteses hierárquicas e verificações posteriores.
+
+## 2.4. Theological Analysis Engine
+
+Motor responsável por interpretar documentos recuperados e construir análises fundamentadas.
+
+Tipos de análise:
+
+- Exegética.
+- Lexical.
+- Hermenêutica.
+- Histórica.
+- Patrística.
+- Sistemática.
+- Bíblico-teológica.
+- Doutrinária comparativa.
+- Confessional.
+- Bibliográfica.
+- Biográfica.
+- Cronológica.
+- Intertextual.
+- Historiográfica.
+- História da interpretação.
+- Desenvolvimento histórico de doutrinas.
+
+## 2.5. Editorial Engine
+
+Motor que transforma resultados de pesquisa em documentos finais.
+
+Produzir:
+
+- Artigos.
+- Comentários de passagens.
+- Estudos exegéticos.
+- Perfis de autores.
+- Resumos analíticos de obras.
+- Comparações doutrinárias.
+- Estudos históricos.
+- Dossiês temáticos.
+- Linhas do tempo.
+- Materiais de aula.
+- Roteiros de estudos.
+- Índices bibliográficos.
+- Documentos de consulta para agentes.
+
+O conteúdo deverá ser gerado a partir das evidências coletadas, jamais apenas de um prompt genérico.
+
+## 2.6. Quality Assurance Engine
+
+Motor independente de controle de qualidade.
+
+Deve verificar:
+
+- Existência das fontes.
+- Correspondência entre afirmações e evidências.
+- Fidelidade das citações.
+- Referências bibliográficas.
+- Consistência histórica.
+- Coerência exegética.
+- Contradições não resolvidas.
+- Repetição excessiva.
+- Limites de reprodução.
+- Licenciamento.
+- Integridade dos arquivos.
+- Classificação de incertezas.
+- Cobertura real da pesquisa.
+
+O agente que audita não deve simplesmente confiar nas conclusões do agente autor.
+
+## 2.7. Publishing Engine
+
+Publicar documentos aprovados para consumo pelo aplicativo e seus agentes MCP.
+
+Separar:
+
+- Documento de pesquisa interno.
+- Documento editorial revisado.
+- Documento público.
+- Resumo para pesquisa.
+- Metadados.
+- Evidências.
+- Versão de publicação.
+
+Não disponibilizar automaticamente no produto todos os documentos que foram processados.
+
+---
+
+# 3. CATÁLOGO DE AUTORES E FONTES
+
+Criar um cadastro extensível de autores e documentos.
+
+## 3.1. Primeiro conjunto de autores
+
+### Cristianismo primitivo e patrística
+
+- Clemente de Roma.
+- Inácio de Antioquia.
+- Policarpo de Esmirna.
+- Justino Mártir.
+- Irineu de Lião.
+- Tertuliano.
+- Clemente de Alexandria.
+- Orígenes.
+- Cipriano de Cartago.
+- Eusébio de Cesareia.
+- Atanásio de Alexandria.
+- Basílio de Cesareia.
+- Gregório de Nazianzo.
+- Gregório de Nissa.
+- João Crisóstomo.
+- Jerônimo.
+- Ambrósio de Milão.
+- Agostinho de Hipona.
+- Cirilo de Alexandria.
+- Leão Magno.
+- Máximo, o Confessor.
+- João Damasceno.
+
+### Idade Média
+
+- Anselmo de Cantuária.
+- Pedro Abelardo.
+- Bernardo de Claraval.
+- Pedro Lombardo.
+- Boaventura.
+- Tomás de Aquino.
+- João Duns Escoto.
+- Guilherme de Ockham.
+
+### Reforma e pós-Reforma
+
+- Martinho Lutero.
+- Filipe Melanchthon.
+- Ulrico Zuínglio.
+- Heinrich Bullinger.
+- João Calvino.
+- Teodoro de Beza.
+- Menno Simons.
+- Jacó Armínio.
+- Francisco Gomaro.
+- John Owen.
+- Richard Baxter.
+- John Bunyan.
+- Francis Turretin.
+- John Gill.
+
+### Período moderno
+
+- Jonathan Edwards.
+- John Wesley.
+- George Whitefield.
+- Charles Spurgeon.
+- Charles Finney.
+- Friedrich Schleiermacher.
+- Charles Hodge.
+- B. B. Warfield.
+- Abraham Kuyper.
+- Herman Bavinck.
+
+### Séculos XX e XXI
+
+Preparar cadastro para:
+
+- Karl Barth.
+- Dietrich Bonhoeffer.
+- Rudolf Bultmann.
+- C. S. Lewis.
+- Jürgen Moltmann.
+- Oscar Cullmann.
+- John Stott.
+- J. I. Packer.
+- Gordon Fee.
+- N. T. Wright.
+- Alister McGrath.
+- Outros pesquisadores e professores.
+
+Para autores recentes, não presumir que suas obras estão disponíveis para incorporação integral. Registrar somente metadados, materiais licenciados ou referências permitidas até que os direitos sejam resolvidos.
+
+## 3.2. Documentos coletivos e institucionais
+
+Incluir:
+
+- Credos apostólicos e históricos.
+- Concílio de Niceia.
+- Concílio de Constantinopla.
+- Concílio de Éfeso.
+- Concílio de Calcedônia.
+- Concílios ecumênicos posteriores.
+- Confissão de Augsburgo.
+- Livro de Concórdia.
+- Confissão Belga.
+- Catecismo de Heidelberg.
+- Cânones de Dort.
+- Confissão de Westminster.
+- Catecismos reformados.
+- Confissão Batista de Londres.
+- Concílio de Trento.
+- Documentos do Vaticano I e II.
+- Declarações metodistas e wesleyanas.
+- Confissões e documentos pentecostais relevantes.
+
+Os documentos devem ser classificados segundo sua natureza, autoridade institucional, data, tradição e situação textual.
+
+Não misturar escritos individuais e definições institucionais como se tivessem o mesmo status.
+
+## 3.3. Repositórios prioritários
+
+Criar conectores ou procedimentos de ingestão para fontes autorizadas provenientes de:
+
+- Christian Classics Ethereal Library.
+- Project Gutenberg.
+- Corpus Thomisticum.
+- Post-Reformation Digital Library.
+- New Advent.
+- Open Greek and Latin.
+- Wesley Center.
+- Book of Concord.
+- Arquivos documentais do Vaticano.
+- Bibliotecas universitárias.
+- Bibliotecas digitais nacionais.
+- Repositórios acadêmicos abertos.
+
+Cada conector deve possuir sua própria configuração de acesso e licença.
+
+Nenhum repositório deverá ser considerado automaticamente liberado para redistribuição comercial.
+
+---
+
+# 4. MODELO DE DADOS DO ACERVO
+
+Projetar entidades equivalentes às seguintes:
+
+- `authors`
+- `author_names`
+- `traditions`
+- `historical_periods`
+- `works`
+- `work_editions`
+- `work_translations`
+- `work_sections`
+- `source_files`
+- `source_fragments`
+- `source_rights`
+- `source_repositories`
+- `theological_topics`
+- `biblical_passages`
+- `doctrinal_positions`
+- `position_evidence`
+- `historical_events`
+- `historical_documents`
+- `analysis_jobs`
+- `analysis_evidence`
+- `analysis_documents`
+- `analysis_revisions`
+- `editorial_reviews`
+- `publication_versions`
+- `knowledge_relationships`
+- `ingestion_jobs`
+- `llm_execution_logs`
+
+O agente deverá normalizar esse modelo e propor migrations reais.
+
+## 4.1. Dados bibliográficos
+
+Cada edição deve armazenar, quando conhecido:
+
+- Autor.
+- Título original.
+- Título traduzido.
+- Data aproximada de composição.
+- Data da edição.
+- Idioma original.
+- Idioma da edição.
+- Tradutor.
+- Editor.
+- Editora.
+- Local da publicação.
+- Volume.
+- ISBN, DOI ou identificador bibliográfico disponível.
+- URL de origem.
+- Identificador interno.
+- Versão.
+- Licença.
+- Situação de direitos.
+- Hash criptográfico do arquivo.
+- Data de ingestão.
+- Data da última verificação.
+
+Nunca atribuir uma data ou autoria com falsa precisão.
+
+## 4.2. Segmentação estrutural
+
+As obras deverão ser divididas seguindo sua organização original:
+
+Obra → Livro → Parte → Capítulo → Seção → Parágrafo → Fragmento.
+
+Nem todos os documentos possuem essa hierarquia. O modelo deve aceitar estruturas variáveis.
+
+Cada fragmento precisa preservar:
+
+- Identificador estável.
+- Localização canônica.
+- Texto integral do fragmento.
+- Edição de referência.
+- Idioma.
+- Deslocamentos no texto-fonte.
+- Localização no arquivo.
+- Hash.
+- Relações com fragmentos adjacentes.
+- Relações com passagens bíblicas.
+- Relações com temas teológicos.
+
+Evitar fragmentação arbitrária que destrua o contexto de um argumento.
+
+---
+
+# 5. MOTOR DE AQUISIÇÃO E INGESTÃO
+
+Implementar pipeline idempotente.
+
+Estados sugeridos:
+
+`DISCOVERED → RIGHTS_REVIEW → APPROVED_FOR_INGESTION → DOWNLOADED → EXTRACTED → NORMALIZED → STRUCTURED → INDEXED → VERIFIED`
+
+Estados de erro e suspensão devem existir.
+
+## 5.1. Etapas
+
+1. Localizar fonte.
+2. Identificar obra e edição.
+3. Verificar condições de acesso.
+4. Registrar direitos.
+5. Validar permissão de ingestão e armazenamento.
+6. Baixar ou importar.
+7. Calcular hash.
+8. Detectar duplicação.
+9. Extrair texto.
+10. Preservar original.
+11. Normalizar codificação.
+12. Reconstruir divisões da obra.
+13. Verificar qualidade.
+14. Indexar.
+15. Registrar proveniência.
+16. Disponibilizar para pesquisas internas autorizadas.
+
+Não eliminar notas editoriais, variantes textuais ou paginação quando forem relevantes para a citação.
+
+## 5.2. Reprocessamento
+
+O pipeline precisa permitir:
+
+- Retomar execuções interrompidas.
+- Reprocessar uma edição.
+- Corrigir extração.
+- Substituir arquivos defeituosos.
+- Comparar duas extrações.
+- Detectar alteração de conteúdo.
+- Reindexar sem redownload.
+- Reverter alterações incorretas.
+
+Todos os jobs devem produzir logs estruturados.
+
+---
+
+# 6. MOTOR DE ANÁLISE TEOLÓGICA
+
+Este é o componente central da BKF.
+
+Não criar um único prompt gigantesco pedindo a análise completa.
+
+Implementar um pipeline com agentes especializados e etapas verificáveis.
+
+## 6.1. Agentes de pesquisa
+
+### Agent A — Research Planner
+
+Recebe tema e objetivo.
+
+Produz:
+
+- Pergunta central.
+- Perguntas secundárias.
+- Conceitos relevantes.
+- Autores candidatos.
+- Obras candidatas.
+- Períodos históricos.
+- Tradições envolvidas.
+- Plano de busca.
+- Critérios de cobertura.
+- Critérios de encerramento.
+
+### Agent B — Source Retriever
+
+Executa pesquisas no acervo.
+
+Recupera:
+
+- Fragmentos relevantes.
+- Contexto anterior e posterior.
+- Localização exata.
+- Metadados bibliográficos.
+- Autores relacionados.
+- Documentos institucionais.
+- Passagens bíblicas associadas.
+
+### Agent C — Historical Analyst
+
+Analisa:
+
+- Contexto histórico.
+- Datação.
+- Controvérsias contemporâneas.
+- Influências.
+- Desenvolvimento do pensamento do autor.
+- Terminologia histórica.
+- Relações entre autores.
+- Anacronismos potenciais.
+
+### Agent D — Exegetical Analyst
+
+Analisa:
+
+- Contexto literário.
+- Estrutura argumentativa.
+- Gênero.
+- Referências intertextuais.
+- Aspectos gramaticais.
+- Questões lexicais.
+- Interpretações históricas.
+- Limites do texto bíblico.
+- Diferença entre exegese e aplicação doutrinária.
+
+### Agent E — Doctrinal Analyst
+
+Identifica:
+
+- Tese central.
+- Argumentos.
+- Fundamentos bíblicos.
+- Distinções conceituais.
+- Desdobramentos.
+- Objeções.
+- Reformulações históricas.
+- Relações com tradições confessionais.
+
+### Agent F — Comparative Analyst
+
+Compara os posicionamentos.
+
+Deve registrar:
+
+- Concordâncias substanciais.
+- Discordâncias substanciais.
+- Divergências terminológicas.
+- Diferenças de pressupostos.
+- Diferenças de interpretação bíblica.
+- Mudanças ao longo do tempo.
+- Incertezas documentais.
+
+### Agent G — Evidence Auditor
+
+Audita todas as afirmações verificáveis.
+
+Deve consultar novamente as fontes, sem confiar apenas nos resumos fornecidos pelos outros agentes.
+
+### Agent H — Editorial Composer
+
+Produz o documento final com base nas evidências aprovadas.
+
+### Agent I — Critical Reviewer
+
+Examina a versão editorial, procura interpretações inadequadas, objeções relevantes e lacunas.
+
+### Agent J — Publication Validator
+
+Verifica estrutura, licença, citações, qualidade e autorização de publicação.
+
+## 6.2. Execução
+
+Os agentes podem utilizar diferentes modelos ou a mesma infraestrutura CLI, desde que as credenciais, os limites de uso e as condições contratuais permitam a atividade realizada.
+
+A utilização interna do CLI não deve ser automaticamente considerada autorizada para processamento comercial ilimitado ou execução de serviços em nome de clientes. Avaliar os termos aplicáveis ao serviço, à conta e ao mecanismo de autenticação.
+
+Preservar abstração de provedor.
+
+---
+
+# 7. CRITÉRIOS FORMAIS DE ANÁLISE
+
+Toda análise deverá seguir uma rubrica metodológica.
+
+## 7.1. Identificação do problema
+
+Registrar:
+
+- Tema.
+- Pergunta.
+- Escopo.
+- Recorte cronológico.
+- Tradições consideradas.
+- Pressupostos.
+- Hipóteses.
+- Limitações de fontes.
+
+## 7.2. Exame das fontes primárias
+
+Identificar quais documentos são efetivamente relevantes.
+
+Priorizar:
+
+1. Obras do próprio autor.
+2. Documentos contemporâneos.
+3. Declarações oficiais de tradições e concílios.
+4. Edições críticas.
+5. Estudos acadêmicos secundários.
+
+Fontes secundárias podem auxiliar a interpretação, mas não devem substituir as primárias quando se afirma o que um autor escreveu.
+
+## 7.3. Contexto histórico
+
+Examinar:
+
+- Quem escreveu.
+- Quando escreveu.
+- Para quem escreveu.
+- Contra qual posição argumentava.
+- Qual problema procurava responder.
+- Quais conceitos eram utilizados naquele período.
+- Como o pensamento se desenvolveu posteriormente.
+
+## 7.4. Análise textual
+
+Verificar:
+
+- Significado contextual.
+- Progressão argumentativa.
+- Terminologia.
+- Traduções.
+- Referências bíblicas.
+- Ambiguidades.
+- Variantes relevantes.
+- Questões de autoria e autenticidade.
+
+## 7.5. Análise doutrinária
+
+Identificar:
+
+- Formulação da doutrina.
+- Fundamentos.
+- Raciocínio.
+- Implicações.
+- Objeções.
+- Respostas.
+- Relações com tradições posteriores.
+
+## 7.6. Comparação
+
+Comparar autores segundo os mesmos critérios.
+
+Evitar comparar uma frase isolada de um autor com um sistema teológico completo de outro.
+
+## 7.7. Conclusão
+
+Distinguir obrigatoriamente:
+
+- Evidências documentadas.
+- Interpretação predominante nas fontes consultadas.
+- Interpretações alternativas.
+- Pontos controvertidos.
+- Lacunas de pesquisa.
+- Conclusão editorial.
+
+---
+
+# 8. SISTEMA DE EVIDÊNCIAS E CITAÇÕES
+
+Este módulo é obrigatório.
+
+Cada afirmação factual ou atribuição doutrinária relevante deve poder ser ligada a uma ou mais evidências verificáveis.
+
+## 8.1. Evidence Record
+
+Criar uma entidade estruturada contendo:
+
+- `evidence_id`
+- `claim_id`
+- `source_id`
+- `work_id`
+- `edition_id`
+- `section_id`
+- `canonical_locator`
+- `source_url`
+- `source_language`
+- `exact_quote`
+- `paraphrase`
+- `context_before`
+- `context_after`
+- `verification_status`
+- `rights_status`
+- `quote_word_count`
+- `quote_policy_id`
+- `review_status`
+
+O texto de uma citação literal precisa ser recuperado diretamente do corpus armazenado.
+
+A IA não poderá preencher `exact_quote` livremente.
+
+## 8.2. Política de citação
+
+Criar um sistema parametrizável para limitar o número de palavras reproduzidas.
+
+Exemplo de configuração interna, meramente ilustrativa:
+
+- `max_words_per_quote = 40`
+- `max_quoted_words_per_work_per_document = 120`
+- `max_quoted_words_per_work_per_user_response = 80`
+
+Esses números NÃO representam um limite legal universal.
+
+Cada fonte deve possuir sua própria política, conforme licença e avaliação jurídica.
+
+A configuração deve permitir:
+
+- Citações proibidas.
+- Apenas referência bibliográfica.
+- Pequenos trechos permitidos.
+- Reprodução autorizada por licença.
+- Reprodução integral autorizada.
+- Utilização apenas interna.
+- Distribuição pública proibida.
+- Revisão manual obrigatória.
+
+## 8.3. Controle cumulativo
+
+O sistema deve contabilizar citações por:
+
+- Documento.
+- Obra.
+- Edição.
+- Resposta.
+- Produto.
+- Política de licença.
+
+Implementar detecção de sobreposição entre trechos citados para impedir que uma obra protegida seja reconstruída por várias consultas sucessivas.
+
+## 8.4. Verificação literal
+
+Antes da publicação:
+
+1. Localizar a frase no texto-fonte.
+2. Confirmar correspondência.
+3. Validar pontuação e normalizações permitidas.
+4. Validar localização.
+5. Calcular quantidade de palavras.
+6. Verificar permissões.
+7. Aprovar ou bloquear.
+
+Se a citação não puder ser confirmada, removê-la da versão final e registrar erro.
+
+## 8.5. Traduções
+
+Distinguir:
+
+- Citação literal da edição.
+- Tradução autorizada.
+- Tradução editorial revisada.
+- Tradução assistida por IA.
+- Paráfrase.
+
+Uma tradução criada por IA não deve ser identificada como citação literal de uma edição publicada.
+
+Para citações acadêmicas, preservar acesso ao texto na língua original quando disponível.
+
+---
+
+# 9. CONTROLE DE DIREITOS AUTORAIS
+
+Criar um registro de direitos por obra e por edição.
+
+Campos mínimos:
+
+- Titular conhecido.
+- Tipo de licença.
+- Território.
+- Uso comercial permitido.
+- Armazenamento permitido.
+- Processamento automatizado permitido.
+- Reprodução de trechos permitida.
+- Redistribuição permitida.
+- Publicação integral permitida.
+- Restrições de atribuição.
+- Data e fonte da verificação.
+- Responsável pela aprovação.
+- Evidência documental da autorização.
+
+Não presumir que textos encontrados gratuitamente na internet possam ser reproduzidos comercialmente.
+
+Obras antigas e suas traduções modernas deverão ser tratadas separadamente.
+
+Implementar estado:
+
+`UNKNOWN | RESTRICTED | INTERNAL_REVIEW | APPROVED_LIMITED | APPROVED_FULL | BLOCKED`
+
+Fontes `UNKNOWN`, `INTERNAL_REVIEW` e `BLOCKED` não poderão ser publicadas ou reproduzidas automaticamente.
+
+O software deverá suportar a retirada de uma edição, suas cópias publicadas e seus índices de distribuição quando houver necessidade de correção de direitos.
+
+A análise jurídica e a aprovação final de licenças deverão ser humanas.
+
+---
+
+# 10. FORMATO PADRÃO DOS DOCUMENTOS ANALÍTICOS
+
+Todo documento deve ter uma representação estruturada, preferencialmente JSON validado por schema, e uma representação editorial em Markdown.
+
+A versão estruturada será a fonte de dados da publicação.
+
+## 10.1. Cabeçalho obrigatório
+
+- ID.
+- Título.
+- Tipo de análise.
+- Tema.
+- Resumo.
+- Data de criação.
+- Data de revisão.
+- Versão.
+- Idioma.
+- Agentes utilizados.
+- Estado editorial.
+- Fontes utilizadas.
+- Obras cobertas.
+- Cobertura da pesquisa.
+- Classificação de confiança.
+- Revisores.
+- Direitos de publicação.
+
+## 10.2. Estrutura editorial padrão
+
+1. Título.
+2. Resumo executivo.
+3. Pergunta central.
+4. Contextualização.
+5. Fontes primárias utilizadas.
+6. Contexto histórico.
+7. Exame das passagens e textos.
+8. Análise exegética, quando aplicável.
+9. Argumentos centrais.
+10. Interpretações históricas.
+11. Comparações doutrinárias.
+12. Convergências.
+13. Divergências.
+14. Objeções e respostas.
+15. Questões não resolvidas.
+16. Síntese conclusiva.
+17. Referências bibliográficas.
+18. Notas de método.
+19. Limitações da análise.
+20. Evidências estruturadas.
+
+O motor poderá criar versões simplificadas para leitores iniciantes e versões avançadas para estudantes.
+
+A simplificação não poderá alterar o sentido documentado das fontes.
+
+## 10.3. Tipos de documento
+
+Implementar schemas independentes para:
+
+- `AUTHOR_PROFILE`
+- `WORK_ANALYSIS`
+- `BIBLICAL_EXEGESIS`
+- `DOCTRINAL_COMPARISON`
+- `HISTORICAL_EVENT`
+- `COUNCIL_ANALYSIS`
+- `THEOLOGICAL_TOPIC`
+- `HISTORICAL_TIMELINE`
+- `BIBLIOGRAPHIC_REVIEW`
+- `LEARNING_MATERIAL`
+
+---
+
+# 11. CONTROLE DE QUALIDADE
+
+Criar uma pontuação editorial de 0 a 100, como indicador auxiliar e não como substituto de revisão.
+
+Pesos iniciais sugeridos:
+
+| Critério | Peso |
+|---|---:|
+| Fidelidade às fontes | 25 |
+| Verificabilidade das citações | 20 |
+| Contextualização histórica | 15 |
+| Qualidade exegética | 15 |
+| Equilíbrio e precisão comparativa | 10 |
+| Coerência argumentativa | 10 |
+| Clareza editorial | 5 |
+
+Além da pontuação, aplicar bloqueios obrigatórios.
+
+Um documento nunca poderá ser publicado automaticamente quando:
+
+- Tiver citação inventada.
+- Possuir evidência essencial inexistente.
+- Reproduzir conteúdo não autorizado.
+- Apresentar atribuição histórica gravemente incorreta.
+- Não identificar adequadamente a edição usada.
+- Possuir contradição essencial não resolvida.
+- Não tiver passado pelas validações mínimas do seu tipo.
+
+## 11.1. Estados editoriais
+
+`DRAFT → RESEARCHED → EVIDENCE_VERIFIED → CRITICALLY_REVIEWED → HUMAN_APPROVAL → PUBLISHED`
+
+Criar estados adicionais:
+
+- `REJECTED`
+- `NEEDS_SOURCES`
+- `NEEDS_REVISION`
+- `RIGHTS_BLOCKED`
+- `SUPERSEDED`
+- `RETRACTED`
+
+O motor poderá automatizar rascunhos e verificações, mas análises interpretativas sensíveis destinadas a publicação deverão poder exigir aprovação humana.
+
+## 11.2. Classificação de evidências
+
+Utilizar categorias distintas:
+
+- `PRIMARY_EXPLICIT`: afirmação expressa na fonte primária.
+- `PRIMARY_INFERRED`: interpretação fundamentada na fonte primária.
+- `SECONDARY_SUPPORTED`: afirmação apoiada por pesquisa secundária.
+- `EDITORIAL_SYNTHESIS`: conclusão produzida pela análise editorial.
+- `DISPUTED`: interpretação contestada.
+- `INSUFFICIENT_EVIDENCE`: evidência insuficiente.
+
+Não transformar categorias metodológicas em percentuais falsamente precisos de certeza.
+
+---
+
+# 12. CRUZAMENTO DE CONHECIMENTO
+
+O sistema deverá construir relacionamentos entre:
+
+- Autor e obra.
+- Autor e tradição.
+- Autor e período.
+- Autor e doutrina.
+- Obra e passagem bíblica.
+- Obra e autor citado.
+- Documento e concílio.
+- Doutrina e desenvolvimento histórico.
+- Posição e evidência.
+- Posição e objeção.
+- Estudo e estudos relacionados.
+
+Cada relacionamento deve possuir origem e justificativa.
+
+## 12.1. Exemplo de pesquisa
+
+Tema: Predestinação.
+
+O motor deverá:
+
+1. Identificar a terminologia relevante.
+2. Consultar passagens bíblicas relacionadas.
+3. Recuperar documentos patrísticos pertinentes.
+4. Localizar obras relevantes de Agostinho.
+5. Identificar posições de autores medievais.
+6. Localizar formulações da Reforma.
+7. Examinar Calvino e Armínio em suas próprias obras.
+8. Consultar documentos confessionais.
+9. Comparar argumentos segundo critérios equivalentes.
+10. Identificar diferenças terminológicas e históricas.
+11. Produzir uma análise rastreável.
+12. Publicar somente após verificação.
+
+Não afirmar que autores de épocas distintas estão respondendo necessariamente à mesma pergunta nos mesmos termos.
+
+## 12.2. Pré-computação
+
+Criar análises reutilizáveis sobre temas recorrentes.
+
+Exemplos:
+
+- Salvação.
+- Graça.
+- Fé.
+- Justificação.
+- Santificação.
+- Predestinação.
+- Livre-arbítrio.
+- Trindade.
+- Cristologia.
+- Pneumatologia.
+- Eclesiologia.
+- Escatologia.
+- Sacramentos.
+- Batismo.
+- Ceia do Senhor.
+- Cura divina.
+- Autoridade espiritual.
+- Dons espirituais.
+- História dos concílios.
+- Reforma Protestante.
+
+O motor deve reaproveitar evidências e análises existentes, sem simplesmente copiar conclusões anteriores.
+
+---
+
+# 13. INTEGRAÇÃO COM CLI
+
+Criar um adaptador genérico de execução de agentes.
+
+Não acoplar a fábrica ao executável de um único provedor.
+
+## 13.1. Interface de execução
+
+Cada tarefa deve definir:
+
+- Identificador do job.
+- Tipo de agente.
+- Objetivo.
+- Prompt versionado.
+- Referências de entrada.
+- Contexto autorizado.
+- Ferramentas disponíveis.
+- Modelo.
+- Limite de tokens.
+- Limite de tempo.
+- Orçamento.
+- Formato de saída.
+- Local de armazenamento.
+- Política de repetição.
+- Estado de execução.
+
+## 13.2. Gerenciamento de contexto
+
+Não transportar todo o histórico de uma análise para cada novo agente.
+
+Persistir:
+
+- Plano da pesquisa.
+- Evidências selecionadas.
+- Decisões.
+- Questões pendentes.
+- Resumos por seção.
+- Documentos intermediários.
+- Resultados das verificações.
+
+O agente deverá reconstruir contextos mínimos para cada tarefa.
+
+Os resumos não poderão substituir as fontes originais para verificação de citações.
+
+## 13.3. Segurança operacional
+
+Implementar:
+
+- Execução sem comandos arbitrários provenientes de documentos.
+- Isolamento de processos.
+- Diretórios de trabalho dedicados.
+- Limites de CPU, memória e tempo.
+- Proteção de credenciais.
+- Tratamento de stdout e stderr.
+- Saída estruturada validada.
+- Timeouts.
+- Retentativas com limite.
+- Controle de concorrência.
+- Registro de custos.
+- Identificação de falhas.
+- Proteção contra prompt injection em fontes importadas.
+
+Documentos históricos são dados não confiáveis para o executor. Seu conteúdo não poderá modificar instruções de sistema ou provocar acesso a ferramentas não autorizadas.
+
+## 13.4. Compatibilidade
+
+O motor deverá permitir provedores como:
+
+- CLI autorizado de modelos comerciais.
+- APIs comerciais.
+- Modelos locais.
+- Gateways próprios.
+- Ferramentas determinísticas sem LLM.
+
+A troca de provedor não pode exigir reescrever a estrutura editorial.
+
+---
+
+# 14. SISTEMA DE ARMAZENAMENTO
+
+Criar estrutura lógica de diretórios:
+
+    bereianos-knowledge/
+      corpus/
+        originals/
+        extracted/
+        normalized/
+        structured/
+      metadata/
+      licenses/
+      indexes/
+      research/
+        plans/
+        evidence/
+        intermediate/
+      analyses/
+        drafts/
+        reviewed/
+        published/
+      exports/
+      logs/
+      manifests/
+      backups/
+
+Os nomes poderão ser ajustados conforme a infraestrutura existente.
+
+## 14.1. Google Drive
+
+Implementar como adaptador opcional.
+
+Capacidades:
+
+- Criar estrutura de diretórios.
+- Sincronizar arquivos.
+- Armazenar documentos finais.
+- Exportar Markdown e PDF quando necessário.
+- Recuperar versões.
+- Restaurar material.
+- Detectar conflitos.
+
+Não usar o Drive como único mecanismo de versionamento, busca e integridade.
+
+## 14.2. Armazenamento local
+
+Implementar por padrão, caso seja o caminho mais simples para o MVP.
+
+Utilizar um catálogo central para localização de arquivos e garantir backups.
+
+## 14.3. Sincronização
+
+A sincronização deverá preservar:
+
+- IDs estáveis.
+- Hashes.
+- Versões.
+- Metadados.
+- Estado editorial.
+- Permissões.
+- Rastreabilidade.
+
+Não substituir silenciosamente um documento aprovado por outro gerado posteriormente.
+
+---
+
+# 15. MCP KNOWLEDGE SERVER
+
+Criar um servidor de conhecimento compatível com MCP, destinado aos agentes do produto.
+
+As ferramentas devem operar com autorização definida pelo backend.
+
+## 15.1. Ferramentas iniciais
+
+### `search_theological_knowledge`
+
+Pesquisa documentos aprovados.
+
+Parâmetros:
+
+- query.
+- topic.
+- author_ids.
+- tradition_ids.
+- passage_ids.
+- language.
+- limit.
+
+### `get_analysis`
+
+Recupera um estudo publicado.
+
+Parâmetros:
+
+- analysis_id.
+- version.
+- detail_level.
+
+### `compare_doctrines`
+
+Recupera comparação doutrinária existente.
+
+Parâmetros:
+
+- topic_id.
+- tradition_ids.
+- author_ids.
+
+### `get_author_profile`
+
+Retorna informações bibliográficas e históricas verificadas sobre um autor.
+
+### `get_work_metadata`
+
+Retorna dados de uma obra, edição e suas condições de uso.
+
+### `get_evidence`
+
+Retorna evidência identificada por ID, respeitando licenças e limites de reprodução.
+
+### `get_biblical_cross_references`
+
+Recupera vínculos entre passagens, estudos e documentos.
+
+### `get_historical_timeline`
+
+Retorna acontecimentos e documentos relacionados a um período ou tema.
+
+### `get_related_studies`
+
+Sugere conteúdo publicado relacionado ao material atualmente consultado.
+
+## 15.2. Regras do servidor MCP
+
+- Não disponibilizar arquivos internos completos por padrão.
+- Não permitir leitura arbitrária do filesystem.
+- Não expor documentos com direitos restritos.
+- Não permitir consultas diretas irrestritas ao banco.
+- Aplicar filtros de autorização no servidor.
+- Validar todos os parâmetros.
+- Aplicar rate limits.
+- Registrar auditoria.
+- Garantir que referências retornadas correspondam a documentos publicados ou fontes explicitamente autorizadas.
+- Não confiar em `tenant_id` ou `user_id` enviados pelo modelo.
+- Não permitir que o modelo altere o estado editorial.
+- Aplicar limites de citação e proteção contra reconstrução cumulativa de obras.
+
+A separação entre ferramentas editoriais internas e ferramentas públicas de leitura é obrigatória.
+
+---
+
+# 16. OTIMIZAÇÃO DE CUSTOS
+
+A BKF deve realizar pesquisa pesada antecipadamente.
+
+O aplicativo deverá priorizar:
+
+1. Consulta a estudos existentes.
+2. Busca em documentos estruturados.
+3. Recuperação de evidências.
+4. Resposta por templates quando suficiente.
+5. Geração com IA somente quando necessária.
+
+## 16.1. Cache
+
+Implementar cache por:
+
+- Tema.
+- Passagem.
+- Autor.
+- Doutrina.
+- Idioma.
+- Versão do documento.
+- Tipo de consulta.
+
+A invalidação deverá considerar alterações nas fontes e revisões editoriais.
+
+## 16.2. Reutilização
+
+Quando uma nova pesquisa exigir evidências já analisadas:
+
+- Reutilizar referências.
+- Reutilizar índices.
+- Reutilizar fragmentos.
+- Revalidar evidências essenciais.
+- Produzir somente a análise adicional necessária.
+
+Não recomputar obras completas sem justificativa.
+
+## 16.3. Métricas
+
+Medir:
+
+- Custo por documento.
+- Tokens por etapa.
+- Tempo de processamento.
+- Número de fontes consultadas.
+- Percentual de citações verificadas.
+- Taxa de retrabalho.
+- Taxa de reprovação editorial.
+- Tempo de publicação.
+- Economia de consultas no aplicativo.
+- Utilização dos estudos publicados.
+
+---
+
+# 17. ROTINA DE PRODUÇÃO CONTÍNUA
+
+Criar uma fila editorial de temas.
+
+Estados:
+
+`BACKLOG → PLANNED → RESEARCHING → ANALYZING → VERIFYING → REVIEWING → APPROVED → PUBLISHED`
+
+A fábrica deverá permitir produção recorrente.
+
+## 17.1. Planejamento
+
+Cadastrar prioridades por:
+
+- Relevância teológica.
+- Interesse dos usuários.
+- Volume de consultas.
+- Lacunas no catálogo.
+- Disponibilidade de fontes.
+- Potencial educacional.
+- Demanda comercial.
+- Relações com estudos já publicados.
+
+## 17.2. Produção diária
+
+A automação poderá:
+
+1. Selecionar tema.
+2. Consultar corpus.
+3. Planejar pesquisa.
+4. Executar agentes.
+5. Validar referências.
+6. Produzir rascunho.
+7. Executar revisão crítica.
+8. Enviar para aprovação.
+9. Publicar após liberação.
+10. Atualizar índices MCP.
+
+Não publicar automaticamente apenas porque o cronograma diário determina uma entrega.
+
+A qualidade editorial é prioritária em relação à quantidade.
+
+---
+
+# 18. PAINEL ADMINISTRATIVO
+
+Criar uma interface interna para acompanhar a fábrica.
+
+## 18.1. Dashboard
+
+Exibir:
+
+- Obras cadastradas.
+- Obras integralmente importadas.
+- Obras indexadas.
+- Autores catalogados.
+- Fontes com direitos aprovados.
+- Temas pesquisados.
+- Análises em andamento.
+- Documentos pendentes.
+- Documentos aprovados.
+- Documentos publicados.
+- Erros de ingestão.
+- Erros de citações.
+- Gastos com IA.
+- Evolução do acervo.
+
+## 18.2. Gestão de fontes
+
+Permitir:
+
+- Cadastrar autor.
+- Cadastrar obra.
+- Informar URL.
+- Subir arquivo.
+- Registrar edição.
+- Informar licença.
+- Solicitar ingestão.
+- Reprocessar.
+- Verificar integridade.
+- Consultar fragmentos.
+
+## 18.3. Gestão editorial
+
+Permitir:
+
+- Criar projeto de análise.
+- Escolher tipo.
+- Informar pergunta central.
+- Selecionar autores.
+- Selecionar obras.
+- Selecionar tradições.
+- Definir profundidade.
+- Iniciar pesquisa.
+- Consultar evidências.
+- Ler rascunho.
+- Comparar revisões.
+- Aprovar ou rejeitar.
+- Publicar.
+- Reverter publicação.
+
+## 18.4. Gestão de conhecimento
+
+Permitir navegar por:
+
+- Bíblia.
+- Doutrinas.
+- Autores.
+- Obras.
+- Concílios.
+- Períodos.
+- Tradições.
+- Estudos publicados.
+
+---
+
+# 19. SEGURANÇA E PERMISSÕES
+
+Criar papéis:
+
+- Administrador.
+- Curador do acervo.
+- Pesquisador.
+- Revisor teológico.
+- Editor.
+- Publicador.
+- Agente automatizado.
+- Serviço de leitura MCP.
+
+Permissões devem seguir o princípio do menor privilégio.
+
+Somente funções autorizadas podem:
+
+- Aprovar licenças.
+- Alterar fontes.
+- Corrigir evidências.
+- Aprovar material.
+- Publicar.
+- Retirar conteúdo.
+- Gerenciar provedores.
+- Alterar limites de consumo.
+
+Registrar todas as operações administrativas sensíveis.
+
+---
+
+# 20. TESTES OBRIGATÓRIOS
+
+Implementar testes de unidade, integração e avaliação semântica.
+
+## 20.1. Ingestão
+
+- Importação integral.
+- Identificação de duplicação.
+- Preservação de seções.
+- Hash correto.
+- Detecção de edição.
+- Tratamento de arquivo defeituoso.
+
+## 20.2. Pesquisa
+
+- Busca lexical.
+- Busca semântica.
+- Recuperação contextual.
+- Pesquisa por localização canônica.
+- Identificação correta de edição.
+- Recuperação de fontes divergentes.
+
+## 20.3. Evidências
+
+- Citação existente.
+- Citação inexistente.
+- Citação atribuída ao autor errado.
+- Citação de edição incorreta.
+- Texto alterado.
+- Limite excedido.
+- Reprodução proibida.
+- Referência incompleta.
+
+## 20.4. Teologia
+
+Construir um conjunto de avaliação com perguntas e referências conferidas manualmente.
+
+Exemplos:
+
+- Agostinho e a graça.
+- Calvino e a eleição.
+- Armínio e a predestinação.
+- Lutero e a justificação.
+- Wesley e a santificação.
+- Atanásio e a encarnação.
+- Niceia e a cristologia.
+- Trento e a justificação.
+- Westminster e os decretos divinos.
+
+O agente deve produzir respostas verificáveis e reconhecer quando um autor não tratou diretamente de determinado assunto.
+
+## 20.5. Segurança
+
+- Prompt injection em documento importado.
+- Acesso não autorizado a arquivo.
+- Exposição de credenciais.
+- Consulta MCP sem autenticação.
+- Tentativa de acessar fonte bloqueada.
+- Excesso de consumo de tokens.
+- Concorrência de jobs.
+- Duplicação de publicação.
+- Reconstrução de conteúdo protegido por consultas sucessivas.
+
+---
+
+# 21. MVP DA KNOWLEDGE FACTORY
+
+Não implementar toda a fábrica antes de demonstrar o funcionamento do pipeline principal.
+
+Criar uma primeira versão funcional com:
+
+1. Cadastro de autores.
+2. Cadastro de obras e edições.
+3. Importação de TXT, HTML ou XML.
+4. Armazenamento local.
+5. Segmentação estrutural.
+6. Índice de busca textual.
+7. Registro de direitos.
+8. Execução de pesquisa via CLI autorizado.
+9. Recuperação de evidências.
+10. Geração de análise padronizada.
+11. Verificação literal de citações.
+12. Revisão editorial.
+13. Exportação em Markdown e JSON.
+14. Publicação aprovada.
+15. MCP de consulta aos documentos publicados.
+
+## 21.1. Primeiro teste de ponta a ponta
+
+Selecionar uma edição legalmente autorizada das Institutas de Calvino.
+
+Executar:
+
+- Ingestão.
+- Segmentação.
+- Catalogação.
+- Indexação.
+- Pesquisa sobre a predestinação.
+- Recuperação de evidências.
+- Geração de documento.
+- Auditoria de citações.
+- Revisão editorial.
+- Publicação.
+- Consulta por MCP.
+
+Em seguida, acrescentar uma obra relevante de Armínio e produzir uma comparação fundamentada, identificando também os limites das edições disponíveis.
+
+O objetivo não é provar que a IA conhece Calvino e Armínio, mas que o sistema consegue localizar, verificar e citar corretamente aquilo que foi efetivamente importado.
+
+---
+
+# 22. IMPLEMENTAÇÃO TÉCNICA
+
+Preferir tecnologias já disponíveis no ecossistema SamJoE.
+
+Referências iniciais:
+
+- Python para processamento documental e orquestração de jobs.
+- TypeScript para interfaces e integrações.
+- PostgreSQL/Supabase para catálogo e conhecimento estruturado.
+- Busca textual do PostgreSQL.
+- `pgvector` quando a recuperação semântica trouxer benefício demonstrável.
+- Armazenamento local ou objeto para arquivos.
+- CLI para agentes internos.
+- Serviços compatíveis com MCP para consultas do produto.
+
+Não introduzir infraestrutura distribuída complexa sem necessidade.
+
+A fábrica poderá começar como um aplicativo interno modular com workers executados na máquina de desenvolvimento ou servidor dedicado.
+
+Separar claramente código de aquisição, transformação, pesquisa, análise, revisão e publicação.
+
+## 22.1. Versionamento
+
+Versionar:
+
+- Prompts.
+- Schemas.
+- Configurações.
+- Políticas editoriais.
+- Modelos.
+- Documentos.
+- Regras de citação.
+- Pipelines.
+
+Cada documento deve registrar quais versões de componentes foram utilizadas em sua criação.
+
+## 22.2. Observabilidade
+
+Registrar:
+
+- Job ID.
+- Horários.
+- Etapas.
+- Modelo.
+- Consumo.
+- Arquivos.
+- Evidências.
+- Erros.
+- Revisões.
+- Estado.
+- Resultados.
+
+Permitir retomar um job do último checkpoint válido.
+
+---
+
+# 23. CRITÉRIOS DE ACEITE
+
+A primeira versão será considerada funcional quando:
+
+- Conseguir importar uma obra autorizada mantendo o texto integral.
+- Identificar corretamente sua estrutura.
+- Permitir busca por conteúdo e localização.
+- Recuperar trechos e contextos verificáveis.
+- Executar análise via CLI.
+- Produzir documento padronizado.
+- Associar afirmações a evidências.
+- Bloquear citações inexistentes.
+- Aplicar políticas de reprodução configuradas.
+- Preservar versões e logs.
+- Permitir revisão humana.
+- Publicar documento aprovado.
+- Permitir que o agente MCP consulte a versão publicada.
+- Não exigir reanalisar a obra inteira para responder a cada nova consulta.
+- Funcionar independentemente de um único fornecedor de LLM.
+
+---
+
+# 24. INSTRUÇÕES FINAIS AO AGENTE
+
+Você deve tratar esta especificação como o objetivo funcional, não como uma obrigação de implementar literalmente cada tecnologia sugerida.
+
+Antes de desenvolver:
+
+1. Examine o ambiente local.
+2. Identifique recursos existentes da SamJoE.
+3. Verifique conectores, armazenamento e banco.
+4. Avalie quais componentes podem ser reutilizados.
+5. Identifique dependências críticas.
+6. Proponha uma arquitetura simples, modular e extensível.
+7. Documente riscos e decisões.
+8. Implemente primeiro o fluxo completo de uma obra e uma análise.
+
+Não substitua requisitos essenciais por mocks silenciosos.
+
+Não presuma que as fontes estão autorizadas para uso comercial.
+
+Não invente material bibliográfico.
+
+Não use o modelo de linguagem como banco de verdades históricas.
+
+**Toda análise deve nascer das fontes, preservar as fontes e permitir que suas conclusões sejam conferidas nas fontes.**
+
+A fábrica deverá ser construída para crescimento progressivo, com automação de pesquisa e produção editorial, mantendo supervisão humana nas aprovações relevantes.
+
+## PRIMEIRA ENTREGA SOLICITADA
+
+Produza:
+
+1. Diagnóstico do ambiente.
+2. Arquitetura proposta.
+3. Estrutura de diretórios.
+4. Modelo de dados e migrations.
+5. Contratos de entrada e saída dos agentes.
+6. Política de direitos e citações.
+7. Plano incremental de implementação.
+8. Estratégia de testes.
+9. Implementação inicial do pipeline completo.
+10. Demonstração com fonte real autorizada.
+
+Comece pelo caminho mais curto que possibilite importar, pesquisar, analisar, verificar e publicar conhecimento teológico confiável.
+
+**Nome do sistema: BEREIANOS KNOWLEDGE FACTORY — BKF.**
+
+**Princípio central: conhecimento fundamentado, verificável e permanentemente reutilizável.**

@@ -1,0 +1,28 @@
+{
+  // Infraestrutura definitiva: Cloudflare Workers (sem túnel).
+  // Deploy via @opennextjs/cloudflare. Ver docs/CLOUDFLARE_INFRA.md.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "samjoe-estudos",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-17",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+
+  // Gerado por `opennextjs-cloudflare build`; nao alterar o caminho.
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  // `service` precisa ser igual a `name` acima.
+  "services": [
+    { "binding": "WORKER_SELF_REFERENCE", "service": "samjoe-estudos" }
+  ],
+
+  "images": { "binding": "IMAGES" },
+
+  "observability": { "enabled": true },
+
+  // Bindings de R2, fila e Hyperdrive entram somente quando a aplicação
+  // realmente consumir cache incremental ou Postgres diretamente no Worker.
+  // O MVP atual mantém autorização e dados sensíveis fora do cache público.
+}

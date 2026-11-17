@@ -1,0 +1,28 @@
+{
+  "id": "12a1dcd8-0482-49a8-8c31-1b989fef53ef",
+  "version_id": "42b9f74f-01a8-41f6-8b94-4c68096dd154",
+  "status": "draft",
+  "title": "Romanos 9 e eleição — pauta pendente",
+  "summary": "",
+  "type": "doctrinal-comparison",
+  "level": "",
+  "author": "",
+  "reviewer": "",
+  "team_review": true,
+  "changelog": "",
+  "sections": [],
+  "dossier": {
+    "schema_version": 1,
+    "draft_id": "12a1dcd8-0482-49a8-8c31-1b989fef53ef",
+    "question": "Como delimitar a comparação editorial?",
+    "scope": "",
+    "passages": ["Rm 9:1-33"],
+    "topics": ["eleição"],
+    "sources": [],
+    "claims": [],
+    "open_questions": ["Quais fontes e permissões foram verificadas?"],
+    "rights_status": "pending",
+    "editorial_risks": ["Fontes e revisão pendentes."],
+    "token_budget_used": 0
+  }
+}
