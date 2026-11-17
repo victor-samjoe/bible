@@ -12,5 +12,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="pt-BR"><body><PwaRegistration />{children}</body></html>;
+  return <html lang="pt-BR"><head><meta charSet="utf-8" /></head><body><PwaRegistration />{children}</body></html>;
 }

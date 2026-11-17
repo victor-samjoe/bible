@@ -17,18 +17,18 @@ import { ThemeToggle } from "../../theme-toggle";
 import { ChapterPicker } from "../../chapter-picker";
 import { ReaderUnavailable } from "../../reader-unavailable";
 
-// Leitor ligado ao corpus (tarefa C4). O capítulo vem do banco pelo contrato de
-// leitura (`src/server/bible/**`), que só entrega versículo publicado de tradução
-// aprovada. Nenhum texto bíblico existe neste arquivo.
+// Leitor ligado ao corpus (tarefa C4). O cap�tulo vem do banco pelo contrato de
+// leitura (`src/server/bible/**`), que s� entrega vers�culo publicado de tradu��o
+// aprovada. Nenhum texto b�blico existe neste arquivo.
 //
-// Dinâmica por requisição: não há geração estática de 1189 capítulos nem
-// dependência de banco no momento do build.
+// Din�mica por requisi��o: n�o h� gera��o est�tica de 1189 cap�tulos nem
+// depend�ncia de banco no momento do build.
 export const dynamic = "force-dynamic";
 
 type RouteParams = { book: string; chapter: string };
 
 /**
- * Carregamento único por requisição. `cache` da React faz `generateMetadata` e o
+ * Carregamento �nico por requisi��o. `cache` da React faz `generateMetadata` e o
  * componente compartilharem o mesmo resultado, em vez de consultar duas vezes.
  */
 const loadChapter = cache(async (book: string, chapter: string) => {
@@ -41,9 +41,9 @@ const loadChapter = cache(async (book: string, chapter: string) => {
   ]);
   const books = booksResult.ok ? booksResult.books : null;
 
-  // No capítulo 1, o link de "anterior" precisa saber onde o livro anterior
-  // termina. Essa consulta extra só acontece nesse caso, e sem ela o link
-  // apontaria para o capítulo 1 do livro anterior em vez do último.
+  // No cap�tulo 1, o link de "anterior" precisa saber onde o livro anterior
+  // termina. Essa consulta extra s� acontece nesse caso, e sem ela o link
+  // apontaria para o cap�tulo 1 do livro anterior em vez do �ltimo.
   let chaptersInPreviousBook = 0;
   if (chapterResult.chapter.number === 1 && books) {
     const previousBook = previousBookOf(books, chapterResult.book.slug);
@@ -70,16 +70,16 @@ export async function generateMetadata({
   const loaded = await loadChapter(book, chapter);
   if (!loaded.chapter.ok) {
     return {
-      title: "Leitura indisponível | Bíblia Bereana",
+      title: "Leitura indispon�vel | B�blia Bereana",
       description:
-        "Nenhum versículo é exibido quando a fonte não pode ser verificada no corpus publicado.",
+        "Nenhum vers�culo � exibido quando a fonte n�o pode ser verificada no corpus publicado.",
       robots: { index: false },
     };
   }
   const reference = canonicalReference(loaded.chapter.book.name, loaded.chapter.chapter.number);
   return {
-    title: `${reference} · Bíblia Livre (BLIVRE) | Bíblia Bereana`,
-    description: `${reference} na tradução Bíblia Livre (BLIVRE), licenciada em Creative Commons Atribuição 4.0 Brasil.`,
+    title: `${reference} � B�blia Livre (BLIVRE) | B�blia Bereana`,
+    description: `${reference} na tradu��o B�blia Livre (BLIVRE), licenciada em Creative Commons Atribui��o 4.0 Brasil.`,
     alternates: { canonical: chapterPath(loaded.chapter.book.slug, loaded.chapter.chapter.number) },
   };
 }
@@ -89,8 +89,8 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
   const loaded = await loadChapter(book, chapter);
 
   if (!loaded.chapter.ok) {
-    // Referência inexistente ou malformada é 404; falta de banco, tradução não
-    // aprovada ou capítulo sem publicação são estados explicados ao leitor.
+    // Refer�ncia inexistente ou malformada � 404; falta de banco, tradu��o n�o
+    // aprovada ou cap�tulo sem publica��o s�o estados explicados ao leitor.
     if (loaded.chapter.reason === "not_found" || loaded.chapter.reason === "invalid_reference") {
       notFound();
     }
@@ -139,10 +139,10 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
           verses={verses}
         />
 
-        <nav className="chapterNav" aria-label="Navegação entre capítulos">
+        <nav className="chapterNav" aria-label="Navega��o entre cap�tulos">
           {previous ? (
             <Link href={chapterPath(previous.book.slug, previous.chapter)} rel="prev">
-              <span aria-hidden="true">←</span>{" "}
+              <span aria-hidden="true">�</span>{" "}
               {canonicalReference(previous.book.name, previous.chapter)}
             </Link>
           ) : (
@@ -150,7 +150,7 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
           )}
           {next ? (
             <Link href={chapterPath(next.book.slug, next.chapter)} rel="next">
-              {canonicalReference(next.book.name, next.chapter)} <span aria-hidden="true">→</span>
+              {canonicalReference(next.book.name, next.chapter)} <span aria-hidden="true">�</span>
             </Link>
           ) : (
             <span />
@@ -160,7 +160,7 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
         <footer className="readerFooter">
           <Link href="/estudos">Contexto e estudos</Link>
           <span>
-            {reference} · {translation.attribution}
+            {reference} � {translation.attribution}
           </span>
           <Link href="/direitos-autorais">Direitos</Link>
         </footer>
