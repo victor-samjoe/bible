@@ -8,9 +8,12 @@ export type ChapterVerse = {
   readonly content: string;
 };
 
-// Renderiza o capítulo vindo do corpus BLIVRE no banco (tarefa C4) e liga cada
-// versículo às ferramentas locais. Nenhum texto é gerado aqui: `verses` vem do
-// contrato de leitura, que só entrega versículo publicado de tradução aprovada.
+// Renderiza o capítulo vindo do corpus BLIVRE no banco e trata cada versículo como
+// alvo de seleção (tarefa C13): o toque marca e desmarca, sem abrir painel nem
+// modal. As ações ficam na barra que aparece só quando há seleção.
+//
+// Nenhum texto é gerado aqui: `verses` vem do contrato de leitura, que só entrega
+// versículo publicado de tradução aprovada.
 
 export function ReaderChapter({
   bookName,
@@ -23,7 +26,17 @@ export function ReaderChapter({
   translationName: string;
   verses: readonly ChapterVerse[];
 }) {
-  const { selectedVerse, selectVerse, highlights, read, notes, totalVerses } = useReader();
+  const {
+    selection,
+    toggleVerse,
+    highlightOf,
+    chapterNotes,
+    isChapterRead,
+    highlightCount,
+    totalVerses,
+  } = useReader();
+
+  const noteAnchors = new Map(chapterNotes.map((note) => [note.anchor, note]));
 
   return (
     <article className="scripture" aria-labelledby="chapter-title">
@@ -32,35 +45,39 @@ export function ReaderChapter({
         {bookName} <span>{chapterNumber}</span>
       </h1>
       <div className="chapterRule" />
-      {verses.map((verse) => (
-        <p key={verse.id} className="verseLine">
-          <button
-            type="button"
-            className="verseButton"
-            data-selected={selectedVerse === verse.number ? "true" : undefined}
-            data-highlighted={highlights.has(verse.number) ? "true" : undefined}
-            data-read={read.has(verse.number) ? "true" : undefined}
-            onClick={() => selectVerse(verse.number)}
-          >
-            <sup>{verse.number}</sup>
-            {verse.content}
-            {notes[verse.number] ? (
-              <span className="verseMark" title="Nota local nesta sessão" aria-hidden="true">
-                ✎
-              </span>
-            ) : null}
-            {read.has(verse.number) ? (
-              <span className="verseMark" title="Lido nesta sessão" aria-hidden="true">
-                ✓
-              </span>
-            ) : null}
-          </button>
-        </p>
-      ))}
+      {verses.map((verse) => {
+        const selected = selection.has(verse.number);
+        const color = highlightOf(verse.number);
+        const note = noteAnchors.get(verse.number);
+        return (
+          <p key={verse.id} className="verseLine">
+            <button
+              type="button"
+              className="verseButton"
+              aria-pressed={selected}
+              data-selected={selected ? "true" : undefined}
+              data-highlight={color}
+              onClick={() => toggleVerse(verse.number)}
+            >
+              <sup>{verse.number}</sup>
+              {verse.content}
+              {note ? (
+                <span
+                  className="verseMark"
+                  title={`Nota local em ${bookName} ${chapterNumber}:${note.verses}`}
+                  aria-hidden="true"
+                >
+                  ✎
+                </span>
+              ) : null}
+            </button>
+          </p>
+        );
+      })}
       <p className="readerProgress" role="status">
-        Lidos nesta sessão: {read.size} de {totalVerses} versículos deste capítulo · destaques:{" "}
-        {highlights.size} · notas: {Object.keys(notes).length}. Tudo local nesta sessão, sem conta e
-        sem sincronização.
+        {isChapterRead ? "Capítulo marcado como lido nesta sessão." : "Capítulo ainda não marcado como lido."}{" "}
+        {totalVerses} versículos · destaques: {highlightCount} · notas: {chapterNotes.length}. Tudo
+        local nesta sessão, sem conta e sem sincronização.
       </p>
     </article>
   );

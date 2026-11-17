@@ -38,6 +38,34 @@ Somente após BKF-P0-002 e após o operador aprovar uma edição por arquivo. In
 C12 — Preparação de release
 Somente após C4 e C8. Atualizar documentação de PWA/iPhone e APK/Android, validar manifests, ícones, metadados, política de privacidade pendente e checklist de loja. Não criar contas, não assinar app, não enviar para lojas.
 
+C13 — Interação de leitura por seleção múltipla
+Substituir a interação atual do leitor conforme abaixo, sem alterar corpus/API/licenças/banco:
+1. Seletor de livro: ao escolher livro, trocar imediatamente para lista de capítulos desse livro; ao escolher capítulo, navegar. Não exigir reabrir menu manualmente.
+2. Versículos: toque seleciona/desseleciona vários versículos no próprio texto; não abrir painel/modal automaticamente. Seleção visível e acessível.
+3. Barra de ações: só aparece quando houver seleção. Deve ser discreta/flutuante e oferecer um menu suspenso: destacar por cor (amarelo, verde, azul, rosa), adicionar nota, comparar traduções, consultar original e limpar seleção. Comparação/original devem explicar indisponibilidade/licenciamento quando necessário; não inventar dados.
+4. Lido: remover do nível de versículo. Virar uma ação única de capítulo (marcar/desmarcar capítulo como lido), no menu de três pontos ou barra do cabeçalho.
+5. Três pontos: conter configurações de leitura em seção própria, separada das ações de texto: tema, tamanho com opção menor adicional, fonte e espaçamento. Não misturar versões ou ações de seleção nessa tela.
+6. Versões: abrir somente após o usuário ter seleção ativa, como ação da barra; BLIVRE disponível e outras seguem “Em licenciamento”.
+7. Preservar estado local de sessão por capítulo e atualizar testes. Não fazer deploy/commit, não aplicar banco remoto.
+
+C14 — Corpora grego e hebraico
+Importar somente fontes abertas já documentadas em docs/ORIGINAL_LANGUAGE_SOURCES.md: WLC (texto hebraico), OSHB/MorphHB (lemas e morfologia hebraica) e SBLGNT (texto grego). Antes de baixar, registrar URL oficial, licença, atribuição, versão/commit e checksum. Separar texto bíblico de dados morfológicos e de definições lexicais; não inventar glossas nem usar léxico sem fonte própria. Criar migrations/contratos/importadores/testes locais idempotentes e manter corpus fora de public/. Não expor no app, não aplicar Supabase remoto, não fazer deploy/commit e parar se licença/arquivo oficial não for verificável.
+
+C15 — App shell e dashboard pessoal
+Após C13 e somente com dados locais/fixtures quando Auth não existir: criar navegação lateral responsiva para Início, Bíblia, Materiais, Notas, Estudos, Cursos, Planos e Perfil. Criar dashboard com retomar leitura, leituras concluídas e novidades; sem números inventados e deixando claro quando dados são locais ou indisponíveis. Não integrar banco/Auth/pagamentos, não fazer deploy/commit.
+
+C16 — Catálogos de materiais, estudos e cursos
+Criar UI e contratos puros para Materiais, Estudos/Análises e Cursos por tema. Curso: tema, módulos, lições, leituras e progresso. Usar apenas fixtures editoriais explicitamente marcadas; não criar alegações, fontes ou conteúdo premium. Não integrar banco/checkout, não fazer deploy/commit.
+
+C17 — Esqueletos de conta e segurança
+Criar somente telas e contratos de login, cadastro, recuperação de senha, perfil e 2FA com estados “integração pendente”. Não simular autenticação, não instalar provedor, não enviar e-mails, não armazenar senhas, não fazer deploy/commit.
+
+C18 — Fundação de cobrança neutra
+Criar contratos server-side e testes puros para planos, preços, assinaturas, eventos de webhook e entitlements. Sem provedor escolhido, sem checkout, sem credenciais, sem pagamentos ou webhooks reais. Reusar canAccess e falhar fechada.
+
+C19 — BKF localhost
+Criar uma plataforma local em HTML para gestão interna do acervo BKF. Deve rodar apenas em localhost, sem login externo, deploy, banco remoto ou MCP. Exibir: estrutura de pastas privada, materiais cadastrados, autor/obra/edição, status de direitos, hashes, fila de ingestão, análises, revisões e bloqueios. Permitir cadastrar/editar somente fixtures ou arquivos locais autorizados; não baixar conteúdo, não publicar e não fingir que dados locais são aprovados. Criar instruções claras de execução localhost e testes básicos. Não fazer commit.
+
 RESPOSTA DO CLAUDE CLI — 17/11/2026
 
 Relatório completo: docs/CLAUDE_MVP_EXECUTION_QUEUE.md, seção "Relatório de execução".

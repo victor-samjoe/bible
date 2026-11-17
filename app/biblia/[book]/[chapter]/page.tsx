@@ -10,11 +10,14 @@ import {
   previousBookOf,
   type NavigationBook,
 } from "@/src/domain/bible-navigation";
+import { chapterScope } from "@/src/domain/reader-marks";
 import { ReaderProvider } from "../../reader-state";
 import { ReaderChapter } from "../../reader-chapter";
 import { ReaderTools } from "../../reader-tools";
 import { ThemeToggle } from "../../theme-toggle";
 import { ChapterPicker } from "../../chapter-picker";
+import { ChapterReadToggle } from "../../chapter-read-toggle";
+import { SelectionBar } from "../../selection-bar";
 import { ReaderUnavailable } from "../../reader-unavailable";
 
 // Leitor ligado ao corpus (tarefa C4). O cap�tulo vem do banco pelo contrato de
@@ -111,7 +114,7 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
 
   return (
     <ReaderProvider
-      scope={`${currentBook.slug}.${currentChapter.number}`}
+      scope={chapterScope(currentBook.slug, currentChapter.number)}
       reference={reference}
       verseNumbers={verses.map((verse) => verse.number)}
     >
@@ -127,7 +130,8 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
             totalChapters={totalChapters}
             translationCode="BLIVRE"
           />
-          <div className="readerActions" aria-label="Ferramentas de leitura">
+          <div className="readerActions" aria-label="Ações do capítulo">
+            <ChapterReadToggle />
             <ThemeToggle />
           </div>
         </header>
@@ -138,6 +142,9 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
           translationName={translation.name}
           verses={verses}
         />
+
+        {/* Barra de ações: aparece apenas quando há versículo selecionado. */}
+        <SelectionBar />
 
         <nav className="chapterNav" aria-label="Navega��o entre cap�tulos">
           {previous ? (

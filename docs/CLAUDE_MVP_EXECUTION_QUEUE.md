@@ -61,6 +61,34 @@
 - **C11 — Catálogo histórico:** integrar pipeline e catálogo somente após BKF-P0-002 e aprovação humana por edição; não baixar nem decidir direitos.
 - **C12 — Preparação de release:** revisar PWA/APK, manifests, ícones, privacidade e checklist de lojas após C4/C8; sem publicar em lojas.
 
+## C13 — Seleção múltipla e ações de leitura
+
+Substituir o toque que abre painel por seleção múltipla no texto. Livro escolhido deve abrir capítulos imediatamente. Uma barra discreta só aparece com seleção e oferece destaque por cores, nota, comparação, original e limpar; versões/originais respeitam licença e indisponibilidade. “Lido” passa a ser estado de capítulo. Três pontos ficam exclusivamente para tema, fonte, tamanho (inclusive menor) e espaçamento. Estado segue local por capítulo até Auth real; atualizar testes e não fazer deploy/commit.
+
+## C14 — Corpora originais
+
+Importar WLC (hebraico), OSHB/MorphHB (morfologia hebraica) e SBLGNT (grego) apenas a partir de fontes oficiais verificáveis. Registrar licença, atribuição, versão/commit, URL e checksum antes de baixar. Separar texto, morfologia e futuros léxicos; não inventar glossas. Criar contratos, migrations, importadores idempotentes e testes locais; corpus privado, sem app, Supabase remoto, deploy ou commit.
+
+## C15 — App shell e dashboard
+
+Depois de C13, criar menu lateral responsivo e dashboard de continuidade: retomar leitura, leituras concluídas, novidades e acesso às áreas Bíblia, Materiais, Notas, Estudos, Cursos, Planos e Perfil. Sem dados inventados, Auth, banco ou deploy.
+
+## C16 — Conteúdo e cursos
+
+Criar catálogos UI/contratos para materiais, estudos/análises e cursos por tema (módulos, lições, leituras e progresso), usando fixtures claramente marcadas. Sem conteúdo premium, fontes inventadas, banco ou checkout.
+
+## C17 — Conta e segurança
+
+Criar telas/contratos de login, cadastro, recuperação, perfil e 2FA com integração pendente. Sem simular Auth, guardar senhas, e-mail ou deploy.
+
+## C18 — Cobrança neutra
+
+Criar contratos e testes para planos, assinaturas, webhooks e entitlements; falha fechada e reutilização de `canAccess`. Sem provedor, credenciais, checkout ou cobrança real.
+
+## C19 — BKF localhost
+
+Criar painel HTML interno que roda somente em localhost para organizar o acervo: pastas privadas, materiais, autor/obra/edição, direitos, hashes, ingestão, análises, revisões e bloqueios. Sem deploy, login externo, banco remoto, MCP, download ou publicação. Somente fixtures e arquivos locais autorizados; documentação de execução e testes básicos obrigatórios.
+
 
 ---
 

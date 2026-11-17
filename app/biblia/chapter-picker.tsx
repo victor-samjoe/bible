@@ -1,16 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import styles from "./chapter-picker.module.css";
 import { chapterPath, chapterRange, type NavigationBook } from "@/src/domain/bible-navigation";
 
-// Seletor de livro e capítulo do cabeçalho. Os dois botões existiam sem ação;
-// a tarefa C4 os liga à navegação real por URL.
+// Seletor de livro e capítulo do cabeçalho (tarefas C4 e C13).
 //
-// Só aparece o que vem do corpus: a lista de livros e a contagem de capítulos
-// chegam do contrato de leitura, então não há como navegar para capítulo que não
-// existe no banco.
+// Fluxo da C13: escolher um livro **não** fecha o menu — ele troca na hora para a
+// lista de capítulos daquele livro, e só a escolha do capítulo termina a
+// navegação. A etapa viaja na URL (`?selecionar=capitulo`), porque a contagem de
+// capítulos de cada livro vem do servidor: o cliente não inventa quantos
+// capítulos um livro tem, e nada na API ou no corpus precisou mudar para isso.
+
+const STEP_PARAM = "selecionar";
 
 export function ChapterPicker({
   books,
@@ -25,21 +29,30 @@ export function ChapterPicker({
   totalChapters: number;
   translationCode: string;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [open, setOpen] = useState<"livro" | "capitulo" | null>(null);
+
+  // Voltando de uma escolha de livro, o menu reabre direto nos capítulos dele.
+  useEffect(() => {
+    if (searchParams.get(STEP_PARAM) === "capitulo") setOpen("capitulo");
+  }, [searchParams, currentBook.slug]);
+
+  // Fechar também limpa o passo da URL, para que recarregar não reabra o menu.
+  const close = useCallback(() => {
+    setOpen(null);
+    if (searchParams.get(STEP_PARAM) !== null) router.replace(pathname);
+  }, [pathname, router, searchParams]);
 
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(null);
+      if (event.key === "Escape") close();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
-
-  // Navegar fecha o painel: a rota muda e o capítulo aberto passa a ser outro.
-  useEffect(() => {
-    setOpen(null);
-  }, [currentBook.slug, currentChapter]);
+  }, [close, open]);
 
   return (
     <>
@@ -48,7 +61,7 @@ export function ChapterPicker({
           type="button"
           aria-label={`Selecionar livro, atual ${currentBook.name}`}
           aria-expanded={open === "livro"}
-          onClick={() => setOpen(open === "livro" ? null : "livro")}
+          onClick={() => (open === "livro" ? close() : setOpen("livro"))}
         >
           {currentBook.name}
         </button>
@@ -56,7 +69,7 @@ export function ChapterPicker({
           type="button"
           aria-label={`Selecionar capítulo, atual ${currentChapter}`}
           aria-expanded={open === "capitulo"}
-          onClick={() => setOpen(open === "capitulo" ? null : "capitulo")}
+          onClick={() => (open === "capitulo" ? close() : setOpen("capitulo"))}
         >
           {currentChapter}
         </button>
@@ -64,7 +77,7 @@ export function ChapterPicker({
       </div>
 
       {open && (
-        <div className={styles.backdrop} role="presentation" onClick={() => setOpen(null)}>
+        <div className={styles.backdrop} role="presentation" onClick={close}>
           <section
             className={styles.sheet}
             role="dialog"
@@ -73,8 +86,22 @@ export function ChapterPicker({
             onClick={(event) => event.stopPropagation()}
           >
             <header>
-              <h2>{open === "livro" ? "Livros" : `${currentBook.name}: capítulos`}</h2>
-              <button type="button" onClick={() => setOpen(null)} aria-label="Fechar seletor">
+              {open === "capitulo" ? (
+                <div className={styles.step}>
+                  <button
+                    type="button"
+                    className={styles.back}
+                    onClick={() => setOpen("livro")}
+                    aria-label="Voltar para a lista de livros"
+                  >
+                    ←
+                  </button>
+                  <h2>{currentBook.name}: capítulos</h2>
+                </div>
+              ) : (
+                <h2>Livros</h2>
+              )}
+              <button type="button" onClick={close} aria-label="Fechar seletor">
                 ×
               </button>
             </header>
@@ -83,14 +110,24 @@ export function ChapterPicker({
               <ul className={styles.books}>
                 {books.map((book) => (
                   <li key={book.slug}>
-                    <Link
-                      href={chapterPath(book.slug, 1)}
-                      aria-current={book.slug === currentBook.slug ? "page" : undefined}
-                      className={book.slug === currentBook.slug ? styles.current : undefined}
-                    >
-                      <b>{book.orderNo}</b>
-                      {book.name}
-                    </Link>
+                    {book.slug === currentBook.slug ? (
+                      // Livro atual: já temos a contagem de capítulos, então a
+                      // troca para a lista é imediata, sem passar pela rota.
+                      <button
+                        type="button"
+                        className={styles.current}
+                        aria-current="page"
+                        onClick={() => setOpen("capitulo")}
+                      >
+                        <b>{book.orderNo}</b>
+                        {book.name}
+                      </button>
+                    ) : (
+                      <Link href={`${chapterPath(book.slug, 1)}?${STEP_PARAM}=capitulo`}>
+                        <b>{book.orderNo}</b>
+                        {book.name}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -102,6 +139,7 @@ export function ChapterPicker({
                       href={chapterPath(currentBook.slug, number)}
                       aria-current={number === currentChapter ? "page" : undefined}
                       className={number === currentChapter ? styles.current : undefined}
+                      onClick={() => setOpen(null)}
                     >
                       {number}
                     </Link>

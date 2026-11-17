@@ -1,6 +1,9 @@
-/* Versículo como alvo de toque: abre o painel local de ferramentas sem tirar o
-   texto do primeiro plano. Destaque, marca de leitura e nota são local nesta
-   sessão (ver app/biblia/reader-state.tsx). */
+/* Versículo como alvo de seleção (tarefa C13): o toque marca e desmarca, e as
+   ações ficam na barra flutuante. Destaque por cor, nota e "lido" de capítulo são
+   local nesta sessão (ver app/biblia/reader-state.tsx).
+
+   Os seletores de tema usam `[data-reader-theme]` sem prefixo para valer tanto no
+   elemento `html` quanto no invólucro criado pelo provider. */
 .verseButton {
   display: block;
   width: 100%;
@@ -14,6 +17,7 @@
   margin: 0 -7px;
   border-radius: 7px;
   cursor: pointer;
+  transition: background-color 120ms ease;
 }
 .verseButton:hover {
   background: rgba(213, 138, 99, 0.12);
@@ -22,11 +26,32 @@
   outline: 2px solid #d58a63;
   outline-offset: 2px;
 }
-.verseButton[data-highlighted] {
-  background: rgba(213, 138, 99, 0.24);
+
+/* Destaque por cor. Fundo translúcido para o texto continuar legível nos dois temas. */
+.verseButton[data-highlight="amarelo"] {
+  background: rgba(242, 214, 117, 0.3);
+  box-shadow: inset 3px 0 0 #f2d675;
 }
+.verseButton[data-highlight="verde"] {
+  background: rgba(168, 211, 160, 0.3);
+  box-shadow: inset 3px 0 0 #a8d3a0;
+}
+.verseButton[data-highlight="azul"] {
+  background: rgba(156, 195, 228, 0.3);
+  box-shadow: inset 3px 0 0 #9cc3e4;
+}
+.verseButton[data-highlight="rosa"] {
+  background: rgba(234, 169, 196, 0.3);
+  box-shadow: inset 3px 0 0 #eaa9c4;
+}
+
+/* Seleção é a interação principal: precisa ser inconfundível e não depender só
+   de cor, por isso traço à esquerda somado ao contorno. */
 .verseButton[data-selected] {
-  box-shadow: inset 0 0 0 1px #d58a63;
+  background: rgba(213, 138, 99, 0.2);
+  box-shadow:
+    inset 0 0 0 1px #d58a63,
+    inset 5px 0 0 #d58a63;
 }
 .verseMark {
   font: 700 0.68rem Arial, Helvetica, sans-serif;
@@ -41,23 +66,27 @@
   margin: 38px 0 0;
   padding: 16px 0 0;
 }
+/* Espaço para a barra flutuante não cobrir o fim do capítulo. */
+.scripture {
+  padding-bottom: 104px;
+}
 
-html[data-reader-theme="light"] .verseButton:hover {
+[data-reader-theme="light"] .verseButton:hover {
   background: rgba(38, 77, 58, 0.09);
 }
-html[data-reader-theme="light"] .verseButton[data-highlighted] {
-  background: rgba(213, 138, 99, 0.3);
+[data-reader-theme="light"] .verseButton[data-selected] {
+  background: rgba(49, 90, 70, 0.14);
+  box-shadow:
+    inset 0 0 0 1px #315a46,
+    inset 5px 0 0 #315a46;
 }
-html[data-reader-theme="light"] .verseButton[data-selected] {
-  box-shadow: inset 0 0 0 1px #315a46;
-}
-html[data-reader-theme="light"] .verseButton:focus-visible {
+[data-reader-theme="light"] .verseButton:focus-visible {
   outline-color: #315a46;
 }
-html[data-reader-theme="light"] .verseMark {
+[data-reader-theme="light"] .verseMark {
   color: #6a706c;
 }
-html[data-reader-theme="light"] .readerProgress {
+[data-reader-theme="light"] .readerProgress {
   color: #6a706c;
   border-color: #d7d0c5;
 }
@@ -86,11 +115,11 @@ html[data-reader-theme="light"] .readerProgress {
   outline: 2px solid #d58a63;
   outline-offset: 2px;
 }
-html[data-reader-theme="light"] .chapterNav a {
+[data-reader-theme="light"] .chapterNav a {
   color: #315a46;
   border-color: #d7d0c5;
 }
-html[data-reader-theme="light"] .chapterNav a:hover {
+[data-reader-theme="light"] .chapterNav a:hover {
   background: #e8e2d7;
 }
 @media (max-width: 650px) {

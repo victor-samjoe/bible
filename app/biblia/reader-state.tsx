@@ -10,21 +10,35 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import {
+  chapterScopeSchema,
+  isHighlightColor,
+  isMarkInScope,
+  markAnchor,
+  selectionLabel as buildSelectionLabel,
+  toggleVerseIn,
+  verseMarkKey,
+  verseMarkKeySchema,
+  type HighlightColor,
+} from "@/src/domain/reader-marks";
 
 // Estado do leitor que vive SOMENTE nesta sessão do navegador (sessionStorage).
 // Nada aqui é conta, nuvem ou banco: a tarefa C5 liga notas, destaques e progresso
 // às tabelas com RLS depois que o Auth Supabase existir de fato. Até então a
 // interface precisa dizer "local nesta sessão" e não prometer sincronização.
 //
-// Desde o C4 o leitor navega por qualquer livro e capítulo, então cada marca é
-// guardada com a chave `<livro>.<capítulo>.<versículo>`. Sem isso, uma nota de
-// Gênesis 1:5 reapareceria em João 1:5.
+// Modelo da tarefa C13:
+// - seleção múltipla de versículos, que não persiste (é intenção, não marca);
+// - destaque com cor, por versículo;
+// - nota pertencente à seleção que a originou;
+// - "lido" é estado do capítulo inteiro, não do versículo.
 
 export type ReaderTheme = "dark" | "light";
 export type FontFamily = "serif" | "sans";
-export type FontSize = "pequeno" | "medio" | "grande";
+export type FontSize = "menor" | "pequeno" | "medio" | "grande";
 export type Spacing = "compacto" | "padrao" | "amplo";
-export type ToolsTab = "leitura" | "versoes" | "versiculo";
+/** Painéis abertos pela barra de seleção. As configurações têm painel próprio. */
+export type ActionPanel = "nota" | "versoes" | "original";
 
 export type ReaderPreferences = {
   fontFamily: FontFamily;
@@ -44,7 +58,8 @@ const fontFamilyValue: Record<FontFamily, string> = {
 };
 
 const fontSizeValue: Record<FontSize, string> = {
-  pequeno: "1.08rem",
+  menor: "0.98rem",
+  pequeno: "1.14rem",
   medio: "1.33rem",
   grande: "1.58rem",
 };
@@ -55,48 +70,73 @@ const spacingValue: Record<Spacing, string> = {
   amplo: "2",
 };
 
-const SESSION_KEY = "reader-session-v2";
+const SESSION_KEY = "reader-session-v3";
 const THEME_KEY = "reader-theme";
-const MARK_KEY = /^[a-z0-9-]{1,64}\.\d{1,3}\.\d{1,3}$/;
 const MAX_MARKS = 4000;
 const MAX_NOTES = 500;
 const MAX_NOTE_LENGTH = 10000;
 
 type Marks = {
-  highlights: ReadonlySet<string>;
-  read: ReadonlySet<string>;
+  /** chave `livro.capítulo.versículo` -> cor */
+  highlights: Readonly<Record<string, HighlightColor>>;
+  /** chave `livro.capítulo.lista` -> texto */
   notes: Readonly<Record<string, string>>;
+  /** escopos `livro.capítulo` marcados como lidos */
+  readChapters: ReadonlySet<string>;
 };
 
 type PersistedState = {
   preferences: ReaderPreferences;
-  highlights: string[];
-  read: string[];
+  highlights: Record<string, HighlightColor>;
   notes: Record<string, string>;
+  readChapters: string[];
+};
+
+export type ChapterNote = {
+  readonly key: string;
+  readonly anchor: number;
+  readonly verses: string;
+  readonly text: string;
 };
 
 type ReaderContextValue = {
   theme: ReaderTheme;
   toggleTheme: () => void;
+  setTheme: (theme: ReaderTheme) => void;
   preferences: ReaderPreferences;
   setPreference: <K extends keyof ReaderPreferences>(key: K, value: ReaderPreferences[K]) => void;
-  toolsOpen: boolean;
-  openTools: (tab?: ToolsTab) => void;
-  closeTools: () => void;
-  tab: ToolsTab;
-  setTab: (tab: ToolsTab) => void;
-  selectedVerse: number | null;
-  selectVerse: (verse: number) => void;
-  /** Marcas do capítulo aberto, por número de versículo. */
-  highlights: ReadonlySet<number>;
-  toggleHighlight: (verse: number) => void;
-  read: ReadonlySet<number>;
-  toggleRead: (verse: number) => void;
-  notes: Readonly<Record<number, string>>;
-  saveNote: (verse: number, body: string) => void;
-  removeNote: (verse: number) => void;
-  totalVerses: number;
+
+  /** Painel de configurações de leitura (menu de três pontos). */
+  settingsOpen: boolean;
+  openSettings: () => void;
+  closeSettings: () => void;
+
+  /** Painel aberto por uma ação da barra de seleção. */
+  panel: ActionPanel | null;
+  openPanel: (panel: ActionPanel) => void;
+  closePanel: () => void;
+
+  selection: ReadonlySet<number>;
+  toggleVerse: (verse: number) => void;
+  clearSelection: () => void;
+  selectionLabel: string;
+
+  highlightOf: (verse: number) => HighlightColor | undefined;
+  applyHighlight: (color: HighlightColor) => void;
+  removeHighlight: () => void;
+  highlightCount: number;
+
+  /** Nota da seleção atual, se já existir uma com exatamente esses versículos. */
+  selectionNote: string;
+  saveNote: (text: string) => void;
+  removeNote: () => void;
+  chapterNotes: readonly ChapterNote[];
+
+  isChapterRead: boolean;
+  toggleChapterRead: () => void;
+
   reference: string;
+  totalVerses: number;
   notice: string;
   setNotice: (notice: string) => void;
 };
@@ -108,18 +148,11 @@ function isFontFamily(value: unknown): value is FontFamily {
 }
 
 function isFontSize(value: unknown): value is FontSize {
-  return value === "pequeno" || value === "medio" || value === "grande";
+  return value === "menor" || value === "pequeno" || value === "medio" || value === "grande";
 }
 
 function isSpacing(value: unknown): value is Spacing {
   return value === "compacto" || value === "padrao" || value === "amplo";
-}
-
-function markKeys(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value
-    .filter((item): item is string => typeof item === "string" && MARK_KEY.test(item))
-    .slice(0, MAX_MARKS);
 }
 
 function readSession(): PersistedState | null {
@@ -130,13 +163,31 @@ function readSession(): PersistedState | null {
     if (typeof parsed !== "object" || parsed === null) return null;
     const source = parsed as Record<string, unknown>;
     const storedPreferences = (source.preferences ?? {}) as Record<string, unknown>;
-    const storedNotes = (source.notes ?? {}) as Record<string, unknown>;
+
+    const highlights: Record<string, HighlightColor> = {};
+    for (const [key, value] of Object.entries(
+      (source.highlights ?? {}) as Record<string, unknown>,
+    )) {
+      if (Object.keys(highlights).length >= MAX_MARKS) break;
+      if (verseMarkKeySchema.test(key) && isHighlightColor(value)) highlights[key] = value;
+    }
+
     const notes: Record<string, string> = {};
-    for (const [key, value] of Object.entries(storedNotes)) {
-      if (typeof value === "string" && MARK_KEY.test(key) && Object.keys(notes).length < MAX_NOTES) {
+    for (const [key, value] of Object.entries((source.notes ?? {}) as Record<string, unknown>)) {
+      if (Object.keys(notes).length >= MAX_NOTES) break;
+      if (verseMarkKeySchema.test(key) && typeof value === "string" && value.trim().length > 0) {
         notes[key] = value.slice(0, MAX_NOTE_LENGTH);
       }
     }
+
+    const readChapters = Array.isArray(source.readChapters)
+      ? source.readChapters
+          .filter(
+            (item): item is string => typeof item === "string" && chapterScopeSchema.test(item),
+          )
+          .slice(0, MAX_MARKS)
+      : [];
+
     return {
       preferences: {
         fontFamily: isFontFamily(storedPreferences.fontFamily)
@@ -149,9 +200,9 @@ function readSession(): PersistedState | null {
           ? storedPreferences.spacing
           : defaultPreferences.spacing,
       },
-      highlights: markKeys(source.highlights),
-      read: markKeys(source.read),
+      highlights,
       notes,
+      readChapters,
     };
   } catch {
     // Armazenamento bloqueado ou conteúdo inválido: segue com os padrões.
@@ -166,45 +217,45 @@ export function ReaderProvider({
   verseNumbers,
 }: {
   children: ReactNode;
-  /** `<slug do livro>.<capítulo>`, usado como prefixo das marcas. */
+  /** `<slug do livro>.<capítulo>`, prefixo de todas as marcas deste capítulo. */
   scope: string;
-  /** Referência canônica já formatada, para o painel e os avisos. */
+  /** Referência canônica já formatada, para rótulos e avisos. */
   reference: string;
   verseNumbers: readonly number[];
 }) {
-  const [theme, setTheme] = useState<ReaderTheme>("dark");
+  const [theme, setThemeState] = useState<ReaderTheme>("dark");
   const [preferences, setPreferences] = useState<ReaderPreferences>(defaultPreferences);
   const [marks, setMarks] = useState<Marks>(() => ({
-    highlights: new Set<string>(),
-    read: new Set<string>(),
+    highlights: {},
     notes: {},
+    readChapters: new Set<string>(),
   }));
-  const [toolsOpen, setToolsOpen] = useState(false);
-  const [tab, setTab] = useState<ToolsTab>("leitura");
-  const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
+  const [selection, setSelection] = useState<ReadonlySet<number>>(() => new Set<number>());
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [panel, setPanel] = useState<ActionPanel | null>(null);
   const [notice, setNotice] = useState("");
   const loaded = useRef(false);
 
-  // Escape fecha o painel de ferramentas, como no seletor de livro/capítulo.
+  // Trocar de capítulo zera a seleção e fecha painéis: a seleção é intenção sobre
+  // o texto que está na tela, não uma marca guardada.
   useEffect(() => {
-    if (!toolsOpen) return;
+    setSelection(new Set<number>());
+    setPanel(null);
+    setSettingsOpen(false);
+    setNotice("");
+  }, [scope]);
+
+  useEffect(() => {
+    if (!settingsOpen && panel === null) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setToolsOpen(false);
-        setNotice("");
-      }
+      if (event.key !== "Escape") return;
+      setSettingsOpen(false);
+      setPanel(null);
+      setNotice("");
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [toolsOpen]);
-
-  // Trocar de capítulo fecha o painel e limpa a seleção: o versículo 7 de um
-  // capítulo não é o versículo 7 do próximo.
-  useEffect(() => {
-    setSelectedVerse(null);
-    setToolsOpen(false);
-    setNotice("");
-  }, [scope]);
+  }, [settingsOpen, panel]);
 
   // Carrega o estado da sessão depois da hidratação: o servidor não conhece o
   // sessionStorage, então a primeira renderização usa os padrões.
@@ -215,14 +266,14 @@ export function ReaderProvider({
     } catch {
       storedTheme = "dark";
     }
-    setTheme(storedTheme);
+    setThemeState(storedTheme);
     const stored = readSession();
     if (stored) {
       setPreferences(stored.preferences);
       setMarks({
-        highlights: new Set(stored.highlights),
-        read: new Set(stored.read),
+        highlights: stored.highlights,
         notes: stored.notes,
+        readChapters: new Set(stored.readChapters),
       });
     }
     loaded.current = true;
@@ -244,9 +295,9 @@ export function ReaderProvider({
     try {
       const payload: PersistedState = {
         preferences,
-        highlights: [...marks.highlights],
-        read: [...marks.read],
+        highlights: { ...marks.highlights },
         notes: { ...marks.notes },
+        readChapters: [...marks.readChapters],
       };
       window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(payload));
     } catch {
@@ -254,49 +305,18 @@ export function ReaderProvider({
     }
   }, [preferences, marks]);
 
-  const keyOf = useCallback((verse: number) => `${scope}.${verse}`, [scope]);
-
-  const scopedNumbers = useCallback(
-    (keys: ReadonlySet<string>) => {
-      const prefix = `${scope}.`;
-      const numbers = new Set<number>();
-      for (const key of keys) {
-        if (!key.startsWith(prefix)) continue;
-        const verse = Number(key.slice(prefix.length));
-        if (Number.isSafeInteger(verse)) numbers.add(verse);
-      }
-      return numbers;
-    },
-    [scope],
-  );
-
-  const highlights = useMemo(
-    () => scopedNumbers(marks.highlights),
-    [marks.highlights, scopedNumbers],
-  );
-  const read = useMemo(() => scopedNumbers(marks.read), [marks.read, scopedNumbers]);
-  const notes = useMemo(() => {
-    const prefix = `${scope}.`;
-    const result: Record<number, string> = {};
-    for (const [key, value] of Object.entries(marks.notes)) {
-      if (!key.startsWith(prefix)) continue;
-      const verse = Number(key.slice(prefix.length));
-      if (Number.isSafeInteger(verse)) result[verse] = value;
+  const setTheme = useCallback((next: ReaderTheme) => {
+    setThemeState(next);
+    try {
+      window.sessionStorage.setItem(THEME_KEY, next);
+    } catch {
+      // Ignora: o tema continua aplicado nesta navegação.
     }
-    return result;
-  }, [marks.notes, scope]);
+  }, []);
 
   const toggleTheme = useCallback(() => {
-    setTheme((current) => {
-      const next: ReaderTheme = current === "dark" ? "light" : "dark";
-      try {
-        window.sessionStorage.setItem(THEME_KEY, next);
-      } catch {
-        // Ignora: o tema continua aplicado nesta navegação.
-      }
-      return next;
-    });
-  }, []);
+    setTheme(theme === "dark" ? "light" : "dark");
+  }, [setTheme, theme]);
 
   const setPreference = useCallback(
     <K extends keyof ReaderPreferences>(key: K, value: ReaderPreferences[K]) => {
@@ -305,117 +325,198 @@ export function ReaderProvider({
     [],
   );
 
-  const openTools = useCallback((nextTab?: ToolsTab) => {
-    if (nextTab) setTab(nextTab);
-    setToolsOpen(true);
+  const toggleVerse = useCallback((verse: number) => {
+    setNotice("");
+    setSelection((current) => toggleVerseIn(current, verse));
   }, []);
 
-  const closeTools = useCallback(() => {
-    setToolsOpen(false);
+  const clearSelection = useCallback(() => {
+    setSelection(new Set<number>());
+    setPanel(null);
     setNotice("");
   }, []);
 
-  const selectVerse = useCallback((verse: number) => {
-    setSelectedVerse(verse);
-    setNotice("");
-    setTab("versiculo");
-    setToolsOpen(true);
-  }, []);
-
-  const toggleIn = useCallback(
-    (field: "highlights" | "read", verse: number) => {
-      const key = keyOf(verse);
-      setMarks((current) => {
-        const next = new Set(current[field]);
-        if (next.has(key)) next.delete(key);
-        else if (next.size < MAX_MARKS) next.add(key);
-        return { ...current, [field]: next };
-      });
+  const highlightOf = useCallback(
+    (verse: number): HighlightColor | undefined => {
+      const key = verseMarkKey(scope, [verse]);
+      return key ? marks.highlights[key] : undefined;
     },
-    [keyOf],
+    [marks.highlights, scope],
   );
 
-  const toggleHighlight = useCallback((verse: number) => toggleIn("highlights", verse), [toggleIn]);
-  const toggleRead = useCallback((verse: number) => toggleIn("read", verse), [toggleIn]);
+  const applyHighlight = useCallback(
+    (color: HighlightColor) => {
+      if (selection.size === 0) return;
+      setMarks((current) => {
+        const highlights = { ...current.highlights };
+        for (const verse of selection) {
+          const key = verseMarkKey(scope, [verse]);
+          if (!key) continue;
+          if (highlights[key] === undefined && Object.keys(highlights).length >= MAX_MARKS) break;
+          highlights[key] = color;
+        }
+        return { ...current, highlights };
+      });
+    },
+    [scope, selection],
+  );
+
+  const removeHighlight = useCallback(() => {
+    if (selection.size === 0) return;
+    setMarks((current) => {
+      const highlights = { ...current.highlights };
+      for (const verse of selection) {
+        const key = verseMarkKey(scope, [verse]);
+        if (key) delete highlights[key];
+      }
+      return { ...current, highlights };
+    });
+  }, [scope, selection]);
+
+  const selectionKey = useMemo(() => verseMarkKey(scope, selection), [scope, selection]);
+
+  const selectionNote = selectionKey ? (marks.notes[selectionKey] ?? "") : "";
 
   const saveNote = useCallback(
-    (verse: number, body: string) => {
-      const key = keyOf(verse);
-      const trimmed = body.trim();
+    (text: string) => {
+      if (!selectionKey) return;
+      const trimmed = text.trim();
       setMarks((current) => {
         const notes = { ...current.notes };
-        if (trimmed.length === 0) delete notes[key];
-        else if (notes[key] !== undefined || Object.keys(notes).length < MAX_NOTES) {
-          notes[key] = trimmed.slice(0, MAX_NOTE_LENGTH);
+        if (trimmed.length === 0) delete notes[selectionKey];
+        else if (notes[selectionKey] !== undefined || Object.keys(notes).length < MAX_NOTES) {
+          notes[selectionKey] = trimmed.slice(0, MAX_NOTE_LENGTH);
         }
         return { ...current, notes };
       });
     },
-    [keyOf],
+    [selectionKey],
   );
 
-  const removeNote = useCallback(
-    (verse: number) => {
-      const key = keyOf(verse);
-      setMarks((current) => {
-        const notes = { ...current.notes };
-        delete notes[key];
-        return { ...current, notes };
-      });
-    },
-    [keyOf],
+  const removeNote = useCallback(() => {
+    if (!selectionKey) return;
+    setMarks((current) => {
+      const notes = { ...current.notes };
+      delete notes[selectionKey];
+      return { ...current, notes };
+    });
+  }, [selectionKey]);
+
+  const chapterNotes = useMemo<readonly ChapterNote[]>(() => {
+    const result: ChapterNote[] = [];
+    for (const [key, text] of Object.entries(marks.notes)) {
+      if (!isMarkInScope(key, scope)) continue;
+      const anchor = markAnchor(key);
+      if (anchor === null) continue;
+      result.push({ key, anchor, verses: key.slice(key.lastIndexOf(".") + 1), text });
+    }
+    return result.sort((left, right) => left.anchor - right.anchor);
+  }, [marks.notes, scope]);
+
+  const highlightCount = useMemo(
+    () => Object.keys(marks.highlights).filter((key) => isMarkInScope(key, scope)).length,
+    [marks.highlights, scope],
   );
+
+  const isChapterRead = marks.readChapters.has(scope);
+
+  const toggleChapterRead = useCallback(() => {
+    setMarks((current) => {
+      const readChapters = new Set(current.readChapters);
+      if (readChapters.has(scope)) readChapters.delete(scope);
+      else if (readChapters.size < MAX_MARKS) readChapters.add(scope);
+      return { ...current, readChapters };
+    });
+  }, [scope]);
+
+  const openSettings = useCallback(() => {
+    setNotice("");
+    setSettingsOpen(true);
+  }, []);
+
+  const closeSettings = useCallback(() => {
+    setSettingsOpen(false);
+    setNotice("");
+  }, []);
+
+  const openPanel = useCallback((next: ActionPanel) => {
+    setNotice("");
+    setPanel(next);
+  }, []);
+
+  const closePanel = useCallback(() => {
+    setPanel(null);
+    setNotice("");
+  }, []);
 
   const value = useMemo<ReaderContextValue>(
     () => ({
       theme,
       toggleTheme,
+      setTheme,
       preferences,
       setPreference,
-      toolsOpen,
-      openTools,
-      closeTools,
-      tab,
-      setTab,
-      selectedVerse,
-      selectVerse,
-      highlights,
-      toggleHighlight,
-      read,
-      toggleRead,
-      notes,
+      settingsOpen,
+      openSettings,
+      closeSettings,
+      panel,
+      openPanel,
+      closePanel,
+      selection,
+      toggleVerse,
+      clearSelection,
+      selectionLabel: buildSelectionLabel(reference, selection),
+      highlightOf,
+      applyHighlight,
+      removeHighlight,
+      highlightCount,
+      selectionNote,
       saveNote,
       removeNote,
-      totalVerses: verseNumbers.length,
+      chapterNotes,
+      isChapterRead,
+      toggleChapterRead,
       reference,
+      totalVerses: verseNumbers.length,
       notice,
       setNotice,
     }),
     [
       theme,
       toggleTheme,
+      setTheme,
       preferences,
       setPreference,
-      toolsOpen,
-      openTools,
-      closeTools,
-      tab,
-      selectedVerse,
-      selectVerse,
-      highlights,
-      toggleHighlight,
-      read,
-      toggleRead,
-      notes,
+      settingsOpen,
+      openSettings,
+      closeSettings,
+      panel,
+      openPanel,
+      closePanel,
+      selection,
+      toggleVerse,
+      clearSelection,
+      reference,
+      highlightOf,
+      applyHighlight,
+      removeHighlight,
+      highlightCount,
+      selectionNote,
       saveNote,
       removeNote,
+      chapterNotes,
+      isChapterRead,
+      toggleChapterRead,
       verseNumbers,
-      reference,
       notice,
     ],
   );
 
-  return <ReaderContext.Provider value={value}><div data-reader-theme={theme}>{children}</div></ReaderContext.Provider>;
+  return (
+    <ReaderContext.Provider value={value}>
+      <div data-reader-theme={theme}>{children}</div>
+    </ReaderContext.Provider>
+  );
 }
 
 export function useReader(): ReaderContextValue {
