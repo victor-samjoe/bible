@@ -1,6 +1,8 @@
 "use client";
 
+import { useRef } from "react";
 import { useReader } from "./reader-state";
+import { ChapterContext } from "./chapter-context";
 
 export type ChapterVerse = {
   readonly id: string;
@@ -26,6 +28,7 @@ export function ReaderChapter({
   translationName: string;
   verses: readonly ChapterVerse[];
 }) {
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
   const {
     selection,
     toggleVerse,
@@ -39,11 +42,12 @@ export function ReaderChapter({
   const noteAnchors = new Map(chapterNotes.map((note) => [note.anchor, note]));
 
   return (
-    <article className="scripture" aria-labelledby="chapter-title">
+    <article className="scripture" aria-labelledby="chapter-title" onTouchStart={(event) => { const touch = event.touches[0]; touchStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null; }} onTouchEnd={(event) => { const start = touchStart.current; const touch = event.changedTouches[0]; touchStart.current = null; if (start && touch && touch.clientX - start.x > 80 && Math.abs(touch.clientY - start.y) < 55) window.dispatchEvent(new Event("reader-open-menu")); }}>
       <p className="scriptureMeta">{translationName.toUpperCase()}</p>
       <h1 id="chapter-title">
         {bookName} <span>{chapterNumber}</span>
       </h1>
+      <ChapterContext bookName={bookName} />
       <div className="chapterRule" />
       {verses.map((verse) => {
         const selected = selection.has(verse.number);

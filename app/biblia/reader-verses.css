@@ -53,6 +53,10 @@
     inset 0 0 0 1px #d58a63,
     inset 5px 0 0 #d58a63;
 }
+.verseButton[data-selected][data-highlight="amarelo"]{background:rgba(242,214,117,.52);box-shadow:inset 0 0 0 1px #d2af3e,inset 5px 0 0 #f2d675}
+.verseButton[data-selected][data-highlight="verde"]{background:rgba(168,211,160,.52);box-shadow:inset 0 0 0 1px #78ab70,inset 5px 0 0 #a8d3a0}
+.verseButton[data-selected][data-highlight="azul"]{background:rgba(156,195,228,.52);box-shadow:inset 0 0 0 1px #6f9cc0,inset 5px 0 0 #9cc3e4}
+.verseButton[data-selected][data-highlight="rosa"]{background:rgba(234,169,196,.52);box-shadow:inset 0 0 0 1px #c97a9d,inset 5px 0 0 #eaa9c4}
 .verseMark {
   font: 700 0.68rem Arial, Helvetica, sans-serif;
   color: #b6a48d;

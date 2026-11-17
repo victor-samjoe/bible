@@ -17,6 +17,7 @@ import {
 // cabeçalho.
 
 const fontSizes: readonly { value: FontSize; label: string }[] = [
+  { value: "muito-pequeno", label: "Muito pequeno" },
   { value: "menor", label: "Menor" },
   { value: "pequeno", label: "Pequeno" },
   { value: "medio", label: "Padrão" },
@@ -26,9 +27,13 @@ const fontSizes: readonly { value: FontSize; label: string }[] = [
 const fontFamilies: readonly { value: FontFamily; label: string }[] = [
   { value: "serif", label: "Serifada" },
   { value: "sans", label: "Sem serifa" },
+  { value: "literaria", label: "Literária" },
+  { value: "humana", label: "Humanista" },
+  { value: "monospace", label: "Monoespaçada" },
 ];
 
 const spacings: readonly { value: Spacing; label: string }[] = [
+  { value: "continuo", label: "Leitura contínua" },
   { value: "compacto", label: "Compacto" },
   { value: "padrao", label: "Padrão" },
   { value: "amplo", label: "Amplo" },

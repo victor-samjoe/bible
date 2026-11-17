@@ -14,11 +14,11 @@ import { chapterScope } from "@/src/domain/reader-marks";
 import { ReaderProvider } from "../../reader-state";
 import { ReaderChapter } from "../../reader-chapter";
 import { ReaderTools } from "../../reader-tools";
-import { ThemeToggle } from "../../theme-toggle";
 import { ChapterPicker } from "../../chapter-picker";
 import { ChapterReadToggle } from "../../chapter-read-toggle";
 import { SelectionBar } from "../../selection-bar";
 import { ReaderUnavailable } from "../../reader-unavailable";
+import { ReaderSideMenu } from "../../reader-side-menu";
 
 // Leitor ligado ao corpus (tarefa C4). O cap�tulo vem do banco pelo contrato de
 // leitura (`src/server/bible/**`), que s� entrega vers�culo publicado de tradu��o
@@ -38,11 +38,17 @@ const loadChapter = cache(async (book: string, chapter: string) => {
   const reader = await getBlivreReader();
   const chapterResult = await reader.readChapter(book, chapter);
   if (!chapterResult.ok) return { chapter: chapterResult, books: null, totalChapters: 0 };
-  const [booksResult, chaptersResult] = await Promise.all([
-    reader.listBooks(),
-    reader.listChapters(book),
-  ]);
+  const booksResult = await reader.listBooks();
   const books = booksResult.ok ? booksResult.books : null;
+  const chapterListings = books
+    ? await Promise.all(
+        books.map(async (entry) => {
+          const result = await reader.listChapters(entry.slug);
+          return [entry.slug, result.ok ? result.chapters.length : 0] as const;
+        }),
+      )
+    : [];
+  const chapterCounts = Object.fromEntries(chapterListings);
 
   // No cap�tulo 1, o link de "anterior" precisa saber onde o livro anterior
   // termina. Essa consulta extra s� acontece nesse caso, e sem ela o link
@@ -51,15 +57,15 @@ const loadChapter = cache(async (book: string, chapter: string) => {
   if (chapterResult.chapter.number === 1 && books) {
     const previousBook = previousBookOf(books, chapterResult.book.slug);
     if (previousBook) {
-      const previousChapters = await reader.listChapters(previousBook.slug);
-      chaptersInPreviousBook = previousChapters.ok ? previousChapters.chapters.length : 0;
+      chaptersInPreviousBook = chapterCounts[previousBook.slug] ?? 0;
     }
   }
 
   return {
     chapter: chapterResult,
     books,
-    totalChapters: chaptersResult.ok ? chaptersResult.chapters.length : 0,
+    totalChapters: chapterCounts[chapterResult.book.slug] ?? 0,
+    chapterCounts,
     chaptersInPreviousBook,
   };
 });
@@ -117,29 +123,31 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
       scope={chapterScope(currentBook.slug, currentChapter.number)}
       reference={reference}
       verseNumbers={verses.map((verse) => verse.number)}
+      verseTexts={verses.map((verse) => ({ number: verse.number, content: verse.content }))}
     >
       <main className="readerShell">
         <header className="readerTop">
           <div className="readerMenu">
-            <ReaderTools />
+            <ReaderSideMenu />
           </div>
           <ChapterPicker
             books={books}
             currentBook={currentBook}
             currentChapter={currentChapter.number}
             totalChapters={totalChapters}
+            chapterCounts={loaded.chapterCounts}
             translationCode="BLIVRE"
           />
           <div className="readerActions" aria-label="Ações do capítulo">
             <ChapterReadToggle />
-            <ThemeToggle />
+            <ReaderTools />
           </div>
         </header>
 
         <ReaderChapter
           bookName={currentBook.name}
           chapterNumber={currentChapter.number}
-          translationName={translation.name}
+          translationName={translation.name.includes("Livre") ? "Bíblia Livre" : translation.name}
           verses={verses}
         />
 

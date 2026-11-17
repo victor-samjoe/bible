@@ -116,6 +116,17 @@ const verseRowSchema = z.object({
   published: z.boolean(),
 });
 
+/** Remove marcas USFM que não pertencem à leitura pública. Notas de rodapé e
+ * referências cruzadas são metadados; `\\add` conserva as palavras editoriais. */
+export function sanitizeUsfm(value: string): string {
+  return value
+    .replace(/\\(?:f|x)\b[\s\S]*?\\(?:f|x)\*/g, " ")
+    .replace(/\\add\*?/g, "")
+    .replace(/\\[a-z0-9]+\*?(?:\s+)?/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /** Referência aceita na URL: slug ou código do livro, sem espaço nem caixa alta. */
 export const bookReferenceSchema = z
   .string()
@@ -193,10 +204,12 @@ export function projectVerses(rows: unknown, chapterId: string): readonly BibleV
     if (parsed.data.chapterId !== chapterId) continue;
     if (!parsed.data.published) continue;
     if (byNumber.has(parsed.data.number)) continue;
+    const content = sanitizeUsfm(parsed.data.content);
+    if (!content) continue;
     byNumber.set(parsed.data.number, {
       id: parsed.data.id,
       number: parsed.data.number,
-      content: parsed.data.content,
+      content,
     });
   }
   return [...byNumber.values()].sort((left, right) => left.number - right.number);

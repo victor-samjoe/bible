@@ -34,9 +34,9 @@ import {
 // - "lido" é estado do capítulo inteiro, não do versículo.
 
 export type ReaderTheme = "dark" | "light";
-export type FontFamily = "serif" | "sans";
-export type FontSize = "menor" | "pequeno" | "medio" | "grande";
-export type Spacing = "compacto" | "padrao" | "amplo";
+export type FontFamily = "serif" | "sans" | "literaria" | "humana" | "monospace";
+export type FontSize = "muito-pequeno" | "menor" | "pequeno" | "medio" | "grande";
+export type Spacing = "continuo" | "compacto" | "padrao" | "amplo";
 /** Painéis abertos pela barra de seleção. As configurações têm painel próprio. */
 export type ActionPanel = "nota" | "versoes" | "original";
 
@@ -55,9 +55,13 @@ export const defaultPreferences: ReaderPreferences = {
 const fontFamilyValue: Record<FontFamily, string> = {
   serif: "Georgia, \"Times New Roman\", serif",
   sans: "Arial, Helvetica, sans-serif",
+  literaria: "\"Palatino Linotype\", Palatino, serif",
+  humana: "Verdana, Geneva, sans-serif",
+  monospace: "ui-monospace, SFMono-Regular, Consolas, monospace",
 };
 
 const fontSizeValue: Record<FontSize, string> = {
+  "muito-pequeno": "0.84rem",
   menor: "0.98rem",
   pequeno: "1.14rem",
   medio: "1.33rem",
@@ -65,6 +69,7 @@ const fontSizeValue: Record<FontSize, string> = {
 };
 
 const spacingValue: Record<Spacing, string> = {
+  continuo: "1.38",
   compacto: "1.5",
   padrao: "1.78",
   amplo: "2",
@@ -120,6 +125,8 @@ type ReaderContextValue = {
   toggleVerse: (verse: number) => void;
   clearSelection: () => void;
   selectionLabel: string;
+  /** Texto dos versículos selecionados, pronto para copiar/compartilhar. */
+  selectionText: string;
 
   highlightOf: (verse: number) => HighlightColor | undefined;
   applyHighlight: (color: HighlightColor) => void;
@@ -144,15 +151,15 @@ type ReaderContextValue = {
 const ReaderContext = createContext<ReaderContextValue | null>(null);
 
 function isFontFamily(value: unknown): value is FontFamily {
-  return value === "serif" || value === "sans";
+  return value === "serif" || value === "sans" || value === "literaria" || value === "humana" || value === "monospace";
 }
 
 function isFontSize(value: unknown): value is FontSize {
-  return value === "menor" || value === "pequeno" || value === "medio" || value === "grande";
+  return value === "muito-pequeno" || value === "menor" || value === "pequeno" || value === "medio" || value === "grande";
 }
 
 function isSpacing(value: unknown): value is Spacing {
-  return value === "compacto" || value === "padrao" || value === "amplo";
+  return value === "continuo" || value === "compacto" || value === "padrao" || value === "amplo";
 }
 
 function readSession(): PersistedState | null {
@@ -215,6 +222,7 @@ export function ReaderProvider({
   scope,
   reference,
   verseNumbers,
+  verseTexts,
 }: {
   children: ReactNode;
   /** `<slug do livro>.<capítulo>`, prefixo de todas as marcas deste capítulo. */
@@ -222,6 +230,7 @@ export function ReaderProvider({
   /** Referência canônica já formatada, para rótulos e avisos. */
   reference: string;
   verseNumbers: readonly number[];
+  verseTexts: readonly { number: number; content: string }[];
 }) {
   const [theme, setThemeState] = useState<ReaderTheme>("dark");
   const [preferences, setPreferences] = useState<ReaderPreferences>(defaultPreferences);
@@ -375,6 +384,14 @@ export function ReaderProvider({
 
   const selectionKey = useMemo(() => verseMarkKey(scope, selection), [scope, selection]);
 
+  const selectionText = useMemo(
+    () => verseTexts
+      .filter((verse) => selection.has(verse.number))
+      .map((verse) => `${verse.number}. ${verse.content}`)
+      .join(" "),
+    [selection, verseTexts],
+  );
+
   const selectionNote = selectionKey ? (marks.notes[selectionKey] ?? "") : "";
 
   const saveNote = useCallback(
@@ -466,6 +483,7 @@ export function ReaderProvider({
       toggleVerse,
       clearSelection,
       selectionLabel: buildSelectionLabel(reference, selection),
+      selectionText,
       highlightOf,
       applyHighlight,
       removeHighlight,
@@ -496,6 +514,7 @@ export function ReaderProvider({
       selection,
       toggleVerse,
       clearSelection,
+      selectionText,
       reference,
       highlightOf,
       applyHighlight,
@@ -508,6 +527,7 @@ export function ReaderProvider({
       isChapterRead,
       toggleChapterRead,
       verseNumbers,
+      verseTexts,
       notice,
     ],
   );

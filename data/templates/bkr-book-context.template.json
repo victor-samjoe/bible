@@ -1,0 +1,57 @@
+{
+  "$schema": "https://bereianos.local/schemas/bkr-book-context-v1.json",
+  "schema_version": 1,
+  "id": "bkr-book-context:<book-slug>:v1",
+  "book": {
+    "slug": "book-slug",
+    "name": "Nome do livro",
+    "testament": "old",
+    "canonical_order": 1
+  },
+  "summary": {
+    "text": "Rascunho pendente de fontes e revisão editorial.",
+    "confidence": "not_reviewed"
+  },
+  "authorship": {
+    "text": "Não preenchido.",
+    "classification": "unreviewed"
+  },
+  "dating": {
+    "text": "Não preenchido.",
+    "classification": "unreviewed"
+  },
+  "audience": {
+    "text": "Não preenchido.",
+    "classification": "unreviewed"
+  },
+  "historical_context": {
+    "text": "Não preenchido.",
+    "classification": "unreviewed"
+  },
+  "purpose": {
+    "text": "Não preenchido.",
+    "classification": "unreviewed"
+  },
+  "major_themes": [],
+  "literary_outline": [],
+  "sources": [
+    {
+      "id": "source-001",
+      "citation": "Preencher edição, autor/editor, título e ano.",
+      "locator": "Preencher página, capítulo ou seção.",
+      "url": null,
+      "accessed_at": null,
+      "rights_status": "UNKNOWN"
+    }
+  ],
+  "review": {
+    "status": "DRAFT",
+    "prepared_by": null,
+    "prepared_at": null,
+    "reviewed_by": null,
+    "reviewed_at": null,
+    "approved_by": null,
+    "approved_at": null,
+    "change_note": "Artefato inicial; não exibir no leitor."
+  }
+}

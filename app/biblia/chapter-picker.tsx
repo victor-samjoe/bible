@@ -2,48 +2,40 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import styles from "./chapter-picker.module.css";
 import { chapterPath, chapterRange, type NavigationBook } from "@/src/domain/bible-navigation";
 
 // Seletor de livro e capítulo do cabeçalho (tarefas C4 e C13).
 //
-// Fluxo da C13: escolher um livro **não** fecha o menu — ele troca na hora para a
-// lista de capítulos daquele livro, e só a escolha do capítulo termina a
-// navegação. A etapa viaja na URL (`?selecionar=capitulo`), porque a contagem de
-// capítulos de cada livro vem do servidor: o cliente não inventa quantos
-// capítulos um livro tem, e nada na API ou no corpus precisou mudar para isso.
-
-const STEP_PARAM = "selecionar";
+// Escolher um livro troca imediatamente para seus capítulos. As contagens são
+// recebidas junto da página, então não há uma navegação nem espera de banco entre
+// esses dois toques.
 
 export function ChapterPicker({
   books,
   currentBook,
   currentChapter,
   totalChapters,
+  chapterCounts,
   translationCode,
 }: {
   books: readonly NavigationBook[];
   currentBook: NavigationBook;
   currentChapter: number;
   totalChapters: number;
+  chapterCounts: Readonly<Record<string, number>>;
   translationCode: string;
 }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [open, setOpen] = useState<"livro" | "capitulo" | null>(null);
+  const [selectedBook, setSelectedBook] = useState<NavigationBook>(currentBook);
 
-  // Voltando de uma escolha de livro, o menu reabre direto nos capítulos dele.
   useEffect(() => {
-    if (searchParams.get(STEP_PARAM) === "capitulo") setOpen("capitulo");
-  }, [searchParams, currentBook.slug]);
+    setSelectedBook(currentBook);
+  }, [currentBook]);
 
-  // Fechar também limpa o passo da URL, para que recarregar não reabra o menu.
   const close = useCallback(() => {
     setOpen(null);
-    if (searchParams.get(STEP_PARAM) !== null) router.replace(pathname);
-  }, [pathname, router, searchParams]);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -96,7 +88,7 @@ export function ChapterPicker({
                   >
                     ←
                   </button>
-                  <h2>{currentBook.name}: capítulos</h2>
+                  <h2>{selectedBook.name}: capítulos</h2>
                 </div>
               ) : (
                 <h2>Livros</h2>
@@ -110,35 +102,26 @@ export function ChapterPicker({
               <ul className={styles.books}>
                 {books.map((book) => (
                   <li key={book.slug}>
-                    {book.slug === currentBook.slug ? (
-                      // Livro atual: já temos a contagem de capítulos, então a
-                      // troca para a lista é imediata, sem passar pela rota.
-                      <button
-                        type="button"
-                        className={styles.current}
-                        aria-current="page"
-                        onClick={() => setOpen("capitulo")}
-                      >
-                        <b>{book.orderNo}</b>
-                        {book.name}
-                      </button>
-                    ) : (
-                      <Link href={`${chapterPath(book.slug, 1)}?${STEP_PARAM}=capitulo`}>
-                        <b>{book.orderNo}</b>
-                        {book.name}
-                      </Link>
-                    )}
+                    <button
+                      type="button"
+                      className={book.slug === currentBook.slug ? styles.current : undefined}
+                      aria-current={book.slug === currentBook.slug ? "page" : undefined}
+                      onClick={() => { setSelectedBook(book); setOpen("capitulo"); }}
+                    >
+                      <b>{book.orderNo}</b>
+                      {book.name}
+                    </button>
                   </li>
                 ))}
               </ul>
             ) : (
               <ul className={styles.chapters}>
-                {chapterRange(totalChapters).map((number) => (
+                {chapterRange(chapterCounts[selectedBook.slug] ?? (selectedBook.slug === currentBook.slug ? totalChapters : 0)).map((number) => (
                   <li key={number}>
                     <Link
-                      href={chapterPath(currentBook.slug, number)}
-                      aria-current={number === currentChapter ? "page" : undefined}
-                      className={number === currentChapter ? styles.current : undefined}
+                      href={chapterPath(selectedBook.slug, number)}
+                      aria-current={selectedBook.slug === currentBook.slug && number === currentChapter ? "page" : undefined}
+                      className={selectedBook.slug === currentBook.slug && number === currentChapter ? styles.current : undefined}
                       onClick={() => setOpen(null)}
                     >
                       {number}

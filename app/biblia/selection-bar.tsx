@@ -33,6 +33,7 @@ export function SelectionBar() {
   const {
     selection,
     selectionLabel,
+    selectionText,
     clearSelection,
     applyHighlight,
     removeHighlight,
@@ -52,6 +53,15 @@ export function SelectionBar() {
 
   const count = selection.size;
   const hasHighlight = [...selection].some((verse) => highlightOf(verse) !== undefined);
+  const shareText = `${selectionLabel}\n${selectionText}\n\nBíblia Bereana — https://bibliabereianos.com.br`;
+  const copySelection = async () => {
+    try { await navigator.clipboard.writeText(shareText); setNotice("Referência copiada."); }
+    catch { setNotice("Não foi possível copiar neste navegador."); }
+  };
+  const shareSelection = async () => {
+    if (navigator.share) { try { await navigator.share({ title: "Bíblia Bereana", text: shareText, url: "https://bibliabereianos.com.br" }); return; } catch { return; } }
+    await copySelection();
+  };
 
   // O rascunho acompanha a seleção e a nota já guardada para exatamente esses
   // versículos.
@@ -83,11 +93,9 @@ export function SelectionBar() {
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((open) => !open)}
             >
-              Ações <span aria-hidden="true">{menuOpen ? "▾" : "▴"}</span>
+              Aplicar <span aria-hidden="true">{menuOpen ? "▾" : "▴"}</span>
             </button>
-            <button type="button" onClick={clearSelection}>
-              Limpar
-            </button>
+            <button type="button" onClick={clearSelection}>Cancelar</button>
           </div>
         </div>
 
@@ -127,6 +135,8 @@ export function SelectionBar() {
 
             <p className={styles.group}>Texto</p>
             <div className={styles.actions}>
+              <button type="button" onClick={copySelection}>Copiar</button>
+              <button type="button" onClick={shareSelection}>Compartilhar</button>
               <button type="button" onClick={() => openPanel("nota")}>
                 ✎ {selectionNote ? "Editar nota" : "Adicionar nota"}
               </button>
