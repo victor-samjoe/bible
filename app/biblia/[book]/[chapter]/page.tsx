@@ -37,7 +37,15 @@ type RouteParams = { book: string; chapter: string };
 const loadChapter = cache(async (book: string, chapter: string) => {
   const reader = await getBlivreReader();
   const chapterResult = await reader.readChapter(book, chapter);
-  if (!chapterResult.ok) return { chapter: chapterResult, books: null, totalChapters: 0 };
+  if (!chapterResult.ok) {
+    return {
+      chapter: chapterResult,
+      books: null,
+      totalChapters: 0,
+      chapterCounts: {},
+      chaptersInPreviousBook: 0,
+    };
+  }
   const booksResult = await reader.listBooks();
   const books = booksResult.ok ? booksResult.books : null;
   const chapterListings = books
