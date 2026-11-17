@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import "./reader.css";
+import "./reader-preferences.css";
+import "./reader-verses.css";
 import "./theme.css";
+import "./reader-header.css";
+import { ReaderProvider } from "./reader-state";
+import { ReaderChapter } from "./reader-chapter";
 import { ThemeToggle } from "./theme-toggle";
+import { ReaderTools } from "./reader-tools";
+import { chapterReference, provisionalChapter } from "./chapter-data";
 
 export const metadata: Metadata = {
   title: "Leitor bíblico em preparação | Bíblia Bereana",
@@ -13,35 +19,38 @@ export const metadata: Metadata = {
 export default function BiblePage() {
   return (
     <>
-      <main className="readerShell">
-        <header className="readerTop">
-          <Link className="readerMark" href="/" aria-label="Bíblia Bereana, início">B</Link>
-          <div className="readerPick"><span>Gálatas</span><b>1</b><span className="readerTranslation">BLIVRE</span></div>
-          <div className="readerActions" aria-label="Ferramentas de leitura"><ThemeToggle /><button type="button" aria-label="Mais opções">•••</button></div>
-        </header>
-        <article className="scripture" aria-labelledby="chapter-title">
-          <p className="scriptureMeta">NOVA ALIANÇA · CARTAS DE PAULO</p>
-          <h1 id="chapter-title">Gálatas <span>1</span></h1>
-          <div className="chapterRule" />
-          <p><sup>1</sup>Paulo, apóstolo (não da parte dos seres humanos, nem por meio de homem algum, mas sim por Jesus Cristo, e por Deus Pai, que o ressuscitou dos mortos),</p>
-          <p><sup>2</sup>e todos os irmãos que estão comigo, para as igrejas da Galácia.</p>
-          <p><sup>3</sup>Graça seja convosco, e também a paz de Deus Pai, e do nosso Senhor Jesus Cristo,</p>
-          <p><sup>4</sup>que deu a si mesmo pelos nossos pecados, para nos tirar da presente era maligna, conforme a vontade do nosso Deus e Pai,</p>
-          <p><sup>5</sup>ao qual seja a glória para todo o sempre, Amém!</p>
-          <h2>Não há outro evangelho</h2>
-          <p><sup>6</sup>Admiro-me de que tão rapidamente desviastes daquele que vos chamou na graça de Cristo, em troca de outro evangelho.</p>
-          <p><sup>7</sup>Não que haja outro evangelho, porém há alguns que vos inquietam, e querem perverter o Evangelho de Cristo.</p>
-          <p><sup>8</sup>Porém, ainda que nós mesmos, ou um anjo do céu vos anuncie outro evangelho além do que já vos anunciamos, maldito seja.</p>
-          <p><sup>9</sup>Como já havíamos dito, volto também agora a dizer: se alguém vos anunciar outro evangelho além do que já recebestes, maldito seja.</p>
-          <p><sup>10</sup>Pois agora estou buscando a aprovação das pessoas, ou a de Deus? Ou procuro agradar a pessoas? Pois, se ainda tentasse agradar a pessoas, eu não seria servo de Cristo.</p>
-        </article>
-        <footer className="readerFooter"><Link href="/estudos">Contexto e estudos</Link><span>Texto: Bíblia Livre (BLIVRE) · CC BY 4.0 BR</span><Link href="/direitos-autorais">Direitos</Link></footer>
-      </main>
+      {/* ReaderProvider mantém preferências, tema, destaques, notas e progresso em um
+          único estado local desta sessão, compartilhado pelo cabeçalho, pelo capítulo e
+          pelas ferramentas. Nada aqui consulta banco: o capítulo ainda é o trecho fixo
+          de `chapter-data.ts` e a persistência por usuário é a tarefa C5. */}
+      <ReaderProvider>
+        <main className="readerShell">
+          <header className="readerTop">
+            <div className="readerMenu"><ReaderTools /></div>
+            <div className="readerPick">
+              <button type="button" aria-label="Selecionar livro">{provisionalChapter.book}</button>
+              <button type="button" aria-label="Selecionar capítulo">{provisionalChapter.chapter}</button>
+              <span className="readerTranslation">{provisionalChapter.translation}</span>
+            </div>
+            <div className="readerActions" aria-label="Ferramentas de leitura">
+              <ThemeToggle />
+            </div>
+          </header>
+          <ReaderChapter />
+          <footer className="readerFooter">
+            <a href="/estudos">Contexto e estudos</a>
+            <span>
+              {chapterReference} · Texto: Bíblia Livre (BLIVRE) · CC BY 4.0 BR
+            </span>
+            <a href="/direitos-autorais">Direitos</a>
+          </footer>
+        </main>
+      </ReaderProvider>
       <div className="legacyBible"><nav className="nav" aria-label="Navegação principal">
-        <Link className="brand" href="/">
+        <a className="brand" href="/">
           bíblia<span aria-hidden="true">•</span>bereana
-        </Link>
-        <Link href="/estudos">Estudos</Link>
+        </a>
+        <a href="/estudos">Estudos</a>
       </nav>
 
       <main className="page">
@@ -110,12 +119,12 @@ export default function BiblePage() {
             Bíblia ao lado.
           </p>
           <p className="actions">
-            <Link className="button" href="/estudos/romanos-9-contexto">
+            <a className="button" href="/estudos/romanos-9-contexto">
               Abrir o estudo Romanos 9: por onde começar
-            </Link>
-            <Link className="text-link" href="/direitos-autorais">
+            </a>
+            <a className="text-link" href="/direitos-autorais">
               Ver direitos autorais e fontes <span aria-hidden="true">→</span>
-            </Link>
+            </a>
           </p>
         </section>
       </main></div>

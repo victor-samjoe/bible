@@ -1,22 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useReader } from "./reader-state";
 
+// Atalho de tema no cabeçalho. O estado real mora em ReaderProvider, para que este
+// botão e a aba "Leitura" das ferramentas nunca mostrem valores diferentes.
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const { theme, toggleTheme } = useReader();
 
-  useEffect(() => {
-    const next = window.sessionStorage.getItem("reader-theme") === "light" ? "light" : "dark";
-    setTheme(next);
-    document.documentElement.dataset.readerTheme = next;
-  }, []);
-
-  function toggleTheme() {
-    const next = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    window.sessionStorage.setItem("reader-theme", next);
-    document.documentElement.dataset.readerTheme = next;
-  }
-
-  return <button type="button" onClick={toggleTheme} aria-label={theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}>{theme === "dark" ? "☀" : "◐"}</button>;
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      aria-label={theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}
+    >
+      {theme === "dark" ? "☀" : "◐"}
+    </button>
+  );
 }

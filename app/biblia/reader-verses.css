@@ -1,0 +1,63 @@
+/* Versículo como alvo de toque: abre o painel local de ferramentas sem tirar o
+   texto do primeiro plano. Destaque, marca de leitura e nota são local nesta
+   sessão (ver app/biblia/reader-state.tsx). */
+.verseButton {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  padding: 2px 7px;
+  margin: 0 -7px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.verseButton:hover {
+  background: rgba(213, 138, 99, 0.12);
+}
+.verseButton:focus-visible {
+  outline: 2px solid #d58a63;
+  outline-offset: 2px;
+}
+.verseButton[data-highlighted] {
+  background: rgba(213, 138, 99, 0.24);
+}
+.verseButton[data-selected] {
+  box-shadow: inset 0 0 0 1px #d58a63;
+}
+.verseMark {
+  font: 700 0.68rem Arial, Helvetica, sans-serif;
+  color: #b6a48d;
+  margin-left: 6px;
+  vertical-align: super;
+}
+.readerProgress {
+  font: 0.72rem/1.6 Arial, Helvetica, sans-serif !important;
+  color: #aaa8a3;
+  border-top: 1px solid #303133;
+  margin: 38px 0 0;
+  padding: 16px 0 0;
+}
+
+html[data-reader-theme="light"] .verseButton:hover {
+  background: rgba(38, 77, 58, 0.09);
+}
+html[data-reader-theme="light"] .verseButton[data-highlighted] {
+  background: rgba(213, 138, 99, 0.3);
+}
+html[data-reader-theme="light"] .verseButton[data-selected] {
+  box-shadow: inset 0 0 0 1px #315a46;
+}
+html[data-reader-theme="light"] .verseButton:focus-visible {
+  outline-color: #315a46;
+}
+html[data-reader-theme="light"] .verseMark {
+  color: #6a706c;
+}
+html[data-reader-theme="light"] .readerProgress {
+  color: #6a706c;
+  border-color: #d7d0c5;
+}
