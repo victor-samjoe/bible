@@ -85,3 +85,44 @@ Nenhuma pessoa ou automação publica sem os sete gates abaixo, todos registrado
 4. Resolver os bloqueios Capacitor/build nativo.
 5. Android: teste interno Play antes de produção. iOS: TestFlight antes de App Review.
 
+
+---
+
+## Revisão de 2026-11-17 (tarefa C12)
+
+Checklist conferido contra o estado real do repositório e do build de produção.
+Nenhuma conta foi criada, nenhum app assinado, nada enviado a loja.
+
+### Itens que passaram a ter evidência
+
+| Item | Estado |
+| --- | --- |
+| Manifest servido e válido | sim: `/manifest.webmanifest`, 200, `standalone`, `start_url` `/`, `lang` `pt-BR` |
+| Service worker instalando | **sim, agora**: chega a `activated`; antes falhava por pré-cache de URL 404 (ver `docs/MOBILE_RELEASE.md`) |
+| Shell offline | `/offline` pré-cacheado; navegação offline cai nele sem exibir texto bíblico |
+| Cache sem dado pessoal ou premium | confirmado: só `/offline` e `/icon.svg` |
+| Metadados do app | `applicationName`, `appleWebApp`, `formatDetection` e `manifest` definidos em `app/layout.tsx` |
+| Leitura bíblica funcionando | sim, do corpus publicado: 66 livros / 1189 capítulos / 31102 versículos |
+| Atribuição de licença visível | sim, no rodapé do leitor e em `/direitos-autorais` |
+
+### Bloqueios que permanecem, em ordem de impedimento
+
+1. **Ícones de loja ausentes** — PNG 192/512 `maskable` e apple-touch-icon 180.
+   Sem eles, a instalação no Android fica com moldura branca e o atalho no iOS não
+   usa ícone próprio. Depende de arte aprovada.
+2. **Política de privacidade e canal de suporte** — ambos são texto-marcador.
+   As duas lojas recusam publicação sem política específica e contato válido.
+   É requisito legal, não técnico.
+3. **Cadeia de build Android inexistente** — sem JDK funcional, sem SDK, sem
+   Capacitor. Detalhes em `docs/APK_BLOCKER.md`.
+4. **Estratégia de empacotamento não decidida** — o leitor e a busca são rotas de
+   servidor (`force-dynamic`); não há export estático utilizável.
+5. **Contas de desenvolvedor e assinatura** — fora do escopo desta frente por
+   ordem explícita; exigem pagamento, identidade e chaves do proprietário.
+6. **Nenhum teste em dispositivo real** — a validação foi em Chromium desktop.
+
+### Observação de honestidade de catálogo
+
+A ficha de loja não pode prometer NVI, NTLH ou Almeida: no produto elas aparecem
+como "Em licenciamento", sem data, e nenhuma licença foi obtida. Qualquer texto
+promocional que cite essas versões cria divergência entre a ficha e o aplicativo.

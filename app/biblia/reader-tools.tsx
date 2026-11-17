@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import styles from "./reader-tools.module.css";
-import { chapterReference, verseReference } from "./chapter-data";
 import {
   useReader,
   type FontFamily,
@@ -74,9 +73,13 @@ export function ReaderTools() {
     saveNote,
     removeNote,
     totalVerses,
+    reference,
     notice,
     setNotice,
   } = useReader();
+
+  // Referência canônica do capítulo aberto, vinda do corpus (tarefa C4).
+  const verseReference = (verse: number) => `${reference}:${verse}`;
 
   const [draft, setDraft] = useState("");
 
@@ -106,7 +109,7 @@ export function ReaderTools() {
           >
             <header>
               <div>
-                <p>{chapterReference} · BLIVRE</p>
+                <p>{reference} · BLIVRE</p>
                 <h2>Ferramentas de leitura</h2>
               </div>
               <button type="button" onClick={closeTools} aria-label="Fechar ferramentas">

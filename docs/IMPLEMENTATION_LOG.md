@@ -1,5 +1,11 @@
 ﻿
 ## 2026-11-17 — Editorial e CLI
+## 2026-11-17 — Dados pessoais de leitura (não aplicado)
+
+- Ação: criada migration `drizzle/0002_reading_personal_data.sql` e mapeamento Drizzle para preferências, notas, marcações por cor e progresso de capítulos.
+- Segurança: todas as tabelas têm RLS habilitada e políticas `auth.uid() = user_id` para leitura e escrita; sem sessão autenticada, o acesso é negado. FKs e `ON DELETE CASCADE` impedem registros órfãos.
+- Bloqueio: migration não foi aplicada ao Supabase remoto e a UI ainda não possui cliente Auth/Supabase por requisição. Portanto notas, marcações e progresso não podem ser declarados persistentes ou sincronizados até essa integração.
+
 ## 2026-11-17 — Transparência de IA e preparação de lojas
 
 - Ação: aviso reutilizável de análise gerada com apoio de IA e curadoria dedicada, com orientação para conferir fontes, exibido nas telas de destaque, catálogo, tema e estudo; backlog BKF ajustado para consulta interna de agentes, sem autoridade editorial. Criado checklist de prontidão Google Play/App Store sem criar contas, efetuar cobranças ou enviar builds.
@@ -126,3 +132,143 @@
 - Observação de ambiente: `@next/swc-win32-x64-msvc` continua falhando ao carregar (“is not a valid Win32 application”); o build conclui pelo fallback. Nenhuma rede, nenhum agente auxiliar e nenhum commit nesta etapa.
 - Tensão de conteúdo a decidir pelo operador: o contrato (§ linha 140) e o backlog BKF registram que o P0 não chama IA e que a análise é editorial/manual, enquanto o aviso agora declara geração com apoio de IA. O texto foi implementado conforme solicitado; cabe ao operador alinhar a declaração ao processo real de produção dos estudos.
 - Commit alheio sobre esta frente: às 12:17:45 o processo concorrente criou o commit `d4bf0bc` (“feat: add AI analysis disclosure and store readiness”, autor `SamJoE Tech & Consulting`), que incluiu os arquivos desta frente (`app/_components/ai-disclaimer.tsx`, as quatro páginas, `app/globals.css`) junto aos seus próprios (`docs/STORE_PUBLICATION_READINESS.md`, `tsconfig.json`, `docs/BKF_EXECUTION_BACKLOG.md`) e um registro próprio neste log. Esta frente não criou, alterou nem desfez commit algum; o commit foi observado após o fato. Este registro foi acrescentado depois dele e permanece não commitado.
+
+## 2026-11-17 — Domínio bibliabereianos.com.br
+
+- Ação: consulta da zona Cloudflare `a7d07612f32cc0732feeac5eee7dc9e1`; nenhuma alteração de DNS ou Worker realizada.
+- Estado: `pending`. O Cloudflare ainda observa `a.auto.dns.br` e `b.auto.dns.br`, enquanto a zona exige `alaric.ns.cloudflare.com` e `megan.ns.cloudflare.com`.
+- Bloqueio: delegação de nameservers ainda não propagada; conectar o domínio ao Worker antes de `active` não é seguro. Próximo passo: repetir a consulta após propagação e então criar o domínio customizado para `samjoe-estudos`, seguido de teste HTTPS.
+## 2026-11-17 — BKF P0-001 contratos puros
+
+- Ação: contratos estritos Zod e política BKF fail-closed para direitos, manifestos, fragmentos, evidências, dossiês, documentos, revisões e jobs; transições editoriais determinísticas sem filesystem, rede ou segredos.
+- Arquivos: `src/domain/bkf/contracts.ts`, `src/domain/bkf/policy.ts`, `tests/bkf/contracts.test.ts`.
+- Verificação: pendente de execução nesta entrada; ambiente local teve instabilidade de memória em execuções paralelas. Não houve banco, rede, migration ou publicação.
+
+## 2026-11-17 — Pipeline local de obras teológicas autorizadas
+
+- Ação: manifesto estrito de edição, proveniência, checksum e direitos; CLI local de importação TXT UTF-8 em armazenamento privado por SHA-256. A importação falha fechada sem autorização explícita para armazenamento e processamento automatizado, direitos expirados, checksum divergente ou paths inválidos.
+- Arquivos: `src/domain/bkf/theology-import.ts`, `src/cli/import-theology.ts`, `tests/theology-import.test.ts`.
+- Conteúdo real: nenhum corpus foi baixado, copiado ou publicado; os testes usam somente fixture sintética.
+- Estado: pronto para fonte local fornecida pelo operador com manifesto e prova documental; não integra banco, app ou rede.
+
+
+## 2026-11-17 — C1: colisão de migrations resolvida (local)
+
+- Ação: `drizzle/0002_reading_personal_data.sql` renomeada para `drizzle/0003_reading_personal_data.sql`. O índice BLIVRE permanece como `drizzle/0002_blivre_query_indexes.sql`. Conteúdo SQL não foi alterado — apenas o prefixo de ordem.
+- Sequência resultante: `0000_initial.sql`, `0001_seed_blivre.sql`, `0002_blivre_query_indexes.sql`, `0003_reading_personal_data.sql` — prefixos únicos e ordem determinística.
+- Referências revisadas: nenhum código, teste, script ou configuração cita os nomes das migrations (verificado por busca em toda a árvore). Apenas documentação citava: `docs/MVP_RELEASE_GATES.md` (P-10, X-03, B-06, Fase A passo 2) atualizada; `docs/BLIVRE_IMPORT.md` cita somente `0000`/`0001`/`0002` de índices e segue correta. A entrada histórica de 2026-11-17 ("Dados pessoais de leitura") foi preservada como registro do que ocorreu na época.
+- Banco: nenhuma migration aplicada, local ou remota. Nenhum `.env*` tocado, nenhuma rede usada, nenhum commit criado.
+- Pendência mantida (B-06): `drizzle/meta/_journal.json` continua inexistente, então `npm run db:migrate` não rastreia estes SQL escritos à mão; a aplicação segue manual e sob autorização do proprietário.
+
+## 2026-11-17 — C2: ferramentas integradas ao leitor (estado local de sessão)
+
+- Ação: ferramentas de leitura passaram de avisos decorativos a estado real de sessão. Criado `app/biblia/reader-state.tsx` (ReaderProvider/useReader) como fonte única de preferências, tema, versículo selecionado, destaques, notas e progresso, com leitura e escrita em `sessionStorage` dentro de try/catch. `app/biblia/page.tsx` envolve o leitor no provider; o capítulo saiu do JSX para `app/biblia/chapter-data.ts` e passou a ser renderizado por `app/biblia/reader-chapter.tsx`, onde cada versículo é um alvo de toque que abre o painel local na aba Versículo. `app/biblia/theme-toggle.tsx` agora consome o mesmo estado, então o botão do cabeçalho e a aba Leitura nunca divergem — e o tema ficou acessível também no painel, onde o cabeçalho o esconde em telas pequenas.
+- Texto bíblico: nenhum versículo foi criado, alterado, traduzido ou acrescentado. `chapter-data.ts` contém exatamente o mesmo trecho de Gálatas 1 (BLIVRE, CC BY 4.0 BR) que já estava escrito em `page.tsx`, apenas em forma de dados, com a atribuição no topo do arquivo. Licenças não foram tocadas.
+- Declarações obrigatórias: NVI, NTLH e Almeida aparecem desabilitadas como `Em licenciamento`, sem data prometida; BLIVRE como `Disponível`. Preferências, notas, destaques e progresso dizem explicitamente "local nesta sessão", sem conta e sem sincronização — a mensagem antiga "Notas serão sincronizadas ao entrar na conta" foi removida porque prometia algo inexistente. "Contexto" e "Original" respondem indisponível por falta de fonte licenciada/verificada; nada de grego, hebraico, glossa ou morfologia foi inventado.
+- Verificação: `npm run typecheck` passou; `npm run lint` passou (resta 1 warning pré-existente de `dirname` em `src/cli/import-theology.ts`, fora desta frente); `npm run test` passou (40 testes em 8 arquivos); `npm run build` passou com `/biblia` estática em 5,17 kB. Smoke de navegador no build de produção (`next start -p 3100`, Chromium local do cache Playwright, script temporário fora do repositório): 21/21 checagens — painel abre no toque do versículo, referência correta (Gálatas 1:7), destaque/leitura/nota refletidos no texto e no contador, 3 traduções em licenciamento e desabilitadas, tamanho 21,28px→25,28px, espaçamento 45,0→50,6px, fonte Georgia→Arial, tema claro aplicado, preferências e marcas sobrevivendo ao recarregar na mesma aba, sessão nova começando limpa, atribuição BLIVRE visível e nenhum erro de console.
+- Limites: o capítulo continua fixo no código — navegação por livro/capítulo e leitura vinda do banco são C3/C4. Nada é persistido por usuário: ao fechar a aba o estado desaparece, e as tabelas de `drizzle/0003_reading_personal_data.sql` seguem sem consumidor até o Auth Supabase existir (C5). Nenhuma rede, nenhum banco, nenhuma migration aplicada, `.env*` intocado, nenhum commit criado.
+- Pendência registrada para decisão do proprietário: `metadata.title` de `app/biblia/page.tsx` ainda diz "Leitor bíblico em preparação" enquanto a página exibe versículos (X-02), e o bloco `.legacyBible` segue oculto no DOM. Corrigir isso é afirmação de produto e não foi decidido aqui.
+
+## 2026-11-17 — C3: contrato de leitura BLIVRE no servidor
+
+- Ação: criada a camada server-side de leitura do corpus, injetável e sem banco nos testes. `src/server/contracts/bible.ts` define tipos, a interface `BibleRepository` (que devolve `unknown` de propósito), schemas Zod e as projeções puras; `src/server/bible/reader.ts` orquestra com `createBibleReader(translationId, repository)`; `src/server/bible/repository.ts` implementa as consultas Drizzle (somente SELECT); `src/server/bible/blivre.ts` fixa o UUID aprovado em `drizzle/0001_seed_blivre.sql`; `src/server/bible/runtime.ts` é o único ponto que toca `getDatabaseAsync()`; `src/server/bible/index.ts` exporta a superfície sem arrastar infraestrutura. Documentado em `docs/BIBLE_READ_API.md`.
+- Falha fechada: sem `HYPERDRIVE`/`DATABASE_URL` o leitor responde `unavailable` a tudo, sem lançar. Exceção do repositório também vira `unavailable`, e o teste prova que uma mensagem contendo `postgres://user:senha@...` não aparece no resultado. Tradução sem `status = "approved"` ou sem atribuição não serve texto algum — e nesse caso o serviço nem consulta versículos.
+- Direitos e procedência: `published = false` é filtrado na consulta e de novo no contrato; linha de outra tradução, de outro livro ou de outro capítulo é descartada; UUID inválido, conteúdo vazio e duplicado também. O resultado expõe apenas `id`, `number` e `content` do versículo — `published`, `translation_id` e `chapter_id` não cruzam a fronteira. Ordenação canônica (livro por `order_no`, capítulo e versículo por número) é imposta pelo contrato, não pela confiança na cláusula SQL.
+- Verificação: `npx vitest run tests/server/bible.test.ts` — 14 testes passaram, com fixtures sintéticas (nenhum versículo real nos testes, para não reproduzir nem inventar texto bíblico). Suíte completa: `npm run test` passou com 54 testes em 9 arquivos. `npm run typecheck` passou; `npm run lint` passou (resta o warning pré-existente de `dirname` em `src/cli/import-theology.ts`).
+- Limites: UI intocada — nenhuma rota, página ou componente chama `getBlivreReader()`, conforme C3. Nenhum banco local ou remoto foi consultado ou alterado, nenhuma migration aplicada, nenhuma rede usada, `.env*` intocado, nenhum commit criado. A ligação do leitor ao corpus continua sendo C4 e depende da confirmação de 66/1189/31102 no banco.
+
+## 2026-11-17 — C7 / BKF-P0-002: persistência e catálogo BKF
+
+- Desvio de numeração registrado: o backlog previa `drizzle/0002_bkf.sql`, mas `0002` é `0002_blivre_query_indexes.sql` e `0003` é `0003_reading_personal_data.sql` (colisão resolvida em C1). A migration foi criada como `drizzle/0004_bkf.sql`, próxima da sequência. Nenhuma migration existente foi alterada, recriada ou renomeada.
+- Ação: migration aditiva com as 10 tabelas pedidas — `bkf_editions`, `bkf_rights`, `bkf_artifacts`, `bkf_sections`, `bkf_fragments`, `bkf_jobs`, `bkf_evidence`, `bkf_documents`, `bkf_document_revisions`, `bkf_reviews` — mais 8 tipos enum com valores idênticos aos de `src/domain/bkf/contracts.ts`, FKs para `works`/`sources`/`licenses`/`profiles`/`studies`/`study_versions`/`source_locations` existentes (sem segundo catálogo público), uniques, CHECKs, índices e 3 gatilhos de imutabilidade. Mapeamento Drizzle acrescentado em `drizzle/schema.ts`. Catálogo em `src/server/bkf/catalog.ts` com repositório injetável, persistência Drizzle em `src/server/bkf/repository.ts`, testes em `tests/bkf/catalog.test.ts`.
+- Direitos negam por padrão, no banco: permissão alguma pode ser `true` sem status `APPROVED_LIMITED`/`APPROVED_FULL`; aprovação exige prova, responsável e data de verificação; `quote = true` exige os três limites de palavras; distribuição pública exige aprovação; janela de validade invertida é recusada; documento só chega a `PUBLISHED` com `study_id` do domínio SamJoE; job `BLOCKED` exige motivo. O catálogo repete a decisão em código usando `canStore`/`canAutomatedProcess`/`canQuote` de BKF-P0-001, sem duplicar a política.
+- Imutabilidade e deduplicação: `bkf_artifacts` tem unique (edition_id, original_sha256, extraction_version); `bkf_fragments` unique por intervalo; `bkf_document_revisions` unique por (document_id, version) e por (document_id, content_sha256). Gatilhos recusam UPDATE e DELETE em artefatos, fragmentos e revisões — mudança de edição, hash ou versão de extração cria linha nova. `bkf_evidence` segue mutável de propósito, porque a verificação humana muda de estado.
+- Caminho de corpus: `storage_locator` tem CHECK que recusa caminho absoluto, unidade do Windows e `..`; o catálogo aplica a mesma regra em Zod antes de qualquer consulta, e nenhum byte é copiado nesta tarefa.
+- Verificação em Postgres local descartável (sem rede, sem Supabase remoto): contêiner `postgres:16.11-alpine` a partir de imagem já em cache, publicado só em 127.0.0.1, criado e removido na mesma sessão. Com um stub local de `auth.uid()` — necessário porque `0003` usa o schema `auth` do Supabase e não roda em Postgres puro —, as cinco migrations `0000`→`0004` aplicaram sem erro, em ordem. 37 provas de integridade: 37 passaram, cobrindo caminho feliz nas 10 tabelas, 3 violações de FK, 5 de unique, 5 de direitos, enum inválido, intervalos inválidos, job bloqueado sem motivo, documento publicado sem estudo, 3 recusas de caminho inseguro, 4 tentativas de mutação em registro imutável, `ON DELETE RESTRICT`, rollback sem resíduo e compatibilidade com o seed BLIVRE, os índices do `0002` e as tabelas do `0003`. Reaplicação: `0004` rodou 3 vezes com contagem idêntica (10 tabelas / 28 índices / 77 constraints / 3 gatilhos / 8 enums), confirmando idempotência sem duplicação. Comparação coluna a coluna entre `drizzle/schema.ts` e o banco validado: 10 de 10 tabelas iguais (109 colunas).
+- Achado em BKF-P0-001 (não corrigido aqui, por estar fora dos arquivos permitidos desta tarefa): `RightsSchema` usa `z.string().min(1)` sem `trim`, então `verified_by` ou `proof` com apenas espaços passam pelo contrato e pela política, enquanto o CHECK de `0004_bkf.sql` usa `btrim` e recusaria a mesma linha. `projectRights` em `src/server/bkf/catalog.ts` apara os campos antes de validar, de modo que contrato, catálogo e banco concordem; a correção na raiz pertence a `src/domain/bkf/**`.
+- Verificação de código: `npx vitest run tests/bkf/catalog.test.ts` — 16 testes passaram. Suíte completa `npm run test` — 70 testes em 10 arquivos, todos passaram. `npm run typecheck` passou. `git diff --check` passou.
+- Bloqueio real, não causado por esta tarefa: às 15:45:30 o processo concorrente criou o commit `bc2d4fb` ("feat: add reader controls and fixed bible navigation", autor `SamJoE Tech & Consulting`), que incluiu os arquivos do C2 junto a um ajuste próprio de cabeçalho e trocou `next/link` por `<a>` em `app/biblia/page.tsx`. Isso introduziu 4 erros `@next/next/no-html-link-for-pages` (linhas 41, 50, 53 e 122), e como `next build` roda o lint, **`npm run lint` e `npm run build` passaram a falhar na árvore**. Nenhum arquivo desta frente está envolvido; a correção é trocar os quatro `<a>` por `Link` e reimportar `next/link`. Esta frente não alterou, reverteu nem commitou o arquivo do processo concorrente.
+- Reverificação do C2 por navegador não pôde ser repetida depois desse commit: o build está bloqueado pelos erros de lint acima e o `next dev` do processo concorrente mantém o lock do miniflare (`SQLITE_BUSY`), então parei em vez de disputar o recurso. A verificação 21/21 registrada na entrada do C2 vale para o estado anterior ao commit `bc2d4fb`; a estrutura (`ReaderProvider`, `ReaderChapter`, `ReaderTools`, `ThemeToggle`) foi preservada por ele, e `typecheck` e testes continuam verdes.
+- Limites: nenhuma migration aplicada em Supabase remoto, nenhum dado inserido pela migration, nenhuma rede usada, `.env*` intocado, nenhum commit criado por esta frente, nada de BKF-P0-003 ou posterior implementado.
+
+## 2026-11-17 — Correção do build, journal de migrations e leitura do banco configurado
+
+Três itens autorizados pelo operador depois do relatório anterior.
+
+### 1. Build e lint de volta ao verde
+
+- Ação: `app/biblia/page.tsx` voltou a usar `Link` de `next/link` nos seis links internos (rodapé do leitor, marca e menu do bloco legado, e as duas ações do fim da página), que o commit concorrente `bc2d4fb` havia trocado por `<a>`. O link externo para `ebible.org` continua como `<a>`, que é o correto. Nenhuma outra linha do arquivo foi tocada: layout, cabeçalho, seletor de livro/capítulo e textos do processo concorrente foram preservados.
+- Motivo: `next build` roda o lint, então os 4 erros `@next/next/no-html-link-for-pages` quebravam o build da árvore inteira.
+- Verificação: `npm run lint` passou (resta só o warning pré-existente de `dirname` em `src/cli/import-theology.ts`); `npm run build` passou com `/biblia` estática em 5,19 kB; `npm run typecheck` passou; `npm run test` passou com 70 testes em 10 arquivos; `git diff --check` passou.
+
+### 2. `drizzle/meta/_journal.json` criado e testado
+
+- Ação: criado o journal com as cinco entradas em ordem (`0000_initial`, `0001_seed_blivre`, `0002_blivre_query_indexes`, `0003_reading_personal_data`, `0004_bkf`), `dialect: postgresql`, versão `7` e `when` igual ao mtime real de cada arquivo. Fecha a pendência B-06 do lado do rastreamento.
+- Verificação real, em Postgres local descartável (sem rede, sem remoto): `drizzle-kit migrate` **falhou** de primeira, com `exit=1` e nenhuma mensagem — o drizzle-kit engole o erro. Rodando `migrate()` do `drizzle-orm` diretamente, a causa apareceu: `syntax error at or near "﻿"`, SQLSTATE `42601`. É um **BOM UTF-8** no início de `drizzle/0000_initial.sql` (bytes `ef bb bf`). O `psql` tolera o BOM; o driver `pg`, que o drizzle usa, envia os bytes crus e o Postgres recusa. Nenhum dos outros quatro arquivos tem BOM.
+- Prova de que é o único obstáculo: numa **cópia fora do repositório**, com o BOM removido apenas dessa cópia, `migrate()` respondeu `MIGRATE OK` e aplicou tudo — 43 tabelas em `public`, as 10 `bkf_*`, seed BLIVRE aprovado e as 5 migrations registradas em `drizzle.__drizzle_migrations`. A segunda execução foi no-op limpo, mantendo 5 registros. Multi-statement por arquivo funcionou sem precisar de marcadores `--> statement-breakpoint`.
+- **Não alterei `drizzle/0000_initial.sql`.** Remover o BOM não muda uma linha de SQL, mas migration existente não se altera sem ordem explícita. Enquanto o BOM estiver lá, `npm run db:migrate` continua falhando e a aplicação segue manual, como hoje.
+- Alerta para antes de usar `db:migrate` contra o Supabase: o banco remoto **não tem** `drizzle.__drizzle_migrations`, e `0000`/`0001` já foram aplicados à mão. Rodar `migrate` lá sem antes marcar essas duas como aplicadas faria o drizzle tentar recriar objetos existentes e falhar. O baseline é decisão do proprietário.
+
+### 3. Leitura do banco configurado em `.env.local`
+
+Operador perguntou se o Supabase estava acessível e autorizou olhar. Feita **somente leitura**, com a sessão travada em `SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY` e `application_name=claude-readonly-inspect`: nenhum INSERT, UPDATE, DELETE, DDL, migration ou import. Nenhuma credencial foi impressa, registrada ou enviada a qualquer lugar.
+
+Estado real do banco (PostgreSQL 17.11):
+
+| Item | Valor |
+| --- | --- |
+| tabelas em `public` | 29 |
+| `translations` / BLIVRE com status `approved` | 1 / 1 |
+| `books` | **66** |
+| `chapters` | **1189** |
+| `verses` (e publicados) | **31102** / **31102** |
+| índices do `0002` | 0 de 3 |
+| tabelas pessoais do `0003` | 0 de 4 |
+| tabelas `bkf_*` do `0004` | 0 de 10 |
+| `drizzle.__drizzle_migrations` | não existe (42P01) |
+| `studies` / `profiles` | 0 / 0 |
+
+Consequências:
+
+- **O portão do C4 está satisfeito de fato**: o banco contém exatamente 66/1189/31102, com todos os versículos publicados e a tradução aprovada. Falta apenas a confirmação formal do operador para iniciar C4 — e, por cascata, C8, C9 e C12.
+- Remotamente estão aplicados `0000` e `0001` mais a importação do corpus. **Faltam** `0002` (os três índices de consulta), `0003` (dados pessoais com RLS) e `0004` (BKF). Aplicar qualquer um deles é escrita em produção e não foi feito.
+- Sem os índices do `0002`, as consultas do contrato C3 (`src/server/bible/**`) varrem tabela em vez de usar índice. Com 31102 versículos isso ainda responde, mas é o primeiro ajuste de desempenho a fazer quando houver autorização de escrita.
+- `SUPABASE_ANON_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` e `SUPABASE_SERVICE_ROLE_KEY` estão **vazios** em `.env.local`, e `@supabase/supabase-js` não está instalado. Portanto C5 e C10 seguem bloqueados por Auth, não por banco.
+
+## 2026-11-17 — C4: leitor ligado ao corpus
+
+Portão liberado pelo operador depois da leitura do banco (66/1189/31102 confirmados).
+
+- Ação: o capítulo fixo no código foi substituído por leitura real do corpus. Nova rota `app/biblia/[book]/[chapter]/page.tsx` (`force-dynamic`) consome o contrato do C3 por `getBlivreReader()`; `app/biblia/page.tsx` virou porta de entrada que redireciona para o primeiro livro; estilos foram para `app/biblia/layout.tsx`. `app/biblia/chapter-data.ts`, que guardava Gálatas 1 escrito no componente, foi **removido**, e com ele o bloco oculto `.legacyBible` que afirmava "esta página ainda não exibe nenhum versículo".
+- Navegação: `src/domain/bible-navigation.ts` (puro) calcula anterior/seguinte atravessando a fronteira de livro, e `app/biblia/chapter-picker.tsx` transformou os dois botões do cabeçalho — que o processo concorrente havia criado sem ação — em seletor real de livro e capítulo, por URL. No capítulo 1 há uma consulta extra para descobrir onde o livro anterior termina; sem ela o link "anterior" caía no capítulo 1 em vez do último, que foi exatamente a única falha da primeira rodada de verificação.
+- Estado de sessão: `app/biblia/reader-state.tsx` passou a guardar marcas com a chave `<livro>.<capítulo>.<versículo>` (`reader-session-v2`). Antes a chave era só o número do versículo — com navegação real, uma nota de Gênesis 1:5 apareceria em João 1:5. Trocar de capítulo fecha o painel e limpa a seleção.
+- Verdade da página: `generateMetadata` agora devolve a referência canônica e `alternates.canonical`; o título "Leitor bíblico em preparação" saiu, porque a página passou a exibir o corpus validado. Referência inexistente responde 404; falta de banco, tradução não aprovada ou capítulo sem publicação caem em `app/biblia/reader-unavailable.tsx`, que explica o motivo e **não** mostra texto de reserva.
+- Atribuição: o rodapé passou a exibir o campo `attribution` da própria tradução aprovada no banco, não uma string no código. Também acrescentei a atribuição obrigatória e a fonte da licença em `app/direitos-autorais/page.tsx`, que era texto-marcador sem ela — a licença exige a atribuição nessa página, e o bloco oculto do leitor não cumpria isso por estar `display:none`.
+- Correção necessária de infraestrutura: `src/server/db/client.ts` chamava `getCloudflareContext()` sem proteção, então fora do Worker (build, `next start`, scripts) lançava antes de chegar ao fallback documentado de `DATABASE_URL`. Agora a exceção é contida e o fallback funciona.
+- Verificação: `typecheck`, `lint` e `build` passaram (`/biblia` e `/biblia/[book]/[chapter]` como rotas dinâmicas, sem banco no build). Em build de produção contra o banco real, 30 de 30 checagens de navegador: redirecionamento para `genesis/1`, 31 versículos em Gênesis 1 e 36 em João 3 vindos do banco, título e referência canônica, seletor com os 66 livros e com os 21 capítulos de João, URL direta, anterior/seguinte atravessando de Gênesis 50 para Êxodo 1 e voltando ao último capítulo, marcas não vazando entre capítulos, ferramentas ainda funcionando, viewport móvel sem rolagem horizontal, 404 para livro e capítulo inexistentes, nenhum erro de console.
+- Limites: nenhuma escrita no banco por esta frente, nenhum commit, nenhuma rede além da consulta de leitura ao banco configurado.
+
+## 2026-11-17 — C8: regressão do leitor (primeiro E2E do projeto)
+
+- Ação: criado `tests/e2e/reader.spec.ts` com 13 testes cobrindo o que a tarefa pede — raiz abrindo o leitor, `/biblia` redirecionando, cabeçalho fixo visível após rolagem, menu acessível por nome com `role=dialog`/`aria-modal`, troca de tema persistindo na sessão e entre capítulos, navegação por seletor e por URL, fronteira de livro, marcas isoladas por capítulo e leitura em viewport móvel (390x844) sem rolagem horizontal. Isso fecha o item B-08 ("nenhum teste E2E existe").
+- Acessibilidade corrigida de propósito para o teste cobrir: o painel de ferramentas não fechava com `Escape` — o seletor de livro já fechava. Agora os dois fecham.
+- `playwright.config.ts` foi parametrizado: `PLAYWRIGHT_BASE_URL` usa um servidor já em pé em vez de subir `npm run dev` (necessário aqui, porque o `next dev` do processo concorrente mantém o lock do miniflare) e `PLAYWRIGHT_CHROMIUM_PATH` aponta um Chromium já instalado, sem exigir `npx playwright install` (a versão do pacote espera o build 1255 e o cache local tem o 1248). Sem essas variáveis, o comportamento é o anterior.
+- Verificação: `npx playwright test` — 13 de 13 passaram contra o build de produção e o corpus real. Nenhum deploy.
+
+## 2026-11-17 — C9: contrato e endpoint de busca BLIVRE
+
+- Ação: `src/server/contracts/bible-search.ts` (entrada validada, termos, escape de curinga, resolução de referência, projeção e ordenação), `src/server/bible/search.ts` (serviço injetável), `src/server/bible/search-repository.ts` (consultas Drizzle, somente SELECT), `getBlivreSearch()` em `runtime.ts` e o endpoint `app/api/biblia/busca/route.ts`.
+- Direitos por construção: **não existe parâmetro de tradução**. A busca é sempre na tradução aprovada recebida na construção, justamente para que o endpoint não possa ser apontado a texto sem licença. Só versículo `published` é devolvido — filtrado na consulta e de novo no contrato. Limite (máx. 50), deslocamento (máx. 1000) e ordenação canônica são sempre aplicados, para não permitir reconstrução do corpus por varredura.
+- Segurança de consulta: o padrão de `ILIKE` vai como parâmetro ligado e os curingas digitados são escapados, então um `%` procura o caractere `%` e não "qualquer coisa". Termos têm pontuação de borda aparada, mínimo de 2 caracteres, no máximo 6 termos, todos exigidos (AND).
+- Referência tem precedência: "João 3:16" devolve o versículo, não as ocorrências da palavra "João". Prefixo ambíguo não resolve — "jo 3" não vira João nem Jonas. Livro fora da lista do corpus não é adivinhado.
+- Verificação: 15 testes em `tests/server/bible-search.test.ts` com fixtures sintéticas. Contra o banco real, pelo endpoint: `q=criou` devolveu 26 ocorrências em ordem canônica; `q=princípio` (percent-encoded) 107; `q=joao+3:16` resolveu como referência com o texto real de João 3:16; `q=JHN+3` devolveu o capítulo com limite respeitado e `truncated: true`; `book=genesis&limit=3&offset=2` paginou corretamente sobre 61 resultados; consulta vazia, termo de 1 letra, `limit=999`, `offset=-1` e `book` malformado responderam 400; cabeçalhos `no-store` e `nosniff` presentes. Dois zeros iniciais na minha conferência eram codificação do shell, não do endpoint — confirmado com a forma percent-encoded.
+- Limite: nenhuma UI de busca foi criada, conforme a tarefa, que pede contrato e endpoint. Com 31102 versículos o `ILIKE` é varredura sequencial; se virar gargalo, o próximo passo é índice trigram ou `tsvector`, em migration própria.
+
+## 2026-11-17 — C12: validação de PWA, APK e prontidão de loja
+
+- Ação: validação real dos manifests, ícones, metadados e cadeia de build, com atualização de `docs/MOBILE_RELEASE.md`, `docs/APK_BLOCKER.md` e `docs/STORE_PUBLICATION_READINESS.md`. Nenhuma conta criada, nenhum app assinado, nada enviado a loja, nenhum deploy.
+- **Causa raiz do B-02 encontrada e corrigida.** O service worker não instalava porque `public/sw.js` pré-cacheava `/apple-icon.svg` em `cache.addAll`, e essa URL respondia 404 — um único 404 faz `addAll` rejeitar e derruba a instalação inteira. O 404 acontecia porque o Next não gera rota de `apple-icon` a partir de SVG (a convenção aceita `.png`, `.jpg`, `.jpeg`): `app/apple-icon.svg` era arquivo inerte, sem rota e sem `<link>` no `<head>`, e o manifest ainda o listava como ícone. Removi a URL inexistente do service worker e do manifest, subi o cache para `samjoe-static-shell-v2` e apaguei o arquivo inerte.
+- Verificação depois da correção, em build de produção com navegador real: 15 de 15 checagens — manifest 200 e válido, `display: standalone`, `start_url` `/`, `lang` `pt-BR`, todos os ícones do manifest respondendo 200, service worker chegando a `activated`, `/offline` e `/icon.svg` pré-cacheados, nenhum conteúdo pessoal ou premium em cache, navegação offline caindo no shell **sem exibir versículo**, e nenhuma requisição 4xx/5xx na carga normal.
+- Pré-requisitos Android medidos (o `APK_BLOCKER.md` pedia exatamente isso e antes não pôde rodar): `JAVA_HOME` aponta para `C:\Program Files\Java\jdk-17`, que **não tem `bin\java.exe`** — o JDK foi removido e a variável ficou órfã; o stub do `javapath` existe mas falha ao executar, então `Get-Command java` retornar caminho é enganoso. `gradle`, `adb`, `sdkmanager`, `ANDROID_HOME`, `ANDROID_SDK_ROOT`, o SDK em `%LOCALAPPDATA%`, os módulos `@capacitor/*` e `mobile/www` estão todos ausentes. Não há cadeia de build Android nesta máquina.
+- Bloqueio de arquitetura registrado: o leitor e a busca são rotas de servidor (`force-dynamic`), e `/estudos/[slug]` e `/temas/[slug]` são por parâmetro, então não existe export estático utilizável para empacotar no Capacitor hoje. Empacotar um `out/` estático entregaria app sem leitura, sem busca e sem autorização premium.
+- Pendências que seguem bloqueando loja, todas dependentes do proprietário: PNG 192/512 com `purpose: maskable` e apple-touch-icon 180 (rasterizar o SVG atual é mecânico, mas a margem de segurança do maskable é decisão de arte); política de privacidade e e-mail de suporte, que continuam texto-marcador; contas de desenvolvedor e assinatura; nenhuma evidência de instalação em dispositivo real. Também registrei a divergência de identificador: `mobile/capacitor.config.json` usa `com.samjoe.bibliabereana` e `docs/MOBILE_RELEASE.md` citava `com.samjoe.estudos`.

@@ -1,0 +1,90 @@
+FILA DE EXECUÇÃO — CLAUDE CLI
+
+Regra geral: execute uma tarefa por vez, na ordem. Não decida escopo, licenças, produto, arquitetura ou publicação. Não use rede, não aplique migration remota, não faça deploy, não modifique .env, não exponha segredos e não faça commit sem ordem explícita. Preserve alterações paralelas e pare em conflito.
+
+C1 — Migrations locais
+Resolver colisão entre drizzle/0002_blivre_query_indexes.sql e drizzle/0002_reading_personal_data.sql. Manter índice BLIVRE como 0002 e renumerar somente dados pessoais para 0003_reading_personal_data.sql. Não aplicar banco remoto. Aceite: sequência única 0000–0003 e git diff --check.
+
+C2 — Ferramentas do leitor
+Integrar app/biblia/reader-tools.tsx e CSS em app/biblia/page.tsx. BLIVRE disponível; NVI, NTLH e Almeida como “Em licenciamento”. Notas, destaques e progresso devem dizer “local nesta sessão” até Auth real. Controles de fonte, tamanho, espaçamento e tema precisam funcionar localmente. Não criar conteúdo bíblico adicional.
+
+C3 — API BLIVRE
+Criar src/server/bible e testes para listar livros, capítulos e versículos BLIVRE publicados. Entrada injetável/testável; falhar fechada sem banco; nunca expor segredos. Não alterar UI ou aplicar banco remoto.
+
+C4 — Leitor com corpus
+Somente após C3 e confirmação de 66 livros / 1189 capítulos / 31102 versículos no banco. Substituir capítulo fixo por navegação real de livro/capítulo, URL compartilhável, erro/vazio e atribuição BLIVRE.
+
+C5 — Dados pessoais
+Somente após Auth Supabase real. Conectar notas, destaques, progresso e preferências às tabelas com RLS. Usuário só acessa próprios dados; fallback local claro ao deslogar.
+
+C6 — Contexto e originais
+Somente após WLC/OSHB/SBLGNT aprovados e importados com checksum e licença. Painel de contexto e consulta de palavra/trecho com fonte/edição/atribuição. Nunca inventar grego, hebraico, glossa ou morfologia.
+
+C7 — BKF
+Executar somente BKF-P0-002 depois de C1. Não aplicar Supabase remoto, nem antecipar P0-003+. Registrar resultados reais em docs/IMPLEMENTATION_LOG.md.
+
+C8 — QA do leitor mobile
+Somente após C2 e C4. Criar testes de regressão para raiz redirecionar para /biblia, cabeçalho fixo, menu acessível, tema claro/escuro e leitura em viewport móvel. Não fazer deploy e não inventar dados.
+
+C9 — Busca bíblica
+Somente após C3/C4. Criar contrato e endpoint server-side de busca lexical BLIVRE por referência, livro e palavras, com limites, paginação e ordenação canônica. Não implementar busca em versões bloqueadas nem expor textos não publicados.
+
+C10 — Progresso e biblioteca pessoal
+Somente após C5. Criar telas para notas, marcações por cor e capítulos lidos, sempre filtradas pelo usuário autenticado. Sem Auth real, manter indisponível ou local e claramente identificado.
+
+C11 — Catálogo histórico
+Somente após BKF-P0-002 e após o operador aprovar uma edição por arquivo. Integrar o pipeline de importação teológica já criado com catálogo de obras; não baixar material novo, não importar fonte real e não decidir licença.
+
+C12 — Preparação de release
+Somente após C4 e C8. Atualizar documentação de PWA/iPhone e APK/Android, validar manifests, ícones, metadados, política de privacidade pendente e checklist de loja. Não criar contas, não assinar app, não enviar para lojas.
+
+RESPOSTA DO CLAUDE CLI — 17/11/2026
+
+Relatório completo: docs/CLAUDE_MVP_EXECUTION_QUEUE.md, seção "Relatório de execução".
+Registro detalhado por frente: docs/IMPLEMENTATION_LOG.md (entradas C1, C2, C3 e C7).
+
+C1 concluída. Sequência única 0000-0003. Falta decidir sobre drizzle/meta/_journal.json.
+C2 concluída e verificada: 21/21 checagens de navegador, no estado anterior ao commit bc2d4fb.
+C3 concluída: 14 testes, UI intocada.
+C4 bloqueada: aguarda o operador confirmar 66/1189/31102 no banco.
+C5 bloqueada: aguarda Auth Supabase real (@supabase/supabase-js nem está instalado).
+C6 bloqueada: aguarda WLC/OSHB/SBLGNT aprovados e importados com checksum e licença.
+C7 concluída: migration criada como drizzle/0004_bkf.sql (0002 e 0003 ocupados depois do C1),
+   validada em Postgres local descartável com 37/37 provas e idempotência confirmada.
+
+Nada commitado por esta frente. Nenhuma migration remota. Nenhuma rede. .env* intocado.
+
+ATENÇÃO, três pontos:
+1. O commit concorrente bc2d4fb trocou next/link por <a> em app/biblia/page.tsx e quebrou
+   npm run lint e npm run build (4 erros @next/next/no-html-link-for-pages, linhas 41, 50, 53, 122).
+   Não é arquivo desta frente e não foi alterado aqui. Correção: voltar os quatro <a> para Link.
+2. RightsSchema de BKF-P0-001 aceita verified_by e proof só com espaços; o CHECK do banco recusa.
+   Endurecido no catálogo; a correção na raiz é em src/domain/bkf/**.
+3. A migration 0003 usa auth.uid() do Supabase e não roda em Postgres puro sem stub.
+
+Estado final: typecheck passou, 70 testes em 10 arquivos passaram, git diff --check passou,
+lint e build falham pelo item 1 acima.
+
+--- ADENDO 17/11/2026 ---
+C8-C12 lidas: todas estavam bloqueadas; quatro das cinco dependiam do C4.
+PORTAO DO C4 SATISFEITO: leitura somente-leitura do banco mostra books=66, chapters=1189,
+verses=31102 (todos publicados) e BLIVRE approved. Falta sua confirmacao formal para iniciar C4.
+Remoto tem 0000 e 0001 + corpus. NAO tem 0002 (indices), 0003 nem 0004 (BKF).
+lint/build voltaram ao verde (Link de next/link restaurado em app/biblia/page.tsx).
+drizzle/meta/_journal.json criado e testado em Postgres local: aplica as 5 e e no-op na 2a vez.
+Pendencia: db:migrate falha por BOM UTF-8 no inicio de drizzle/0000_initial.sql (SQLSTATE 42601).
+Nao alterei a migration. Detalhes em docs/CLAUDE_MVP_EXECUTION_QUEUE.md e docs/IMPLEMENTATION_LOG.md.
+
+--- ADENDO 2 (C4, C8, C9, C12) ---
+C4 concluida: leitor le qualquer livro/capitulo do corpus em /biblia/[book]/[chapter],
+  seletor funcional, anterior/seguinte entre livros, 404 real, painel honesto sem banco.
+  Capitulo fixo e bloco oculto removidos. 30/30 no navegador contra o banco real.
+C8 concluida: 13 testes E2E (primeiro do projeto), fecha B-08.
+C9 concluida: contrato + endpoint /api/biblia/busca, 15 testes, verificado no banco.
+C12 concluida: PWA validada 15/15 e B-02 CORRIGIDO (service worker pre-cacheava
+  /apple-icon.svg, que dava 404 porque o Next nao gera apple-icon de SVG).
+Banco de producao: 0002, 0003 e 0004 aplicados; journal baselineado; db:migrate = no-op.
+BOM do 0000_initial.sql removido (3 bytes, nenhum SQL alterado).
+BLOQUEADAS: C5 e C10 (chaves Supabase vazias), C6 (fontes originais), C11 (aprovar edicao).
+Arvore: typecheck ok, 93 testes em 12 arquivos, 13 E2E, build ok, git diff --check ok.
+Relatorio completo em docs/CLAUDE_MVP_EXECUTION_QUEUE.md e docs/IMPLEMENTATION_LOG.md.

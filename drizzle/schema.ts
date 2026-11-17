@@ -1,10 +1,12 @@
 // SQL migration is authoritative for constraints, triggers, and defaults.
-import { pgTable, pgEnum, uuid, text, integer, boolean, numeric, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, pgEnum, uuid, text, integer, bigint, boolean, numeric, timestamp, jsonb, smallint, primaryKey } from "drizzle-orm/pg-core";
 
 export const editorialStatus = pgEnum("editorial_status", ["draft", "in_review", "approved", "published", "archived"]);
 export const accessLevel = pgEnum("access_level", ["free", "premium"]);
 export const subscriptionStatus = pgEnum("subscription_status", ["pending", "active", "grace", "past_due", "canceled", "expired", "refunded"]);
 export const profileRole = pgEnum("profile_role", ["reader", "editor", "admin"]);
+export const readingHighlightColor = pgEnum("reading_highlight_color", ["yellow", "green", "blue", "pink", "purple"]);
+export const readingFontFamily = pgEnum("reading_font_family", ["serif", "sans", "dyslexic"]);
 
 export const profiles = pgTable("profiles", {
   id: uuid("id").primaryKey(),
@@ -334,4 +336,193 @@ export const auditLogs = pgTable("audit_logs", {
   minimizedMetadata: jsonb("minimized_metadata").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+});
+
+export const readingPreferences = pgTable("reading_preferences", {
+  userId: uuid("user_id").primaryKey(),
+  theme: text("theme").notNull(),
+  fontFamily: readingFontFamily("font_family").notNull(),
+  fontSize: smallint("font_size").notNull(),
+  lineHeight: numeric("line_height").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+});
+
+export const verseNotes = pgTable("verse_notes", {
+  id: uuid("id").primaryKey(),
+  userId: uuid("user_id").notNull(),
+  verseId: uuid("verse_id").notNull(),
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+});
+
+export const verseHighlights = pgTable("verse_highlights", {
+  id: uuid("id").primaryKey(),
+  userId: uuid("user_id").notNull(),
+  verseId: uuid("verse_id").notNull(),
+  color: readingHighlightColor("color").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+});
+
+export const chapterReadingProgress = pgTable("chapter_reading_progress", {
+  userId: uuid("user_id").notNull(),
+  chapterId: uuid("chapter_id").notNull(),
+  lastVerseId: uuid("last_verse_id"),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+}, (table) => [primaryKey({ columns: [table.userId, table.chapterId] })]);
+
+// ---------------------------------------------------------------------------
+// BKF — Bereianos Knowledge Factory (drizzle/0004_bkf.sql).
+// Valores dos enums idênticos a src/domain/bkf/contracts.ts. O SQL segue sendo a
+// autoridade: constraints, triggers de imutabilidade e defaults vivem na migration.
+// ---------------------------------------------------------------------------
+
+export const bkfRightsStatus = pgEnum("bkf_rights_status", ["UNKNOWN", "RESTRICTED", "INTERNAL_REVIEW", "APPROVED_LIMITED", "APPROVED_FULL", "BLOCKED"]);
+export const bkfEditorialState = pgEnum("bkf_editorial_state", ["DRAFT", "RESEARCHED", "EVIDENCE_VERIFIED", "CRITICALLY_REVIEWED", "HUMAN_APPROVAL", "PUBLISHED", "NEEDS_SOURCES", "NEEDS_REVISION", "RIGHTS_BLOCKED", "REJECTED", "SUPERSEDED", "RETRACTED"]);
+export const bkfArtifactKind = pgEnum("bkf_artifact_kind", ["ORIGINAL", "EXTRACTION", "NORMALIZED", "INDEX"]);
+export const bkfEvidenceCategory = pgEnum("bkf_evidence_category", ["QUOTE", "PARAPHRASE", "FACT", "INFERENCE"]);
+export const bkfVerificationState = pgEnum("bkf_verification_state", ["PENDING", "VERIFIED", "REJECTED"]);
+export const bkfJobStage = pgEnum("bkf_job_stage", ["INGEST", "INDEX", "RESEARCH", "ANALYSIS", "REVIEW", "PUBLISH"]);
+export const bkfJobState = pgEnum("bkf_job_state", ["QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "BLOCKED"]);
+export const bkfReviewDecision = pgEnum("bkf_review_decision", ["APPROVED", "CHANGES_REQUESTED", "REJECTED"]);
+
+export const bkfEditions = pgTable("bkf_editions", {
+  id: uuid("id").primaryKey(),
+  workId: uuid("work_id").notNull(),
+  sourceId: uuid("source_id"),
+  licenseId: uuid("license_id"),
+  title: text("title").notNull(),
+  language: text("language").notNull(),
+  editionLabel: text("edition_label").notNull(),
+  translationOf: text("translation_of"),
+  sourceUrl: text("source_url").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+  currentRightsId: uuid("current_rights_id"),
+});
+
+export const bkfRights = pgTable("bkf_rights", {
+  id: uuid("id").primaryKey(),
+  editionId: uuid("edition_id").notNull(),
+  status: bkfRightsStatus("status").notNull(),
+  store: boolean("store").notNull(),
+  automatedProcessing: boolean("automated_processing").notNull(),
+  quote: boolean("quote").notNull(),
+  publicDistribution: boolean("public_distribution").notNull(),
+  proof: text("proof").notNull(),
+  verifiedBy: text("verified_by").notNull(),
+  verifiedAt: timestamp("verified_at", { withTimezone: true }),
+  validFrom: timestamp("valid_from", { withTimezone: true }).notNull(),
+  validUntil: timestamp("valid_until", { withTimezone: true }),
+  territory: text("territory").notNull(),
+  attribution: text("attribution").notNull(),
+  wordsPerQuote: integer("words_per_quote"),
+  wordsPerWork: integer("words_per_work"),
+  wordsPerDocument: integer("words_per_document"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+});
+
+export const bkfArtifacts = pgTable("bkf_artifacts", {
+  id: uuid("id").primaryKey(),
+  editionId: uuid("edition_id").notNull(),
+  kind: bkfArtifactKind("kind").notNull(),
+  originalSha256: text("original_sha256").notNull(),
+  extractionVersion: text("extraction_version").notNull(),
+  normalizedSha256: text("normalized_sha256"),
+  byteSize: bigint("byte_size", { mode: "number" }),
+  storageLocator: text("storage_locator").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+});
+
+export const bkfSections = pgTable("bkf_sections", {
+  id: uuid("id").primaryKey(),
+  artifactId: uuid("artifact_id").notNull(),
+  locator: text("locator").notNull(),
+  title: text("title"),
+  orderNo: integer("order_no").notNull(),
+  startOffset: integer("start_offset").notNull(),
+  endOffset: integer("end_offset").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+});
+
+export const bkfFragments = pgTable("bkf_fragments", {
+  id: uuid("id").primaryKey(),
+  artifactId: uuid("artifact_id").notNull(),
+  sectionId: uuid("section_id"),
+  locator: text("locator").notNull(),
+  startOffset: integer("start_offset").notNull(),
+  endOffset: integer("end_offset").notNull(),
+  text: text("text").notNull(),
+  previousText: text("previous_text").notNull(),
+  nextText: text("next_text").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+});
+
+export const bkfJobs = pgTable("bkf_jobs", {
+  id: uuid("id").primaryKey(),
+  stage: bkfJobStage("stage").notNull(),
+  state: bkfJobState("state").notNull(),
+  editionId: uuid("edition_id"),
+  artifactId: uuid("artifact_id"),
+  inputVersion: text("input_version").notNull(),
+  checkpoint: jsonb("checkpoint").notNull(),
+  blockedReason: text("blocked_reason"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+});
+
+export const bkfEvidence = pgTable("bkf_evidence", {
+  id: uuid("id").primaryKey(),
+  fragmentId: uuid("fragment_id").notNull(),
+  editionId: uuid("edition_id").notNull(),
+  rightsId: uuid("rights_id").notNull(),
+  sourceLocationId: uuid("source_location_id"),
+  startOffset: integer("start_offset").notNull(),
+  endOffset: integer("end_offset").notNull(),
+  category: bkfEvidenceCategory("category").notNull(),
+  verificationState: bkfVerificationState("verification_state").notNull(),
+  wordCount: integer("word_count").notNull(),
+  verificationNote: text("verification_note").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+});
+
+export const bkfDocuments = pgTable("bkf_documents", {
+  id: uuid("id").primaryKey(),
+  title: text("title").notNull(),
+  dossierQuestion: text("dossier_question").notNull(),
+  scope: text("scope").notNull(),
+  coverage: text("coverage").notNull(),
+  state: bkfEditorialState("state").notNull(),
+  studyId: uuid("study_id"),
+  createdBy: uuid("created_by"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+  currentRevisionId: uuid("current_revision_id"),
+});
+
+export const bkfDocumentRevisions = pgTable("bkf_document_revisions", {
+  id: uuid("id").primaryKey(),
+  documentId: uuid("document_id").notNull(),
+  version: integer("version").notNull(),
+  state: bkfEditorialState("state").notNull(),
+  payload: jsonb("payload").notNull(),
+  contentSha256: text("content_sha256").notNull(),
+  authorId: uuid("author_id"),
+  studyVersionId: uuid("study_version_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+});
+
+export const bkfReviews = pgTable("bkf_reviews", {
+  id: uuid("id").primaryKey(),
+  documentRevisionId: uuid("document_revision_id").notNull(),
+  reviewerId: uuid("reviewer_id").notNull(),
+  independent: boolean("independent").notNull(),
+  decision: bkfReviewDecision("decision").notNull(),
+  notes: text("notes").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
 });

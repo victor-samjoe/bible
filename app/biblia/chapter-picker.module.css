@@ -1,0 +1,111 @@
+/* Painel de seleção de livro e capítulo. Mesma linguagem visual da folha de
+   ferramentas: sobreposição inferior, texto como protagonista por baixo. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(0, 0, 0, 0.52);
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  font-family: Arial, Helvetica, sans-serif;
+}
+.sheet {
+  width: min(640px, 100%);
+  max-height: 82vh;
+  overflow: auto;
+  background: #f8f5ee;
+  color: #202522;
+  border-radius: 22px 22px 0 0;
+  padding: 20px 22px 28px;
+  box-shadow: 0 -15px 45px rgba(0, 0, 0, 0.28);
+}
+.sheet header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: -20px;
+  background: #f8f5ee;
+  padding: 8px 0 14px;
+}
+.sheet h2 {
+  font: 1.6rem Georgia, serif;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+.sheet header > button {
+  border: 0;
+  background: #e6dfd4;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  flex: none;
+}
+.books,
+.chapters {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.books {
+  grid-template-columns: repeat(2, 1fr);
+}
+.chapters {
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+}
+.books a,
+.chapters a {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 12px;
+  border: 1px solid #ded6c9;
+  border-radius: 9px;
+  color: #27352d;
+  text-decoration: none;
+  font-size: 0.92rem;
+}
+.chapters a {
+  justify-content: center;
+  padding: 12px 6px;
+  font-variant-numeric: tabular-nums;
+}
+.books b {
+  font-size: 0.7rem;
+  color: #6a766d;
+  min-width: 18px;
+  text-align: right;
+  flex: none;
+}
+.books a:hover,
+.chapters a:hover {
+  background: #efe9de;
+}
+.books a:focus-visible,
+.chapters a:focus-visible,
+.sheet header > button:focus-visible {
+  outline: 2px solid #264d3a;
+  outline-offset: 2px;
+}
+.current {
+  background: #264d3a;
+  border-color: #264d3a !important;
+  color: #f3efe6 !important;
+  font-weight: 700;
+}
+.current b {
+  color: #cbd8cf;
+}
+@media (max-width: 480px) {
+  .sheet {
+    padding: 18px 16px 26px;
+  }
+  .books {
+    grid-template-columns: 1fr;
+  }
+}

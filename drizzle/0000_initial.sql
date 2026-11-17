@@ -1,4 +1,4 @@
-﻿-- Initial schema; no content or license grants are seeded.
+-- Initial schema; no content or license grants are seeded.
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE TYPE editorial_status AS ENUM ('draft','in_review','approved','published','archived');
 CREATE TYPE access_level AS ENUM ('free','premium');
