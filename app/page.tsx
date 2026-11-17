@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import "./home.css";
 
 const books = ["Gênesis", "Salmos", "Provérbios", "Mateus", "João", "Romanos"];
 
 export default function HomePage() {
+  redirect("/biblia");
   return <main className="home">
     <nav className="homeNav">
       <Link className="homeBrand" href="/">bíblia <span>bereana</span></Link>
