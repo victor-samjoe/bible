@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Leitor bíblico em preparação | SamJoE Estudos",
+  title: "Leitor bíblico em preparação | Bíblia Bereana",
   description:
     "O leitor usará a Bíblia Livre (BLIVRE), licenciada em Creative Commons Atribuição 4.0 Brasil. Nenhum versículo é exibido antes da validação da importação.",
 };
@@ -12,7 +12,7 @@ export default function BiblePage() {
     <>
       <nav className="nav" aria-label="Navegação principal">
         <Link className="brand" href="/">
-          samjoe<span aria-hidden="true">•</span>estudos
+          bíblia<span aria-hidden="true">•</span>bereana
         </Link>
         <Link href="/estudos">Estudos</Link>
       </nav>

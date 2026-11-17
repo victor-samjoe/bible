@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "SamJoE Estudos",
-    short_name: "SamJoE",
+    name: "Bíblia Bereana",
+    short_name: "Bereana",
     description: "Leitura bíblica e estudos editoriais com fontes rastreáveis.",
     start_url: "/",
     display: "standalone",
