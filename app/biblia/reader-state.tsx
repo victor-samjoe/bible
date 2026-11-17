@@ -415,7 +415,7 @@ export function ReaderProvider({
     ],
   );
 
-  return <ReaderContext.Provider value={value}>{children}</ReaderContext.Provider>;
+  return <ReaderContext.Provider value={value}><div data-reader-theme={theme}>{children}</div></ReaderContext.Provider>;
 }
 
 export function useReader(): ReaderContextValue {
