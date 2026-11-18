@@ -3,6 +3,11 @@
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 }
 
+.readerMenu,
+.readerActions {
+  position: relative;
+  z-index: 2;
+}
 .readerMenu { justify-self: start; }
 .readerActions { justify-self: end; margin-left: 0; }
 .readerPick {
@@ -14,7 +19,12 @@
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   gap: 8px;
   white-space: nowrap;
+  /* A faixa central é larga para alinhar o livro; não pode bloquear os
+     controles laterais que ficam por baixo dela. */
+  pointer-events: none;
+  z-index: 1;
 }
+.readerPick > button { pointer-events: auto; }
 .readerPick > button:first-child { grid-column: 2; justify-self: center; }
 .readerPick > button:nth-child(2) { grid-column: 3; justify-self: start; }
 

@@ -68,15 +68,18 @@
   width: 100%;
   align-items: center;
   justify-content:center;
-  padding: 11px 12px;
+  padding: 9px 12px;
   border: 1px solid #ded6c9;
   border-radius: 9px;
   color: #27352d;
   text-decoration: none;
-  font-size: 1rem;
+  font-size: .96rem;
   font-weight:600;
-  min-height:52px;
+  min-height:72px;
+  height:72px;
   text-align:center;
+  line-height:1.16;
+  text-wrap:balance;
   cursor:pointer;
 }
 .readFlag{color:#d6aa4f;font-size:.82rem;line-height:1;margin-right:4px}
