@@ -120,7 +120,6 @@ export function SelectionBar() {
                   data-color={color}
                   onClick={() => {
                     applyHighlight(color);
-                    setNotice(`Destaque ${colorLabel[color].toLowerCase()} aplicado: local nesta sessão.`);
                   }}
                 >
                   <span className={styles.swatch} data-color={color} aria-hidden="true" />
@@ -133,7 +132,6 @@ export function SelectionBar() {
                 disabled={!hasHighlight}
                 onClick={() => {
                   removeHighlight();
-                  setNotice("Destaque removido desta sessão.");
                 }}
               >
                 Remover destaque

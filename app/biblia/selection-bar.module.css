@@ -2,11 +2,14 @@
    enquanto há versículo selecionado. */
 .root {
   position: fixed;
-  left: 50%;
+  left: 12px;
+  right: 12px;
   bottom: 14px;
-  transform: translateX(-50%);
+  transform: none;
   z-index: 25;
-  width: min(680px, calc(100% - 24px));
+  width: auto;
+  max-width: 680px;
+  margin: 0 auto;
   font-family: Arial, Helvetica, sans-serif;
   display: grid;
   gap: 8px;
@@ -59,13 +62,18 @@
   font-weight: 700;
 }
 .menu {
+  position: fixed;
+  top: 82px;
+  right: 14px;
+  width: min(360px, 68vw);
+  max-height: min(70svh, 720px);
   background: #f8f5ee;
   color: #202522;
   border-radius: 14px;
   padding: 12px 14px 14px;
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3);
-  max-height: 58vh;
   overflow: auto;
+  border: 1px solid rgba(32, 37, 34, 0.12);
 }
 .group {
   font-size: 0.68rem;
@@ -132,12 +140,29 @@
   opacity: 0.5;
 }
 .notice {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 8px);
   background: #dbe7d8;
   color: #254a36;
   padding: 10px 13px;
   border-radius: 10px;
   font-size: 0.8rem;
   margin: 0;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+@media (max-width: 650px) {
+  .menu {
+    top: 78px;
+    right: 10px;
+    width: min(350px, 64vw);
+    max-height: 68svh;
+    padding: 11px 12px 13px;
+  }
+  .colors, .actions { grid-template-columns: 1fr; }
+  .color, .actions button { padding: 10px 11px; font-size: .8rem; }
 }
 
 /* Painéis abertos pelas ações: nota, comparação e original. */
