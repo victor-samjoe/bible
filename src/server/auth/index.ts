@@ -28,7 +28,9 @@ export type { RateLimitDecision, RateLimiter } from "./rate-limit";
 
 /** This lookup must read server-controlled profiles, never user-editable metadata. */
 export type RoleLookup = (userId: string) => Promise<unknown>;
-export type AuthResult = { ok: true } | { ok: false; reason: "unavailable" | "invalid_email" | "provider_error" };
+export type AuthResult =
+  | { ok: true }
+  | { ok: false; reason: "unavailable" | "invalid_email" | "rate_limited" | "provider_error" };
 
 /**
  * Motivos de falha de sessão. São o vocabulário que a interface pode mostrar:
@@ -79,8 +81,16 @@ export function createAuth(config: AuthConfig, client?: SupabaseAuthClient, look
             ? { email: parsed.data }
             : { email: parsed.data, createUser: options.createUser },
         );
-        return result.error ? { ok: false, reason: "provider_error" } : { ok: true };
+        if (!result.error) return { ok: true };
+        // O status é suficiente para diferenciar a cota do provedor, sem
+        // registrar o endereço, a resposta ou qualquer credencial.
+        console.error("auth.otp_request_failed", {
+          status: result.error.status,
+          createUser: options?.createUser ?? null,
+        });
+        return { ok: false, reason: result.error.status === 429 ? "rate_limited" : "provider_error" };
       } catch {
+        console.error("auth.otp_request_failed", { status: "network_or_runtime", createUser: options?.createUser ?? null });
         return { ok: false, reason: "provider_error" };
       }
     },

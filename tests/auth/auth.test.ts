@@ -33,6 +33,15 @@ describe("optional authentication", () => {
     expect(await auth.requestOtp("person@example.com")).toEqual({ ok: false, reason: "provider_error" });
   });
 
+  it("exposes the provider send quota as a generic rate limit", async () => {
+    const c = client();
+    vi.mocked(c.auth.signInWithOtp).mockResolvedValue({ error: { status: 429 } });
+    expect(await createAuth(config, c).requestOtp("person@example.com")).toEqual({
+      ok: false,
+      reason: "rate_limited",
+    });
+  });
+
   it("uses verified identity and trusted role lookup, denying missing or invalid data", async () => {
     const c = client();
     const lookup = vi.fn().mockResolvedValue("editor");
