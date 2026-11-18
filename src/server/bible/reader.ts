@@ -4,6 +4,7 @@ import {
   chapterNumberSchema,
   projectBook,
   projectBooks,
+  projectChapterCounts,
   projectChapter,
   projectChapters,
   projectTranslation,
@@ -11,6 +12,7 @@ import {
   type BibleRepository,
   type BookListing,
   type ChapterListing,
+  type ChapterCountsListing,
   type ChapterReading,
 } from "../contracts/bible";
 
@@ -29,6 +31,7 @@ export type BibleReader = {
   readonly available: boolean;
   listBooks(): Promise<BookListing>;
   listChapters(bookReference: string): Promise<ChapterListing>;
+  listChapterCounts(): Promise<ChapterCountsListing>;
   readChapter(bookReference: string, chapterNumber: number | string): Promise<ChapterReading>;
 };
 
@@ -74,6 +77,19 @@ export function createBibleReader(
         const chapters = projectChapters(await repository.listChapters(book.id), book.id);
         if (chapters.length === 0) return bibleFailure("not_found");
         return { ok: true, translation: approved, book, chapters };
+      } catch {
+        return bibleFailure("unavailable");
+      }
+    },
+
+    async listChapterCounts(): Promise<ChapterCountsListing> {
+      if (!repository) return bibleFailure("unavailable");
+      try {
+        const approved = await translation();
+        if (!approved) return bibleFailure("translation_unavailable");
+        const counts = projectChapterCounts(await repository.listChapterCounts(approved.id));
+        if (counts.length === 0) return bibleFailure("not_found");
+        return { ok: true, counts };
       } catch {
         return bibleFailure("unavailable");
       }

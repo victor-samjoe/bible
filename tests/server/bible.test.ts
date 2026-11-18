@@ -49,6 +49,10 @@ function repository(overrides: Partial<BibleRepository> = {}): BibleRepository {
         { id: CHAPTER_1, bookId: BOOK_A, number: 1 },
         { id: CHAPTER_2, bookId: BOOK_A, number: 2 },
       ]),
+    listChapterCounts: vi.fn().mockResolvedValue([
+      { bookId: BOOK_A, count: 2 },
+      { bookId: BOOK_B, count: 1 },
+    ]),
     findChapter: vi.fn().mockResolvedValue({ id: CHAPTER_1, bookId: BOOK_A, number: 1 }),
     listVerses: vi.fn().mockResolvedValue([
       { id: VERSE("01"), chapterId: CHAPTER_1, number: 1, content: "Texto de teste 1", published: true },

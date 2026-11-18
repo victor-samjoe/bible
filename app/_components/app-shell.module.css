@@ -36,14 +36,6 @@ a.area:focus-visible{outline:2px solid #d6aa4f;outline-offset:2px}
 
 .content{padding:0}
 
-@media(min-width:900px){
-  .bar{display:none}
-  .side{transform:none;visibility:visible;width:278px;background:transparent;transition:none}
-  .closeButton{display:none}
-  .backdrop{display:none}
-  .content{margin-left:278px;min-height:100svh;border-left:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 12%,transparent)}
-}
-
 @media(prefers-reduced-motion:reduce){
   .side{transition:none}
 }

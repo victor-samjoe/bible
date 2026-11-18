@@ -24,6 +24,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const navigationId = useId();
   const closeButton = useRef<HTMLButtonElement | null>(null);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   // Trocar de rota fecha a gaveta: no celular ela cobre o conteúdo.
   useEffect(() => setOpen(false), [pathname]);
@@ -39,7 +40,20 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [open]);
 
   return (
-    <div className={styles.shell}>
+    <div
+      className={styles.shell}
+      onTouchStart={(event) => {
+        const touch = event.touches[0];
+        touchStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
+      }}
+      onTouchEnd={(event) => {
+        const start = touchStart.current;
+        const touch = event.changedTouches[0];
+        touchStart.current = null;
+        if (!start || !touch || start.x > 44 || Math.abs(touch.clientY - start.y) >= 55) return;
+        if (touch.clientX - start.x > 80) setOpen(true);
+      }}
+    >
       <a className={styles.skip} href="#conteudo">
         Ir para o conteúdo
       </a>

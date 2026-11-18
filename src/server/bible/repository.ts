@@ -1,4 +1,4 @@
-import { and, asc, eq, or } from "drizzle-orm";
+import { and, asc, count, eq, or } from "drizzle-orm";
 import { books, chapters, translations, verses } from "@/drizzle/schema";
 import type { BibleRepository } from "../contracts/bible";
 import type { Database } from "../db/client";
@@ -80,6 +80,15 @@ export function createDrizzleBibleRepository(database: Database): BibleRepositor
         .where(and(eq(chapters.bookId, bookId), eq(chapters.number, chapterNumber)))
         .limit(1);
       return rows.at(0) ?? null;
+    },
+
+    async listChapterCounts(translationId: string) {
+      return await database
+        .select({ bookId: chapters.bookId, count: count(chapters.id) })
+        .from(chapters)
+        .innerJoin(books, eq(chapters.bookId, books.id))
+        .where(eq(books.translationId, translationId))
+        .groupBy(chapters.bookId);
     },
 
     async listVerses(chapterId: string) {

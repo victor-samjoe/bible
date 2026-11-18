@@ -72,6 +72,11 @@ export type ChapterReading = BibleResult<{
   verses: readonly BibleVerse[];
 }>;
 
+/** Contagem por livro para montar o seletor sem consultar 66 livros em série. */
+export type ChapterCountsListing = BibleResult<{
+  counts: readonly { readonly bookId: string; readonly count: number }[];
+}>;
+
 /**
  * Fonte de dados. Devolve `unknown` de propósito: quem consome valida antes de
  * usar, então uma implementação com bug ou uma coluna renomeada falha fechada em
@@ -83,6 +88,7 @@ export interface BibleRepository {
   findBook(translationId: string, reference: string): Promise<unknown>;
   listChapters(bookId: string): Promise<unknown>;
   findChapter(bookId: string, chapterNumber: number): Promise<unknown>;
+  listChapterCounts(translationId: string): Promise<unknown>;
   listVerses(chapterId: string): Promise<unknown>;
 }
 
@@ -107,6 +113,21 @@ const chapterRowSchema = z.object({
   bookId: z.uuid(),
   number: z.number().int().min(1).max(150),
 });
+
+const chapterCountRowSchema = z.object({
+  bookId: z.uuid(),
+  count: z.coerce.number().int().min(1).max(150),
+});
+
+export function projectChapterCounts(rows: unknown): readonly { readonly bookId: string; readonly count: number }[] {
+  if (!Array.isArray(rows)) return [];
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    const parsed = chapterCountRowSchema.safeParse(row);
+    if (parsed.success) counts.set(parsed.data.bookId, parsed.data.count);
+  }
+  return [...counts].map(([bookId, count]) => ({ bookId, count }));
+}
 
 const verseRowSchema = z.object({
   id: z.uuid(),

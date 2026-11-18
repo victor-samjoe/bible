@@ -36,7 +36,13 @@ type RouteParams = { book: string; chapter: string };
  */
 const loadChapter = cache(async (book: string, chapter: string) => {
   const reader = await getBlivreReader();
-  const chapterResult = await reader.readChapter(book, chapter);
+  // Três consultas independentes, em paralelo. Antes o seletor disparava uma
+  // consulta por livro (66 ao todo) depois de já carregar o capítulo atual.
+  const [chapterResult, booksResult, countsResult] = await Promise.all([
+    reader.readChapter(book, chapter),
+    reader.listBooks(),
+    reader.listChapterCounts(),
+  ]);
   if (!chapterResult.ok) {
     return {
       chapter: chapterResult,
@@ -46,17 +52,13 @@ const loadChapter = cache(async (book: string, chapter: string) => {
       chaptersInPreviousBook: 0,
     };
   }
-  const booksResult = await reader.listBooks();
   const books = booksResult.ok ? booksResult.books : null;
-  const chapterListings = books
-    ? await Promise.all(
-        books.map(async (entry) => {
-          const result = await reader.listChapters(entry.slug);
-          return [entry.slug, result.ok ? result.chapters.length : 0] as const;
-        }),
-      )
-    : [];
-  const chapterCounts = Object.fromEntries(chapterListings);
+  const countsByBookId = countsResult.ok
+    ? new Map(countsResult.counts.map((entry) => [entry.bookId, entry.count]))
+    : new Map<string, number>();
+  const chapterCounts = Object.fromEntries(
+    (books ?? []).map((entry) => [entry.slug, countsByBookId.get(entry.id) ?? 0]),
+  );
 
   // No cap�tulo 1, o link de "anterior" precisa saber onde o livro anterior
   // termina. Essa consulta extra s� acontece nesse caso, e sem ela o link
