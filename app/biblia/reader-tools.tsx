@@ -1,11 +1,13 @@
 "use client";
 
+import { useEffect } from "react";
 import styles from "./reader-tools.module.css";
 import {
   useReader,
   type FontFamily,
   type FontSize,
   type ReaderTheme,
+  type ParagraphSpacing,
   type Spacing,
 } from "./reader-state";
 
@@ -38,6 +40,9 @@ const spacings: readonly { value: Spacing; label: string }[] = [
   { value: "padrao", label: "Padrão" },
   { value: "amplo", label: "Amplo" },
 ];
+const paragraphSpacings: readonly { value: ParagraphSpacing; label: string }[] = [
+  { value: "junto", label: "Junto" }, { value: "padrao", label: "Padrão" }, { value: "separado", label: "Separado" },
+];
 
 const themes: readonly { value: ReaderTheme; label: string }[] = [
   { value: "dark", label: "Escuro" },
@@ -55,6 +60,12 @@ export function ReaderTools() {
     closeSettings,
     reference,
   } = useReader();
+
+  useEffect(() => {
+    const openFromGesture = () => openSettings();
+    window.addEventListener("reader-open-tools", openFromGesture);
+    return () => window.removeEventListener("reader-open-tools", openFromGesture);
+  }, [openSettings]);
 
   return (
     <div className={styles.root}>
@@ -79,6 +90,11 @@ export function ReaderTools() {
               <div>
                 <p>{reference}</p>
                 <h2>Configurações de leitura</h2>
+              </div>
+
+              <h3 id="ajuste-paragrafos">Distância entre parágrafos</h3>
+              <div className={styles.choices} role="group" aria-labelledby="ajuste-paragrafos">
+                {paragraphSpacings.map((item) => <button key={item.value} type="button" className={preferences.paragraphSpacing === item.value ? styles.on : ""} aria-pressed={preferences.paragraphSpacing === item.value} onClick={() => setPreference("paragraphSpacing", item.value)}>{item.label}</button>)}
               </div>
               <button type="button" onClick={closeSettings} aria-label="Fechar configurações">
                 ×

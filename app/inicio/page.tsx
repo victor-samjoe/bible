@@ -1,4 +1,3 @@
-import { AppShell } from "../_components/app-shell";
 import { PersonalDashboard } from "./dashboard";
 
 // Início do aplicativo (tarefa C15). A raiz `/` continua redirecionando para o
@@ -14,9 +13,5 @@ export const metadata = {
 };
 
 export default function InicioPage() {
-  return (
-    <AppShell>
-      <PersonalDashboard />
-    </AppShell>
-  );
+  return <PersonalDashboard />;
 }

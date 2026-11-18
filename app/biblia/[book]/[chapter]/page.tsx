@@ -87,16 +87,16 @@ export async function generateMetadata({
   const loaded = await loadChapter(book, chapter);
   if (!loaded.chapter.ok) {
     return {
-      title: "Leitura indispon�vel | B�blia Bereana",
+      title: "Leitura indisponível | Bíblia Bereana",
       description:
-        "Nenhum vers�culo � exibido quando a fonte n�o pode ser verificada no corpus publicado.",
+        "Nenhum versículo é exibido quando a fonte não pode ser verificada no corpus publicado.",
       robots: { index: false },
     };
   }
   const reference = canonicalReference(loaded.chapter.book.name, loaded.chapter.chapter.number);
   return {
-    title: `${reference} � B�blia Livre (BLIVRE) | B�blia Bereana`,
-    description: `${reference} na tradu��o B�blia Livre (BLIVRE), licenciada em Creative Commons Atribui��o 4.0 Brasil.`,
+    title: `${reference} · Bíblia Livre (BLIVRE) | Bíblia Bereana`,
+    description: `${reference} na tradução Bíblia Livre (BLIVRE), licenciada em Creative Commons Atribuição 4.0 Brasil.`,
     alternates: { canonical: chapterPath(loaded.chapter.book.slug, loaded.chapter.chapter.number) },
   };
 }
@@ -162,10 +162,10 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
         {/* Barra de ações: aparece apenas quando há versículo selecionado. */}
         <SelectionBar />
 
-        <nav className="chapterNav" aria-label="Navega��o entre cap�tulos">
+        <nav className="chapterNav" aria-label="Navegação entre capítulos">
           {previous ? (
             <Link href={chapterPath(previous.book.slug, previous.chapter)} rel="prev">
-              <span aria-hidden="true">�</span>{" "}
+              <span aria-hidden="true">←</span>{" "}
               {canonicalReference(previous.book.name, previous.chapter)}
             </Link>
           ) : (
@@ -173,7 +173,7 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
           )}
           {next ? (
             <Link href={chapterPath(next.book.slug, next.chapter)} rel="next">
-              {canonicalReference(next.book.name, next.chapter)} <span aria-hidden="true">�</span>
+              {canonicalReference(next.book.name, next.chapter)} <span aria-hidden="true">→</span>
             </Link>
           ) : (
             <span />
@@ -183,7 +183,7 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
         <footer className="readerFooter">
           <Link href="/estudos">Contexto e estudos</Link>
           <span>
-            {reference} � {translation.attribution}
+            {reference} · {translation.attribution}
           </span>
           <Link href="/direitos-autorais">Direitos</Link>
         </footer>

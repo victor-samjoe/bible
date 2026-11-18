@@ -1,9 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import styles from "./chapter-picker.module.css";
 import { chapterPath, chapterRange, type NavigationBook } from "@/src/domain/bible-navigation";
+import { chapterScope } from "@/src/domain/reader-marks";
+import { useReader } from "./reader-state";
 
 // Seletor de livro e capítulo do cabeçalho (tarefas C4 e C13).
 //
@@ -26,8 +28,17 @@ export function ChapterPicker({
   chapterCounts: Readonly<Record<string, number>>;
   translationCode: string;
 }) {
+  const { isReadScope } = useReader();
   const [open, setOpen] = useState<"livro" | "capitulo" | null>(null);
   const [selectedBook, setSelectedBook] = useState<NavigationBook>(currentBook);
+  const [query, setQuery] = useState("");
+  const [versionsOpen, setVersionsOpen] = useState(false);
+
+  const filteredBooks = useMemo(() => {
+    const normalized = query.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim();
+    if (!normalized) return books;
+    return books.filter((book) => `${book.name} ${book.slug}`.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().includes(normalized));
+  }, [books, query]);
 
   useEffect(() => {
     setSelectedBook(currentBook);
@@ -35,6 +46,7 @@ export function ChapterPicker({
 
   const close = useCallback(() => {
     setOpen(null);
+    setQuery("");
   }, []);
 
   useEffect(() => {
@@ -65,7 +77,14 @@ export function ChapterPicker({
         >
           {currentChapter}
         </button>
-        <span className="readerTranslation">{translationCode}</span>
+        <button
+          type="button"
+          className="readerTranslation"
+          aria-expanded={versionsOpen}
+          onClick={() => setVersionsOpen((value) => !value)}
+        >
+          {translationCode}
+        </button>
       </div>
 
       {open && (
@@ -91,7 +110,7 @@ export function ChapterPicker({
                   <h2>{selectedBook.name}: capítulos</h2>
                 </div>
               ) : (
-                <h2>Livros</h2>
+                <div><h2>Livros</h2><p>Escolha um livro ou filtre pelo nome.</p></div>
               )}
               <button type="button" onClick={close} aria-label="Fechar seletor">
                 ×
@@ -99,8 +118,13 @@ export function ChapterPicker({
             </header>
 
             {open === "livro" ? (
-              <ul className={styles.books}>
-                {books.map((book) => (
+              <>
+                <label className={styles.filter}>
+                  <span>Filtrar livros</span>
+                  <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Ex.: João, Salmos, Gênesis" autoFocus />
+                </label>
+                <ul className={styles.books} aria-label="Livros disponíveis">
+                {filteredBooks.map((book) => (
                   <li key={book.slug}>
                     <button
                       type="button"
@@ -108,12 +132,13 @@ export function ChapterPicker({
                       aria-current={book.slug === currentBook.slug ? "page" : undefined}
                       onClick={() => { setSelectedBook(book); setOpen("capitulo"); }}
                     >
-                      <b>{book.orderNo}</b>
                       {book.name}
                     </button>
                   </li>
                 ))}
-              </ul>
+                {filteredBooks.length === 0 ? <li className={styles.empty}>Nenhum livro encontrado para “{query}”.</li> : null}
+                </ul>
+              </>
             ) : (
               <ul className={styles.chapters}>
                 {chapterRange(chapterCounts[selectedBook.slug] ?? (selectedBook.slug === currentBook.slug ? totalChapters : 0)).map((number) => (
@@ -124,6 +149,7 @@ export function ChapterPicker({
                       className={selectedBook.slug === currentBook.slug && number === currentChapter ? styles.current : undefined}
                       onClick={() => setOpen(null)}
                     >
+                      {isReadScope(chapterScope(selectedBook.slug, number)) ? <span className={styles.readFlag} aria-label="Capítulo lido">⚑</span> : null}
                       {number}
                     </Link>
                   </li>
@@ -133,6 +159,18 @@ export function ChapterPicker({
           </section>
         </div>
       )}
+
+      {versionsOpen ? (
+        <div className={styles.backdrop} role="presentation" onClick={() => setVersionsOpen(false)}>
+          <section className={styles.sheet} role="dialog" aria-modal="true" aria-label="Escolher versão" onClick={(event) => event.stopPropagation()}>
+            <header><div><h2>Versões</h2><p>A versão muda por este nome, nunca por uma ação de seleção.</p></div><button type="button" onClick={() => setVersionsOpen(false)} aria-label="Fechar versões">×</button></header>
+            <div className={styles.versions}>
+              <button type="button" className={styles.current} aria-pressed="true">BLIVRE <span>Bíblia Livre · disponível</span></button>
+              {['NVI', 'NTLH', 'Almeida'].map((version) => <button type="button" key={version} disabled>{version} <span>Em licenciamento</span></button>)}
+            </div>
+          </section>
+        </div>
+      ) : null}
     </>
   );
 }

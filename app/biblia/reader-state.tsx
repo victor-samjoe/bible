@@ -37,6 +37,7 @@ export type ReaderTheme = "dark" | "light";
 export type FontFamily = "serif" | "sans" | "literaria" | "humana" | "monospace";
 export type FontSize = "muito-pequeno" | "menor" | "pequeno" | "medio" | "grande";
 export type Spacing = "continuo" | "compacto" | "padrao" | "amplo";
+export type ParagraphSpacing = "junto" | "padrao" | "separado";
 /** Painéis abertos pela barra de seleção. As configurações têm painel próprio. */
 export type ActionPanel = "nota" | "versoes" | "original";
 
@@ -44,12 +45,14 @@ export type ReaderPreferences = {
   fontFamily: FontFamily;
   fontSize: FontSize;
   spacing: Spacing;
+  paragraphSpacing: ParagraphSpacing;
 };
 
 export const defaultPreferences: ReaderPreferences = {
   fontFamily: "serif",
   fontSize: "medio",
   spacing: "padrao",
+  paragraphSpacing: "padrao",
 };
 
 const fontFamilyValue: Record<FontFamily, string> = {
@@ -74,6 +77,7 @@ const spacingValue: Record<Spacing, string> = {
   padrao: "1.78",
   amplo: "2",
 };
+const paragraphSpacingValue: Record<ParagraphSpacing, string> = { junto: "0.5rem", padrao: "1.05rem", separado: "1.7rem" };
 
 const SESSION_KEY = "reader-session-v3";
 const THEME_KEY = "reader-theme";
@@ -140,6 +144,7 @@ type ReaderContextValue = {
   chapterNotes: readonly ChapterNote[];
 
   isChapterRead: boolean;
+  isReadScope: (scope: string) => boolean;
   toggleChapterRead: () => void;
 
   reference: string;
@@ -161,6 +166,7 @@ function isFontSize(value: unknown): value is FontSize {
 function isSpacing(value: unknown): value is Spacing {
   return value === "continuo" || value === "compacto" || value === "padrao" || value === "amplo";
 }
+function isParagraphSpacing(value: unknown): value is ParagraphSpacing { return value === "junto" || value === "padrao" || value === "separado"; }
 
 function readSession(): PersistedState | null {
   try {
@@ -206,6 +212,7 @@ function readSession(): PersistedState | null {
         spacing: isSpacing(storedPreferences.spacing)
           ? storedPreferences.spacing
           : defaultPreferences.spacing,
+        paragraphSpacing: isParagraphSpacing(storedPreferences.paragraphSpacing) ? storedPreferences.paragraphSpacing : defaultPreferences.paragraphSpacing,
       },
       highlights,
       notes,
@@ -297,6 +304,7 @@ export function ReaderProvider({
     style.setProperty("--reader-fontFamily", fontFamilyValue[preferences.fontFamily]);
     style.setProperty("--reader-fontSize", fontSizeValue[preferences.fontSize]);
     style.setProperty("--reader-lineHeight", spacingValue[preferences.spacing]);
+    style.setProperty("--reader-paragraphSpacing", paragraphSpacingValue[preferences.paragraphSpacing]);
   }, [preferences]);
 
   useEffect(() => {
@@ -436,6 +444,7 @@ export function ReaderProvider({
   );
 
   const isChapterRead = marks.readChapters.has(scope);
+  const isReadScope = useCallback((candidate: string) => marks.readChapters.has(candidate), [marks.readChapters]);
 
   const toggleChapterRead = useCallback(() => {
     setMarks((current) => {
@@ -493,6 +502,7 @@ export function ReaderProvider({
       removeNote,
       chapterNotes,
       isChapterRead,
+      isReadScope,
       toggleChapterRead,
       reference,
       totalVerses: verseNumbers.length,
@@ -525,6 +535,7 @@ export function ReaderProvider({
       removeNote,
       chapterNotes,
       isChapterRead,
+      isReadScope,
       toggleChapterRead,
       verseNumbers,
       verseTexts,

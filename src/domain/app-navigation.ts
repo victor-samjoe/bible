@@ -100,6 +100,13 @@ export const appAreas: readonly AppArea[] = [
     description: "Área pessoal; identidade e segurança exigem autenticação, que ainda não existe.",
     availability: available,
   },
+  {
+    id: "acessos",
+    label: "Acessos",
+    href: "/acessos",
+    description: "Papéis e controle de acesso, aguardando autenticação segura.",
+    availability: available,
+  },
 ];
 
 export function isAreaAvailable(area: AppArea): boolean {

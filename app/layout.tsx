@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { PwaRegistration } from "./pwa-registration";
+import { ApplicationFrame } from "./_components/application-frame";
 
 export const metadata: Metadata = {
   title: "Bíblia Bereana | Leia, descubra e aprofunde",
@@ -12,5 +13,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="pt-BR"><head><meta charSet="utf-8" /></head><body><PwaRegistration />{children}</body></html>;
+  return <html lang="pt-BR"><head><meta charSet="utf-8" /></head><body><PwaRegistration /><ApplicationFrame>{children}</ApplicationFrame></body></html>;
 }

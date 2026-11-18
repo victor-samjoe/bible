@@ -23,7 +23,7 @@ export default function LoginPage() {
         <p>O acesso por link seguro ou código de uso único será oferecido depois da integração.</p>
       </form>
       <nav className={styles.links} aria-label="Opções de conta">
-        <Link href="/conta#cadastro">Criar conta quando disponível</Link>
+        <Link href="/criar-conta">Criar conta quando disponível</Link>
         <Link href="/conta#recuperacao">Recuperar acesso quando disponível</Link>
       </nav>
     </section>

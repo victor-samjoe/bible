@@ -35,6 +35,7 @@
   letter-spacing: -0.03em;
   margin: 0;
 }
+.sheet header p{margin:4px 0 0;color:#667168;font-size:.82rem;line-height:1.4}
 .sheet header > button {
   border: 0;
   background: #e6dfd4;
@@ -53,40 +54,38 @@
   gap: 6px;
 }
 .books {
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 .chapters {
   grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
 }
-.books a,
+.books button,
 .chapters a {
   display: flex;
   align-items: center;
-  gap: 9px;
+  justify-content:center;
   padding: 11px 12px;
   border: 1px solid #ded6c9;
   border-radius: 9px;
   color: #27352d;
   text-decoration: none;
-  font-size: 0.92rem;
+  font-size: 1rem;
+  font-weight:600;
+  min-height:48px;
+  text-align:center;
+  cursor:pointer;
 }
+.readFlag{color:#d6aa4f;font-size:.82rem;line-height:1;margin-right:4px}
 .chapters a {
   justify-content: center;
   padding: 12px 6px;
   font-variant-numeric: tabular-nums;
 }
-.books b {
-  font-size: 0.7rem;
-  color: #6a766d;
-  min-width: 18px;
-  text-align: right;
-  flex: none;
-}
-.books a:hover,
+.books button:hover,
 .chapters a:hover {
   background: #efe9de;
 }
-.books a:focus-visible,
+.books button:focus-visible,
 .chapters a:focus-visible,
 .sheet header > button:focus-visible {
   outline: 2px solid #264d3a;
@@ -98,16 +97,12 @@
   color: #f3efe6 !important;
   font-weight: 700;
 }
-.current b {
-  color: #cbd8cf;
-}
+.filter{display:grid;gap:6px;margin:0 0 14px;font-size:.8rem;font-weight:700;color:#465149}.filter input{width:100%;border:1px solid #cfc6b8;border-radius:9px;padding:12px 13px;background:#fffdf7;color:#202522;font:inherit}.filter input:focus{outline:2px solid #264d3a;outline-offset:2px}.empty{grid-column:1/-1;padding:20px 4px;color:#667168;text-align:center}.versions{display:grid;gap:8px}.versions button{display:flex;justify-content:space-between;align-items:center;gap:14px;width:100%;border:1px solid #ded6c9;border-radius:9px;padding:14px;background:#fffdf7;color:#27352d;font:600 1rem Arial,sans-serif;text-align:left}.versions button span{font-size:.8rem;font-weight:400;color:#667168}.versions button:disabled{cursor:not-allowed;opacity:.65}.versions .current{background:#264d3a;color:#f3efe6;border-color:#264d3a}.versions .current span{color:#dbe5dc}
 @media (max-width: 480px) {
   .sheet {
     padding: 18px 16px 26px;
   }
-  .books {
-    grid-template-columns: 1fr;
-  }
+  .books {grid-template-columns:repeat(2,minmax(0,1fr));}
 }
 
 /* Etapa de capitulos: titulo com volta para a lista de livros. */
@@ -130,15 +125,4 @@
 .back:focus-visible {
   outline: 2px solid #264d3a;
   outline-offset: 2px;
-}
-.books button.current {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 11px 12px;
-  border-radius: 9px;
-  font-size: 0.92rem;
-  text-align: left;
-  border: 1px solid #264d3a;
 }

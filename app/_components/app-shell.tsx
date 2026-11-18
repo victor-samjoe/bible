@@ -93,15 +93,14 @@ export function AppShell({ children }: { children: ReactNode }) {
                     className={active ? `${styles.area} ${styles.areaActive}` : styles.area}
                     aria-current={active ? "page" : undefined}
                   >
-                    <b>{area.label}</b>
-                    <span>{area.description}</span>
+                    {area.label}
                   </Link>
                 ) : (
                   <div className={`${styles.area} ${styles.areaOff}`}>
                     <b>
                       {area.label} <em>indisponível</em>
                     </b>
-                    <span>{reason}</span>
+                    <small>{reason}</small>
                   </div>
                 )}
               </li>

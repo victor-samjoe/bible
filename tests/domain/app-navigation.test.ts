@@ -25,6 +25,7 @@ describe("áreas do aplicativo", () => {
       "Cursos",
       "Planos",
       "Perfil",
+      "Acessos",
     ]);
   });
 
@@ -35,7 +36,7 @@ describe("áreas do aplicativo", () => {
 
   it("só marca como disponível a área que tem página publicada", () => {
     // `perfil` entra aqui porque `app/perfil/page.tsx` existe (frente C17b).
-    for (const id of ["inicio", "biblia", "materiais", "estudos", "cursos", "planos", "perfil"]) {
+    for (const id of ["inicio", "biblia", "materiais", "estudos", "cursos", "planos", "perfil", "acessos"]) {
       expect(isAreaAvailable(areaOf(id))).toBe(true);
       expect(unavailableReason(areaOf(id))).toBeNull();
     }

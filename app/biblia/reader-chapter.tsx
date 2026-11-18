@@ -42,9 +42,9 @@ export function ReaderChapter({
   const noteAnchors = new Map(chapterNotes.map((note) => [note.anchor, note]));
 
   return (
-    <article className="scripture" aria-labelledby="chapter-title" onTouchStart={(event) => { const touch = event.touches[0]; touchStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null; }} onTouchEnd={(event) => { const start = touchStart.current; const touch = event.changedTouches[0]; touchStart.current = null; if (start && touch && touch.clientX - start.x > 80 && Math.abs(touch.clientY - start.y) < 55) window.dispatchEvent(new Event("reader-open-menu")); }}>
+    <article className="scripture" aria-labelledby="chapter-title" onTouchStart={(event) => { const touch = event.touches[0]; touchStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null; }} onTouchEnd={(event) => { const start = touchStart.current; const touch = event.changedTouches[0]; touchStart.current = null; if (!start || !touch || Math.abs(touch.clientY - start.y) >= 55) return; if (touch.clientX - start.x > 80) window.dispatchEvent(new Event("reader-open-menu")); if (start.x - touch.clientX > 80) window.dispatchEvent(new Event("reader-open-tools")); }}>
       <p className="scriptureMeta">{translationName.toUpperCase()}</p>
-      <h1 id="chapter-title">
+      <h1 id="chapter-title" style={{ textAlign: "center" }}>
         {bookName} <span>{chapterNumber}</span>
       </h1>
       <ChapterContext bookName={bookName} />
