@@ -7,10 +7,11 @@
 .skip{position:absolute;left:-9999px;top:8px;z-index:30;padding:10px 14px;border-radius:999px;background:#d6aa4f;color:#17231e;font-weight:800}
 .skip:focus{left:12px}
 
-.bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px clamp(16px,4vw,28px);border-bottom:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 14%,transparent);position:sticky;top:0;z-index:12;background:var(--reader-page,#171819)}
+.bar{height:76px;max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:0 28px;border-bottom:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 14%,transparent);position:sticky;top:0;z-index:12;background:var(--reader-page,#171819)}
 .menuButton{display:inline-grid;place-items:center;border:0;border-radius:999px;min-width:39px;height:39px;padding:0;background:color-mix(in srgb,var(--reader-text,#f5f2ea) 8%,transparent);color:inherit;font-weight:700;font-size:1.05rem;cursor:pointer}
+.menuButton{justify-self:start}
 .menuButton:hover{background:color-mix(in srgb,var(--reader-text,#f5f2ea) 13%,transparent)}
-.brand{font-size:.72rem;letter-spacing:.14em;font-weight:800;color:var(--reader-muted,#b9b5ac)}
+.brand{justify-self:center;font-size:.72rem;letter-spacing:.14em;font-weight:800;color:var(--reader-muted,#b9b5ac)}
 
 .backdrop{position:fixed;inset:0;z-index:14;background:rgba(0,0,0,.55)}
 
@@ -36,6 +37,8 @@ a.area:focus-visible{outline:2px solid #d6aa4f;outline-offset:2px}
 
 .content{padding:0}
 .content :global(.nav){display:none}
+
+@media(max-width:650px){.bar{height:67px;padding:0 16px;gap:13px}}
 
 @media(prefers-reduced-motion:reduce){
   .side{transition:none}

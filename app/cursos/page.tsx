@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { courseFixtures } from "@/src/content/catalog-fixtures";
 
 export const metadata = {
@@ -7,12 +6,7 @@ export const metadata = {
 };
 
 export default function CoursesPage() {
-  return <>
-    <nav className="nav" aria-label="Navegação principal">
-      <Link className="brand" href="/">bíblia<span>•</span>bereana</Link>
-      <Link href="/materiais">Materiais</Link>
-    </nav>
-    <main className="page">
+  return <main className="page">
       <p className="eyebrow">CURSOS EM PREPARAÇÃO</p>
       <h1>Estruturas de aprendizado, sem progresso simulado.</h1>
       <p className="muted">Nenhuma aula, fonte, acesso premium ou progresso pessoal é liberado nesta etapa.</p>
@@ -29,6 +23,5 @@ export default function CoursesPage() {
           </section>)}
         </article>)}
       </section>
-    </main>
-  </>;
+    </main>;
 }

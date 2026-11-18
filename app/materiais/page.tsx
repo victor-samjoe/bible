@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { materialFixtures } from "@/src/content/catalog-fixtures";
 
 export const metadata = {
@@ -7,12 +6,7 @@ export const metadata = {
 };
 
 export default function MaterialsPage() {
-  return <>
-    <nav className="nav" aria-label="Navegação principal">
-      <Link className="brand" href="/">bíblia<span>•</span>bereana</Link>
-      <Link href="/biblia">Bíblia</Link>
-    </nav>
-    <main className="page">
+  return <main className="page">
       <p className="eyebrow">CATÁLOGO EDITORIAL</p>
       <h1>Materiais para apoiar a leitura.</h1>
       <p className="muted">Estas são fichas editoriais locais. A publicação de conteúdo, fontes e direitos continua sujeita à revisão.</p>
@@ -24,6 +18,5 @@ export default function MaterialsPage() {
           <p className="muted">Tema: {material.theme}</p>
         </article>)}
       </section>
-    </main>
-  </>;
+    </main>;
 }
