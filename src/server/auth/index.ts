@@ -57,6 +57,12 @@ const otpCodeSchema = z.string().regex(/^\d{6,10}$/);
 const tokenHashSchema = z.string().regex(/^[A-Za-z0-9_-]{16,512}$/);
 const verificationTypeSchema = z.enum(["email", "magiclink", "signup"]);
 
+function providerStatus(error: unknown): number | null {
+  if (typeof error !== "object" || error === null || !("status" in error)) return null;
+  const { status } = error as { status?: unknown };
+  return typeof status === "number" ? status : null;
+}
+
 /**
  * Mesma validação que `requestOtp` aplica, exposta para quem precisa decidir
  * antes de gastar cota de limite de tentativas com um endereço que nem chegaria
@@ -84,11 +90,12 @@ export function createAuth(config: AuthConfig, client?: SupabaseAuthClient, look
         if (!result.error) return { ok: true };
         // O status é suficiente para diferenciar a cota do provedor, sem
         // registrar o endereço, a resposta ou qualquer credencial.
+        const status = providerStatus(result.error);
         console.error("auth.otp_request_failed", {
-          status: result.error.status,
+          status,
           createUser: options?.createUser ?? null,
         });
-        return { ok: false, reason: result.error.status === 429 ? "rate_limited" : "provider_error" };
+        return { ok: false, reason: status === 429 ? "rate_limited" : "provider_error" };
       } catch {
         console.error("auth.otp_request_failed", { status: "network_or_runtime", createUser: options?.createUser ?? null });
         return { ok: false, reason: "provider_error" };
