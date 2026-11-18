@@ -73,6 +73,23 @@ decisões que só o proprietário pode fornecer.
 | Política de retenção aprovada e canal de suporte publicado | Decisão do proprietário, com reflexo em `/privacidade` e `/contato` | O pedido de exclusão registra e revoga a sessão, mas a remoção dos dados não tem prazo nem responsável definidos |
 | `SUPABASE_SECRET_KEY` | `wrangler secret put`. Vazia hoje | A exclusão definitiva do usuário no provedor (Admin API) continua manual; não é usada por nenhum código atual |
 
+### Atualização 18/11/2026 — o que saiu da lista
+
+A tabela acima é o estado de 18/11 pela manhã. Na mesma data, por ordem do
+operador, foram resolvidos: a chave publicável (secret do Worker), a
+`PUBLIC_SITE_URL` (var em `wrangler.jsonc`, `https://bibliabereianos.com.br`) e
+a aplicação de `0003` e `0006` — `0003` já estava aplicada e o `drizzle-kit`
+aplicou `0005` e `0006`, deixando o ledger em 7. A linha do **`HYPERDRIVE`
+deixou de valer**: o Worker lê o Postgres pela direct connection, provado em
+produção pela busca e pelo leitor. Continuam valendo as linhas de Site URL e
+redirecionamentos, template de e-mail, limite de tentativas compartilhado,
+política de retenção e `SUPABASE_SECRET_KEY`.
+
+Entraram duas linhas novas: **`mailer_otp_length` está em 8**, e a interface
+promete seis dígitos; e **`rate_limit_email_sent` é 2 por hora**, teto do e-mail
+embutido do Supabase, que impede uso real sem SMTP próprio. Detalhes e o HTTP
+400 da Management API estão em `docs/IMPLEMENTATION_LOG.md`.
+
 Decisões tomadas nesta frente, para o proprietário confirmar ou reverter:
 
 - **Método único:** código de 6 dígitos digitado no app, com o link do e-mail como

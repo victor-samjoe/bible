@@ -582,3 +582,77 @@ esta frente: `useMemo` em `reader-state.tsx`, `<img>` em página do BKR e
 
 Nenhuma migration aplicada. Nenhum deploy. `.env*` intocado. Nenhum segredo
 exposto.
+
+## 2026-11-18 — Produção ligada ao Supabase (frente A)
+
+Ordem do operador, com três decisões explícitas: aplicar as migrations pendentes
+pelo `drizzle-kit`, definir os secrets do Worker e publicar a frente de conta.
+
+### Banco
+
+`npm run db:migrate` aplicou `0005_original_languages.sql` e
+`0006_account_access.sql` no projeto `samjoe-bible-mvp` (sa-east-1, Postgres 17).
+O ledger `drizzle.__drizzle_migrations` saiu de 5 para **7 registros**; antes
+disso o remoto estava em `0004`. Conferido objeto por objeto depois: `profiles`
+com RLS ligado e policy `profiles_read_own`, `account_deletion_requests` criada
+com as duas policies, gatilho `auth_user_creates_profile` em `auth.users` e
+gatilho `profiles_protect_role` presentes. A `0005` criou apenas as quatro
+tabelas vazias dos originais (`original_editions`, `original_verses`,
+`original_tokens`, `original_morphemes`): nenhum corpus importado, nada exposto
+no app, e as edições seguem `collected_pending_human_approval`.
+
+Antes de aplicar: `auth.users` = 0 e `profiles` = 0, então não houve backfill
+nem risco a dado de usuário. O gatilho de criação de perfil só dispara em
+inserção nova.
+
+### Worker
+
+`SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY` enviados por `wrangler secret put`;
+`DATABASE_URL` já estava. `PUBLIC_SITE_URL` foi declarada como **var** em
+`wrangler.jsonc`, não como secret: é o endereço público do app e fica revisável
+no repositório.
+
+Commit `667b431` com a frente de conta (33 arquivos) e deploy por
+`npm run deploy`. Versão publicada: `a6423a92-f971-4d0b-8293-88296d957e1b`.
+O trabalho paralelo do BKR ficou fora do commit, intocado.
+
+### Verificação em produção
+
+- `/entrar`, `/criar-conta`, `/conta`, `/perfil` e `/acessos`: HTTP 200.
+- `/entrar` serve o formulário real ("E-mail", "Receber código de acesso") e
+  **não** mostra mais o marcador do C17 nem o aviso de ambiente não
+  configurado — prova de que o Worker lê as chaves.
+- `/auth/callback` sem token: 303 para `/entrar?erro=link`.
+- `/conta` sem sessão: estado honesto com caminho para entrar.
+- **O Worker alcança o Postgres**: `/api/biblia/busca?q=luz` devolveu 319
+  ocorrências do banco e `/biblia/genesis/1` renderizou o capítulo. Isso
+  **descarta a necessidade do binding `HYPERDRIVE`** para esta aplicação: a
+  direct connection do Supabase responde de dentro do Worker. A linha
+  correspondente do plano fica obsoleta.
+
+Não testado: uma ida e volta real de código por e-mail, que depende de endereço
+real e consome o limite de envio.
+
+### O que continua faltando, e por quê
+
+1. **Painel de Auth do Supabase**, três campos que impedem o login de funcionar:
+   `site_url` ainda é `http://localhost:3000`; `uri_allow_list` está **vazia**,
+   o que faz o provedor recusar o `redirect_to` do app; e `mailer_otp_length` é
+   **8**, enquanto a interface promete seis dígitos em
+   `src/domain/account-access.ts`. O código digitado funcionaria de qualquer
+   tamanho — o app não valida comprimento, só repassa ao provedor —, mas o texto
+   da tela estaria mentindo.
+2. **Templates de e-mail** usam `{{ .ConfirmationURL }}`, que não entrega
+   `token_hash` ao nosso `/auth/callback`; o atalho por link termina em
+   `/entrar?erro=link`. Precisam virar
+   `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=magiclink` e
+   `&type=signup`.
+3. Tentativa de corrigir 1 e 2 pela Management API devolveu **HTTP 400**, apesar
+   de todos os campos baterem com o schema publicado (`mailer_otp_length` aceita
+   6–10). O projeto está no plano **free**, que é a suspeita. A segunda chamada,
+   para ler o corpo do erro e isolar o campo, foi recusada pelo controle de
+   permissões desta sessão. Fica para o painel ou para uma autorização explícita.
+4. **`rate_limit_email_sent` = 2 por hora**, teto do serviço de e-mail embutido.
+   Serve para testar, não para abrir ao público: exige SMTP próprio.
+5. Limite de tentativas continua por isolate, em memória, e a política de
+   retenção continua não aprovada — os dois já estavam registrados no plano.
