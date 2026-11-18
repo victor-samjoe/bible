@@ -763,3 +763,48 @@ grandes, texto promocional e informação repetida, preservando os fluxos de aut
 Verificação: lint das páginas alteradas, `tsc --noEmit` e build de produção em diretório isolado
 concluíram. Permanecem apenas avisos preexistentes do leitor, BKR e utilitário de importação. Não
 houve commit, deploy, alteração de segredo, banco ou provedor.
+
+## 2026-11-18 — Envio de e-mail próprio: SES ligado ao Supabase Auth
+
+O pedido de saída do sandbox do SES foi concedido (caso `179502721300942`, plano Essentials, 50.000
+mensagens por dia, 14 por segundo). Isso removeu a razão pela qual o SMTP vinha sendo deixado de
+fora: em sandbox, apontar o Supabase para o SES melhoraria o teste do operador e quebraria o login
+de qualquer visitante real, porque só endereços verificados um a um recebem.
+
+Com a liberação, a frente foi concluída. Foi criada a única chave de acesso do usuário IAM
+`ses-smtp-biblia` — que tem política inline permitindo apenas `SendEmail` e `SendRawEmail` pela
+identidade `auth.bibliabereianos.com.br` —, dela foi derivada a senha SMTP pelo algoritmo SigV4 do
+SES, e a configuração foi gravada no projeto `samjoe-bible-mvp` pela Management API:
+`email-smtp.us-east-2.amazonaws.com` na porta 587 com STARTTLS, remetente
+`Biblia Bereana <nao-responda@auth.bibliabereianos.com.br>`, frequência mínima de 60 segundos por
+endereço e limite de envio elevado de 2 para 100 mensagens por hora — número bem abaixo da cota do
+SES, escolhido para segurar custo em caso de abuso.
+
+A senha não foi escrita em nenhum arquivo do repositório, log ou documento. A cópia local da
+credencial, usada só para derivar a senha, foi apagada ao fim. Rotacionar significa criar a nova
+chave, gravar no Supabase, confirmar envio e só então apagar a antiga.
+
+**Verificação, em três etapas e nesta ordem.** Primeiro uma conexão ao endpoint SMTP com STARTTLS
+na 587 e `AUTH` aceito, que prova a credencial exatamente como o Supabase vai usá-la. Depois uma
+mensagem real aceita para `success@simulator.amazonses.com`, o simulador do próprio SES, que
+exercita identidade, MAIL FROM e política do IAM sem entregar nada à caixa de ninguém. Por fim a
+leitura de volta da configuração, confirmando cada campo gravado.
+
+**O `HTTP 400` dos templates era mesmo o remetente embutido.** A hipótese registrada em 18/11
+ficou confirmada: com SMTP próprio configurado, o mesmo PATCH que antes era recusado passou com
+200. Confirmação e magic link foram reescritos em português, mostram o código de seis dígitos em
+destaque — que é o caminho principal da interface — e oferecem o atalho em
+`{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=...`, restrito aos tipos que
+`src/server/auth/client.ts` aceita (`email`, `magiclink`, `signup`); `recovery`, `invite` e
+`email_change` continuam fora de propósito.
+
+Duas coisas continuam abertas, e nenhuma delas depende de código. O DMARC segue sem `rua=`, então
+ninguém recebe relatório de autenticação e não há como endurecer a política para `quarantine` com
+base em evidência — falta o proprietário escolher a caixa. E o teste humano de entrega numa caixa
+real, com conferência de pasta de spam, não foi feito: o simulador prova que o SES aceita, não que
+o Gmail entrega na caixa de entrada.
+
+Fica registrado o risco que não foi resolvido aqui: `src/server/auth/rate-limit.ts` é por isolate e
+em memória, portanto não é um limite global. O teto de 100 por hora no Supabase contém o custo de
+um bot, mas limite compartilhado ou CAPTCHA continua necessário antes de divulgar o site.
+

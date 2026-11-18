@@ -1,6 +1,6 @@
 # AUTH-E01 — SES como SMTP do Supabase da Bíblia
 
-- **Status:** todo
+- **Status:** feito, exceto DMARC `rua=` e teste humano de entrega
 - **Prioridade:** P0
 - **Responsável:** Victor para console AWS + agente para DNS, Supabase e testes
 - **Macro-item:** `P3-01` de `docs/PRODUCT_MVP_BACKLOG.md`
@@ -86,9 +86,9 @@ template, e os dois campos de template iam no mesmo corpo. Um PATCH sem eles iso
 - [x] conta AWS definida: a existente, por decisão de 18/11/2026;
 - [x] `site_url`, `uri_allow_list` e `mailer_otp_length` corrigidos em 18/11/2026 (HTTP 200);
 - [ ] caixa de relatórios DMARC definida;
-- [ ] subdomínio `auth.bibliabereianos.com.br` aprovado;
-- [ ] autorização para escrever DNS na zona;
-- [ ] disponibilidade do SES em `sa-east-1` confirmada no console;
+- [x] subdomínio `auth.bibliabereianos.com.br` aprovado e verificado;
+- [x] autorização para escrever DNS na zona: os sete registros estão publicados;
+- [x] região resolvida: **us-east-2**, única permitida pela SCP da organização;
 - [ ] proteção contra abuso de envio planejada (ver "Riscos").
 
 ## Plano de implementação
@@ -137,6 +137,38 @@ template, e os dois campos de template iam no mesmo corpo. Um PATCH sem eles iso
 - [ ] nenhuma credencial versionada, impressa ou colada em documento.
 
 ## Evidências e resultados reais
+
+**2026-11-18, parte 2 — SMTP ligado.** A saída do sandbox foi concedida: `ProductionAccessEnabled:
+true`, caso `179502721300942`, plano Essentials, cota de 50.000 mensagens por dia e 14 por segundo.
+Com isso caiu o motivo que impedia apontar o Supabase para o SES.
+
+Executado em seguida, pela Management API e não pelo Dashboard:
+
+| Campo | Valor gravado |
+| --- | --- |
+| `smtp_host` | `email-smtp.us-east-2.amazonaws.com` |
+| `smtp_port` | `587`, STARTTLS |
+| `smtp_user` | access key do `ses-smtp-biblia`, criada agora |
+| `smtp_pass` | derivada por SigV4; existe **somente** no Supabase |
+| `smtp_admin_email` | `nao-responda@auth.bibliabereianos.com.br` |
+| `smtp_sender_name` | `Biblia Bereana` |
+| `smtp_max_frequency` | 60 s |
+| `rate_limit_email_sent` | 2 → 100 por hora |
+
+Três verificações, nesta ordem: `AUTH` aceito no endpoint SMTP com STARTTLS na 587; mensagem
+aceita para `success@simulator.amazonses.com`, que exercita identidade, MAIL FROM e política do IAM
+sem entregar a ninguém; e leitura de volta da configuração confirmando os campos.
+
+O `HTTP 400` dos templates **desapareceu** com o SMTP próprio, confirmando a hipótese registrada
+abaixo. Confirmação e magic link agora estão em português, mostram `{{ .Token }}` em destaque e
+oferecem o link em `/auth/callback?token_hash={{ .TokenHash }}&type=...`, restrito aos tipos que
+`src/server/auth/client.ts` aceita. `mailer_templates_custom_contents` virou `true` nos dois.
+
+A cópia local da credencial foi apagada. Rotacionar é criar a nova chave, gravar no Supabase,
+confirmar envio e só então apagar a antiga.
+
+Falta: `rua=` no DMARC, que depende de o proprietário escolher a caixa, e o teste humano de entrega
+numa caixa real.
 
 **2026-11-18 — estado inicial medido.** Produção publicada e lendo as chaves: `/entrar`,
 `/criar-conta`, `/conta`, `/perfil` e `/acessos` em HTTP 200, sem o aviso de ambiente não

@@ -39,41 +39,46 @@ sandbox têm de ser refeitos na conta nova.
 | Identidade SES `auth.bibliabereianos.com.br` | criada e **verificada para envio** |
 | Easy DKIM RSA 2048 | **SUCCESS** — três CNAME publicados na Cloudflare, sem proxy |
 | MAIL FROM `bounce.auth.bibliabereianos.com.br` | **SUCCESS** — com MX e SPF próprios |
-| DMARC em `_dmarc.auth` | `v=DMARC1; p=none; fo=1` |
+| Saída do sandbox | **concedida** — caso `179502721300942`, Essentials, 50.000/dia e 14/s |
 | Usuário IAM `ses-smtp-biblia` | política inline `ses-send-only-biblia`, envio **só** por essa identidade |
-| Chave de acesso desse usuário | **nenhuma**, de propósito |
-| `site_url`, `uri_allow_list`, `mailer_otp_length` no Supabase | corrigidos em 18/11 (HTTP 200) |
+| Chave de acesso desse usuário | **uma, ativa** — é a que o SMTP usa; não crie outra |
+| SMTP do Supabase | **configurado em 18/11**, host `email-smtp.us-east-2.amazonaws.com:587` |
+| Templates de confirmação e magic link | **em português**, com `{{ .Token }}` e link `token_hash` |
+| `site_url`, `uri_allow_list`, `mailer_otp_length` | corrigidos em 18/11 |
+| DMARC em `_dmarc.auth` | `v=DMARC1; p=none; fo=1` — ainda **sem `rua=`** |
 | Frente de conta no app | publicada e lendo as chaves em produção |
 
 Antes de criar qualquer coisa, confira o estado real:
 
 ```bash
 aws sesv2 get-account --profile samjoe-project --region us-east-2
-aws sesv2 get-email-identity --email-identity auth.bibliabereianos.com.br \
-  --profile samjoe-project --region us-east-2
+aws sesv2 get-email-identity --email-identity auth.bibliabereianos.com.br   --profile samjoe-project --region us-east-2
+aws iam list-access-keys --user-name ses-smtp-biblia --profile samjoe-project
 ```
+
+A última chamada deve devolver **exatamente uma** chave. Duas significa que alguém gerou outra sem
+apagar a anterior — a antiga vira credencial órfã com permissão de envio.
 
 ## 3. O que falta, nesta ordem
 
 1. **Definir a caixa de relatórios DMARC** e acrescentar `rua=mailto:<endereço>` ao TXT de
-   `_dmarc.auth.bibliabereianos.com.br`. Hoje o registro não tem `rua`, então ninguém recebe
-   relatório.
-2. **Pedir saída do sandbox** (`aws sesv2 put-account-details`). Decisão do operador, pendente desde
-   18/11. O texto proposto está no histórico da frente; é declaração formal dentro da conta de
-   terceiro, então não envie sem ordem explícita.
-3. **Só depois:** gerar a chave de acesso do `ses-smtp-biblia`, derivar a senha SMTP e configurar o
-   SMTP no Supabase (`email-smtp.us-east-2.amazonaws.com`, porta 587, STARTTLS).
-4. Ajustar `rate_limit_email_sent` em Authentication → Rate Limits conforme a cota do SES.
-5. Trocar os templates de e-mail para o formato `token_hash` — veja o item 5 abaixo.
+   `_dmarc.auth.bibliabereianos.com.br`. Hoje não há `rua`, então ninguém recebe relatório.
+2. **Teste humano do fluxo**: pedir código em `/entrar` numa caixa real, conferir entrega, pasta de
+   spam e o atalho por link. Só uma pessoa com caixa postal faz isso.
+3. Depois de ler relatório DMARC de verdade, endurecer a política para `quarantine` e depois
+   `reject`.
+4. Antes de divulgar o site, limite de abuso compartilhado ou CAPTCHA — ver item 4 abaixo.
 
 ## 4. Nunca faça
 
-- **Não ligue o SMTP no Supabase enquanto a conta estiver em sandbox.** O site está no ar. Em
-  sandbox o SES entrega **apenas** para endereços verificados um a um; trocar agora melhora o teste
-  do operador e **quebra o login de qualquer visitante real**. O remetente embutido do Supabase, com
-  seu teto de 2 e-mails/hora, ao menos entrega para todos.
+- **Não gere outra chave de acesso para `ses-smtp-biblia` "para testar".** Já existe uma, em uso
+  pelo Supabase, e a senha SMTP derivada dela não está em lugar nenhum fora do painel. Rotacionar
+  é: criar a nova, gravar no Supabase, confirmar envio, **aí** apagar a antiga.
 - **Não grave senha SMTP em `.env*`, repositório, log, print, documento ou mensagem.** Ela vive
-  somente no Dashboard do Supabase. Rotacionar significa apagar a chave no IAM e criar outra.
+  somente no Supabase.
+- **Não confie no limitador atual contra abuso.** `src/server/auth/rate-limit.ts` é por isolate e
+  em memória, portanto **não é global**. O teto de 100 e-mails/hora no Supabase segura o custo, não
+  o abuso.
 - **Não edite `.env*`** nem aplique migration remota sem ordem explícita — regra da fila.
 - **Não desligue confirmação de e-mail** para resolver problema de entrega.
 - **Não habilite serviço AWS pago** (IP dedicado, EC2, Mail Manager, Virtual Deliverability
@@ -81,11 +86,11 @@ aws sesv2 get-email-identity --email-identity auth.bibliabereianos.com.br \
 
 ## 5. Duas coisas que vão te confundir
 
-**O `HTTP 400` da Management API do Supabase.** Alterar `mailer_templates_*` é recusado neste
-projeto — plano free com remetente padrão. Confirmado por eliminação: o mesmo PATCH **sem** os
-campos de template passou com 200. Então os templates continuam com `{{ .ConfirmationURL }}`, que
-não entrega `token_hash` ao `/auth/callback` e faz o atalho por link cair em `/entrar?erro=link`. O
-código digitado de 6 dígitos funciona. Com SMTP próprio a edição deve destravar.
+**O `HTTP 400` da Management API do Supabase, que já foi resolvido.** Enquanto o projeto usava o
+remetente embutido, qualquer PATCH com `mailer_templates_*` era recusado — plano free. Confirmado
+por eliminação na época: o mesmo PATCH sem os campos de template passava com 200. Depois de
+configurar SMTP próprio, o PATCH com templates passou com **200**. Se você vir esse 400 de novo,
+verifique primeiro se o SMTP continua configurado.
 
 **O "disparo de e-mail" do sistema jurídico não existe.** `E:\Sistema Juridico\src\lib\auth-email.ts`
 registra que o projeto Supabase de produção está com `smtp_user = "email-delivery-disabled"` e que
@@ -106,7 +111,8 @@ a arquitetura.
 ## 7. Estado do app, para contexto
 
 Produção em `https://bibliabereianos.com.br`, servida por Worker Cloudflare (`samjoe-estudos`).
-Login por código de 6 dígitos **funciona**, limitado a 2 e-mails/hora pelo remetente embutido.
+Login por código de 6 dígitos **funciona**, com envio próprio pelo Amazon SES (us-east-2) desde
+18/11/2026, teto de 100 e-mails por hora no Supabase.
 Banco Supabase `samjoe-bible-mvp` em `sa-east-1` com as 7 migrations aplicadas, RLS ativo em
 `profiles` e gatilho de criação de perfil em `auth.users`. O Worker alcança o Postgres pela direct
 connection — **não existe binding `HYPERDRIVE` e não é necessário**, provado em produção.

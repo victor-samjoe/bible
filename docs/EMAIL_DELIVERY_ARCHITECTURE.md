@@ -200,35 +200,59 @@ Não insista em outra região: não é falta de permissão do papel, é polític
 
 ### O que já existe
 
+Estado medido em 18/11/2026, depois de ligar o SMTP.
+
 | Recurso | Estado |
 | --- | --- |
 | Identidade `auth.bibliabereianos.com.br` | criada, **verificada para envio** |
 | Easy DKIM (RSA 2048) | **SUCCESS**, três CNAME publicados na Cloudflare, sem proxy |
 | MAIL FROM `bounce.auth.bibliabereianos.com.br` | **SUCCESS**, com MX e SPF próprios |
 | DMARC `_dmarc.auth` | `v=DMARC1; p=none; fo=1` — **sem `rua=`**, falta definir a caixa de relatórios |
-| Usuário IAM `ses-smtp-biblia` | criado, política inline `ses-send-only-biblia`, que só permite `SendEmail`/`SendRawEmail` **nessa identidade** |
-| Chave de acesso do usuário IAM | **nenhuma**, de propósito: credencial só é gerada no momento de ligar o SMTP |
-| Saída do sandbox | **não pedida** — 200/dia, 1/s, só para endereços verificados |
-| SMTP no Supabase | **não configurado** — o app segue no remetente embutido |
+| Usuário IAM `ses-smtp-biblia` | política inline `ses-send-only-biblia`, que só permite `SendEmail`/`SendRawEmail` **nessa identidade** |
+| Chave de acesso do usuário IAM | uma, ativa, criada em 18/11 só para o SMTP |
+| Saída do sandbox | **concedida** — caso `179502721300942`, plano Essentials, 50.000/dia e 14/s |
+| SMTP no Supabase | **configurado** em 18/11 via Management API |
+| Templates de e-mail | **em português**, com código de 6 dígitos e link `token_hash` |
 
-### Por que o SMTP ainda não foi ligado
+### Como ficou o SMTP
 
-O site está no ar. Em sandbox o SES entrega **somente para endereços verificados um a um**, então
-apontar o Supabase para ele agora melhoraria o teste do operador e quebraria o login de qualquer
-visitante real — o remetente embutido, com seu teto de 2/hora, ao menos entrega para todos.
+| Campo | Valor |
+| --- | --- |
+| Host | `email-smtp.us-east-2.amazonaws.com` |
+| Porta | `587`, STARTTLS |
+| Usuário | access key do `ses-smtp-biblia` |
+| Senha | derivada da secret key pelo algoritmo SigV4 do SES, **só existe no Supabase** |
+| Remetente | `Biblia Bereana <nao-responda@auth.bibliabereianos.com.br>` |
+| `smtp_max_frequency` | 60 s entre mensagens para o mesmo endereço |
+| `rate_limit_email_sent` | 100 por hora, bem abaixo da cota do SES |
 
-A ordem correta é: pedir saída do sandbox, aguardar aprovação, só então gerar a chave de acesso,
-derivar a senha SMTP e colar no painel do Supabase. Para teste antecipado, verificar um endereço
-específico com `aws sesv2 create-email-identity --email-identity <endereco>` resolve só para ele.
+Três verificações feitas na hora, nesta ordem: `AUTH` aceito no endpoint com STARTTLS; mensagem
+enviada e aceita para `success@simulator.amazonses.com`, que exercita identidade, MAIL FROM e
+política do IAM sem tocar em caixa de ninguém; e leitura de volta da configuração confirmando os
+campos gravados.
 
-### Já resolvido no painel do Supabase
+### O `400` dos templates, resolvido
 
-`site_url`, `uri_allow_list` e `mailer_otp_length` foram corrigidos em 18/11/2026 (HTTP 200). Os
-**templates** continuam intocados: o plano free com remetente padrão recusa alteração, o que foi
-confirmado por eliminação — o mesmo PATCH sem os campos de template passou. Com SMTP próprio a
-edição deve destravar.
+A hipótese estava certa. Enquanto o projeto usava o remetente embutido, qualquer PATCH com
+`mailer_templates_*` voltava `HTTP 400`. Com SMTP próprio configurado, o mesmo PATCH passou com
+**200** e `mailer_templates_custom_contents` virou `true` para confirmação e magic link. Os dois
+templates agora mostram `{{ .Token }}` em destaque — que é o caminho principal da interface — e
+oferecem o link em `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=...`, nos tipos
+que `src/server/auth/client.ts` aceita.
+
+### O que ainda falta
+
+1. **Caixa de relatórios DMARC.** O registro segue sem `rua=`, então ninguém recebe relatório de
+   autenticação. Depende de o proprietário escolher o endereço.
+2. **Endurecer o DMARC** para `quarantine` e depois `reject`, mas só depois de ler relatório de
+   verdade — o que depende do item 1.
+3. **Teste humano do fluxo completo**: pedir código em `/entrar` numa caixa real e conferir entrega,
+   pasta de spam e o atalho por link.
+4. **Limite de abuso compartilhado.** `src/server/auth/rate-limit.ts` é por isolate e em memória. O
+   teto do Supabase em 100/hora segura o custo, mas não substitui limite global ou CAPTCHA antes de
+   divulgar o site.
 
 ### Regra que não muda
 
 Senha SMTP **somente** no Dashboard do Supabase. Nunca em `.env*`, repositório, log, print,
-documento ou mensagem de chat. Se precisar rotacionar, apague a chave antiga no IAM e crie outra.
+documento ou mensagem de chat. Rotacionar significa apagar a chave antiga no IAM e criar outra.
