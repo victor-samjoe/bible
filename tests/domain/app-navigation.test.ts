@@ -25,7 +25,6 @@ describe("áreas do aplicativo", () => {
       "Cursos",
       "Planos",
       "Perfil",
-      "Acessos",
     ]);
   });
 
@@ -36,16 +35,16 @@ describe("áreas do aplicativo", () => {
 
   it("só marca como disponível a área que tem página publicada", () => {
     // `perfil` entra aqui porque `app/perfil/page.tsx` existe (frente C17b).
-    for (const id of ["inicio", "biblia", "materiais", "estudos", "cursos", "planos", "perfil", "acessos"]) {
+    for (const id of ["inicio", "biblia", "materiais", "notas", "estudos", "cursos", "planos", "perfil"]) {
       expect(isAreaAvailable(areaOf(id))).toBe(true);
       expect(unavailableReason(areaOf(id))).toBeNull();
     }
   });
 
-  it("deixa notas indisponível, com motivo escrito, porque não existe página", () => {
+  it("deixa notas disponível porque a biblioteca pessoal foi publicada", () => {
     const area = areaOf("notas");
-    expect(isAreaAvailable(area)).toBe(false);
-    expect(unavailableReason(area)?.length ?? 0).toBeGreaterThan(20);
+    expect(isAreaAvailable(area)).toBe(true);
+    expect(unavailableReason(area)).toBeNull();
   });
 
   it("descreve cada área sem prometer sincronização", () => {
@@ -77,9 +76,9 @@ describe("área ativa", () => {
     for (const area of appAreas) expect(isAreaActive("/", area)).toBe(false);
   });
 
-  it("não ativa área indisponível, mesmo que a rota coincida", () => {
-    expect(isAreaActive("/notas", areaOf("notas"))).toBe(false);
-    expect(activeAreaOf("/notas")).toBeNull();
+  it("ativa notas, que tem página publicada", () => {
+    expect(isAreaActive("/notas", areaOf("notas"))).toBe(true);
+    expect(activeAreaOf("/notas")?.id).toBe("notas");
   });
 
   it("ativa perfil, que tem página publicada", () => {

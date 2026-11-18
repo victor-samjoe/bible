@@ -27,8 +27,8 @@ export type AppArea = {
 const available: AreaAvailability = { kind: "available" };
 
 /**
- * Ordem da fila C15: Início, Bíblia, Materiais, Notas, Estudos, Cursos, Planos
- * e Perfil.
+ * Ordem do aplicativo: Início, Bíblia, Materiais, Notas, Estudos, Cursos,
+ * Planos e Perfil.
  *
  * Notas e perfil têm páginas próprias: ambas exibem apenas dados que já existem
  * (na conta ou na sessão atual) e não prometem recursos ainda ausentes.
@@ -93,13 +93,6 @@ export const appAreas: readonly AppArea[] = [
     // de preferências e notas continua não existindo, e a descrição não a
     // promete.
     description: "Área pessoal; identidade e papel da conta, sem sincronização de notas ou preferências.",
-    availability: available,
-  },
-  {
-    id: "acessos",
-    label: "Acessos",
-    href: "/acessos",
-    description: "Papéis e como a permissão é verificada no servidor.",
     availability: available,
   },
 ];
