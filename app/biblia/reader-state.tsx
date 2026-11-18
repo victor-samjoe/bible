@@ -127,7 +127,7 @@ type ReaderContextValue = {
   closePanel: () => void;
 
   selection: ReadonlySet<number>;
-  toggleVerse: (verse: number) => void;
+  toggleVerse: (verse: number, extendRange?: boolean) => void;
   clearSelection: () => void;
   selectionLabel: string;
   /** Texto dos versículos selecionados, pronto para copiar/compartilhar. */
@@ -248,6 +248,7 @@ export function ReaderProvider({
     readChapters: new Set<string>(),
   }));
   const [selection, setSelection] = useState<ReadonlySet<number>>(() => new Set<number>());
+  const [selectionAnchor, setSelectionAnchor] = useState<number | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [panel, setPanel] = useState<ActionPanel | null>(null);
   const [notice, setNotice] = useState("");
@@ -257,6 +258,7 @@ export function ReaderProvider({
   // o texto que está na tela, não uma marca guardada.
   useEffect(() => {
     setSelection(new Set<number>());
+    setSelectionAnchor(null);
     setPanel(null);
     setSettingsOpen(false);
     setNotice("");
@@ -343,13 +345,24 @@ export function ReaderProvider({
     [],
   );
 
-  const toggleVerse = useCallback((verse: number) => {
+  const toggleVerse = useCallback((verse: number, extendRange = false) => {
     setNotice("");
+    if (extendRange && selectionAnchor !== null) {
+      const start = Math.min(selectionAnchor, verse);
+      const end = Math.max(selectionAnchor, verse);
+      setSelection((current) => new Set([
+        ...current,
+        ...verseNumbers.filter((number) => number >= start && number <= end),
+      ]));
+      return;
+    }
+    setSelectionAnchor(verse);
     setSelection((current) => toggleVerseIn(current, verse));
-  }, []);
+  }, [selectionAnchor, verseNumbers]);
 
   const clearSelection = useCallback(() => {
     setSelection(new Set<number>());
+    setSelectionAnchor(null);
     setPanel(null);
     setNotice("");
   }, []);

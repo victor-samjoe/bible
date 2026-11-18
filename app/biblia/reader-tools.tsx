@@ -59,6 +59,8 @@ export function ReaderTools() {
     openSettings,
     closeSettings,
     reference,
+    isChapterRead,
+    toggleChapterRead,
   } = useReader();
 
   useEffect(() => {
@@ -97,6 +99,13 @@ export function ReaderTools() {
             </header>
 
             <div className={styles.content}>
+              <h3 id="ajuste-progresso">Progresso</h3>
+              <div className={styles.choices} role="group" aria-labelledby="ajuste-progresso">
+                <button type="button" className={isChapterRead ? styles.on : ""} aria-pressed={isChapterRead} onClick={toggleChapterRead}>
+                  {isChapterRead ? "✓ Capítulo lido" : "Marcar como lido"}
+                </button>
+              </div>
+
               <h3 id="ajuste-tema">Tema</h3>
               <div className={styles.choices} role="group" aria-labelledby="ajuste-tema">
                 {themes.map((item) => (

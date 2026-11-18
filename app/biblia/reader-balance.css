@@ -6,6 +6,20 @@
 .readerMenu { justify-self: start; }
 .readerActions { justify-self: end; margin-left: 0; }
 
+.chapterQuickNav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 12px;
+  margin: -2px auto 24px;
+  max-width: 390px;
+  font: 600 .72rem/1.2 Arial, Helvetica, sans-serif;
+}
+.chapterQuickNav a { color: #bdb7ad; text-decoration: none; }
+.chapterQuickNav a:first-child { text-align: left; }
+.chapterQuickNav a:last-child { text-align: right; }
+.chapterQuickNav a:hover { color: #f1eee9; }
+
 @media (max-width: 650px) {
   .readerTop {
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);

@@ -102,7 +102,7 @@ export function SelectionBar() {
             >
               Aplicar <span aria-hidden="true">{menuOpen ? "▾" : "▴"}</span>
             </button>
-            <button type="button" onClick={clearSelection}>Cancelar</button>
+            <button type="button" onClick={clearSelection}>Concluído</button>
           </div>
         </div>
 

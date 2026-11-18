@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRef } from "react";
 import { useReader } from "./reader-state";
 import { ChapterContext } from "./chapter-context";
@@ -22,11 +23,15 @@ export function ReaderChapter({
   chapterNumber,
   translationName,
   verses,
+  previous,
+  next,
 }: {
   bookName: string;
   chapterNumber: number;
   translationName: string;
   verses: readonly ChapterVerse[];
+  previous: { href: string; label: string } | null;
+  next: { href: string; label: string } | null;
 }) {
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const {
@@ -55,6 +60,10 @@ export function ReaderChapter({
         {bookName} <span>{chapterNumber}</span>
       </h1>
       <ChapterContext bookName={bookName} />
+      <nav className="chapterQuickNav" aria-label="Navegação entre capítulos">
+        {previous ? <Link href={previous.href} rel="prev" aria-label={`Capítulo anterior: ${previous.label}`}>← <span>{previous.label}</span></Link> : <span />}
+        {next ? <Link href={next.href} rel="next" aria-label={`Próximo capítulo: ${next.label}`}><span>{next.label}</span> →</Link> : <span />}
+      </nav>
       <div className="chapterRule" />
       {verses.map((verse) => {
         const selected = selection.has(verse.number);
@@ -68,7 +77,7 @@ export function ReaderChapter({
               aria-pressed={selected}
               data-selected={selected ? "true" : undefined}
               data-highlight={color}
-              onClick={() => toggleVerse(verse.number)}
+              onClick={(event) => toggleVerse(verse.number, event.shiftKey)}
             >
               <sup>{verse.number}</sup>
               {verse.content}
