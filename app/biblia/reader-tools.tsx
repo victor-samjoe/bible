@@ -91,11 +91,6 @@ export function ReaderTools() {
                 <p>{reference}</p>
                 <h2>Configurações de leitura</h2>
               </div>
-
-              <h3 id="ajuste-paragrafos">Distância entre parágrafos</h3>
-              <div className={styles.choices} role="group" aria-labelledby="ajuste-paragrafos">
-                {paragraphSpacings.map((item) => <button key={item.value} type="button" className={preferences.paragraphSpacing === item.value ? styles.on : ""} aria-pressed={preferences.paragraphSpacing === item.value} onClick={() => setPreference("paragraphSpacing", item.value)}>{item.label}</button>)}
-              </div>
               <button type="button" onClick={closeSettings} aria-label="Fechar configurações">
                 ×
               </button>
@@ -111,6 +106,21 @@ export function ReaderTools() {
                     className={theme === item.value ? styles.on : ""}
                     aria-pressed={theme === item.value}
                     onClick={() => setTheme(item.value)}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              <h3 id="ajuste-paragrafos">Separação entre versículos</h3>
+              <div className={styles.choices} role="group" aria-labelledby="ajuste-paragrafos">
+                {paragraphSpacings.map((item) => (
+                  <button
+                    key={item.value}
+                    type="button"
+                    className={preferences.paragraphSpacing === item.value ? styles.on : ""}
+                    aria-pressed={preferences.paragraphSpacing === item.value}
+                    onClick={() => setPreference("paragraphSpacing", item.value)}
                   >
                     {item.label}
                   </button>
@@ -163,7 +173,7 @@ export function ReaderTools() {
               </div>
 
               <p className={styles.local}>
-                Tema, tamanho, fonte e espaçamento são aplicados agora e ficam local nesta sessão
+                Tema, tamanho, fonte e espaçamento são aplicados agora e ficam locais nesta sessão
                 deste navegador. Não são salvos em conta e são descartados ao fechar a aba.
               </p>
             </div>

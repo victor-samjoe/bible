@@ -77,7 +77,8 @@ const spacingValue: Record<Spacing, string> = {
   padrao: "1.78",
   amplo: "2",
 };
-const paragraphSpacingValue: Record<ParagraphSpacing, string> = { junto: "0.5rem", padrao: "1.05rem", separado: "1.7rem" };
+// "Junto" é leitura corrida: não há bloco visual entre um versículo e outro.
+const paragraphSpacingValue: Record<ParagraphSpacing, string> = { junto: "0", padrao: "1.05rem", separado: "1.7rem" };
 
 const SESSION_KEY = "reader-session-v3";
 const THEME_KEY = "reader-theme";

@@ -92,8 +92,9 @@ export function ChapterPicker({
           className="readerTranslation"
           aria-expanded={versionsOpen}
           onClick={() => setVersionsOpen((value) => !value)}
+          style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
         >
-          {translationCode}
+          Bíblia Livre · {translationCode}
         </button>
       </div>
 
