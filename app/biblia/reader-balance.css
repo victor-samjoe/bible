@@ -1,0 +1,15 @@
+/* O seletor central não deve variar conforme a largura das ações laterais. */
+.readerTop {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+.readerMenu { justify-self: start; }
+.readerActions { justify-self: end; margin-left: 0; }
+
+@media (max-width: 650px) {
+  .readerTop {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 6px;
+  }
+  .readerActions { gap: 6px; }
+}

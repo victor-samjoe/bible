@@ -5,6 +5,7 @@ import "./reader-preferences.css";
 import "./reader-verses.css";
 import "./theme.css";
 import "./reader-header.css";
+import "./reader-balance.css";
 import "./reader-theme-surfaces.css";
 
 // Estilos do leitor ficam no layout para valerem tanto em /biblia quanto em
