@@ -55,7 +55,9 @@ const loadNavigation = cache(async () => {
 });
 
 function PickerFallback({ name, chapter }: { name: string; chapter: number }) {
-  return <div className="readerPick" aria-busy="true"><span>{name}</span><b>{chapter}</b></div>;
+  // O fallback ocupa a faixa central enquanto a lista de livros chega. Ele não
+  // pode capturar o toque dos controles laterais nesse intervalo.
+  return <div className="readerPick" aria-busy="true" style={{ pointerEvents: "none" }}><span>{name}</span><b>{chapter}</b></div>;
 }
 
 async function DeferredChapterPicker({ currentBook, currentChapter }: { currentBook: { id: string; slug: string; name: string; code: string; orderNo: number }; currentChapter: number }) {
@@ -137,13 +139,13 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
     >
       <main className="readerShell">
         <header className="readerTop">
-          <div className="readerMenu">
+          <div className="readerMenu" style={{ position: "relative", zIndex: 2 }}>
             <ReaderSideMenu />
           </div>
           <Suspense fallback={<PickerFallback name={currentBook.name} chapter={currentChapter.number} />}>
             <DeferredChapterPicker currentBook={currentBook} currentChapter={currentChapter.number} />
           </Suspense>
-          <div className="readerActions" aria-label="Ações do capítulo">
+          <div className="readerActions" aria-label="Ações do capítulo" style={{ position: "relative", zIndex: 2 }}>
             <ReaderTools />
           </div>
         </header>

@@ -74,12 +74,13 @@ export function ChapterPicker({
 
   return (
     <>
-      <div className="readerPick">
+      <div className="readerPick" style={{ pointerEvents: "none" }}>
         <button
           type="button"
           aria-label={`Selecionar livro, atual ${currentBook.name}`}
           aria-expanded={open === "livro"}
           onClick={() => (open === "livro" ? close() : setOpen("livro"))}
+          style={{ pointerEvents: "auto" }}
         >
           {currentBook.name}
         </button>
@@ -88,6 +89,7 @@ export function ChapterPicker({
           aria-label={`Selecionar capítulo, atual ${currentChapter}`}
           aria-expanded={open === "capitulo"}
           onClick={() => (open === "capitulo" ? close() : setOpen("capitulo"))}
+          style={{ pointerEvents: "auto" }}
         >
           {currentChapter}
         </button>
