@@ -147,6 +147,10 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
             translationCode="BLIVRE"
           />
           <div className="readerActions" aria-label="Ações do capítulo">
+            <nav aria-label="Navegação rápida entre capítulos" style={{ display: "flex", gap: 4 }}>
+              {previous ? <Link href={chapterPath(previous.book.slug, previous.chapter)} rel="prev" aria-label={`Capítulo anterior: ${canonicalReference(previous.book.name, previous.chapter)}`} title="Capítulo anterior" style={{ display: "grid", placeItems: "center", width: 30, height: 30, color: "inherit", textDecoration: "none", opacity: 0.72, fontSize: "1rem" }}>←</Link> : null}
+              {next ? <Link href={chapterPath(next.book.slug, next.chapter)} rel="next" aria-label={`Próximo capítulo: ${canonicalReference(next.book.name, next.chapter)}`} title="Próximo capítulo" style={{ display: "grid", placeItems: "center", width: 30, height: 30, color: "inherit", textDecoration: "none", opacity: 0.72, fontSize: "1rem" }}>→</Link> : null}
+            </nav>
             <ChapterReadToggle />
             <ReaderTools />
           </div>
