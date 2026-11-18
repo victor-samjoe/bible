@@ -6,7 +6,8 @@ import { useReader } from "./reader-state";
 // (tarefa C13). Fica no cabeçalho, como ação única, separada das ações de seleção
 // e das configurações de leitura.
 export function ChapterReadToggle() {
-  const { isChapterRead, toggleChapterRead, reference } = useReader();
+  const { isChapterRead, toggleChapterRead, reference, storage } = useReader();
+  const where = storage === "account" ? "na sua conta" : "nesta sessão";
 
   return (
     <button
@@ -15,8 +16,8 @@ export function ChapterReadToggle() {
       aria-pressed={isChapterRead}
       title={
         isChapterRead
-          ? `${reference} está marcado como lido nesta sessão`
-          : `Marcar ${reference} como lido nesta sessão`
+          ? `${reference} está marcado como lido ${where}`
+          : `Marcar ${reference} como lido ${where}`
       }
       aria-label={
         isChapterRead

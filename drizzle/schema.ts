@@ -1,12 +1,11 @@
 // SQL migration is authoritative for constraints, triggers, and defaults.
-import { pgTable, pgEnum, uuid, text, integer, bigint, boolean, numeric, timestamp, jsonb, smallint, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, pgEnum, uuid, text, integer, bigint, boolean, numeric, timestamp, jsonb, primaryKey } from "drizzle-orm/pg-core";
 
 export const editorialStatus = pgEnum("editorial_status", ["draft", "in_review", "approved", "published", "archived"]);
 export const accessLevel = pgEnum("access_level", ["free", "premium"]);
 export const subscriptionStatus = pgEnum("subscription_status", ["pending", "active", "grace", "past_due", "canceled", "expired", "refunded"]);
 export const profileRole = pgEnum("profile_role", ["reader", "editor", "admin"]);
 export const readingHighlightColor = pgEnum("reading_highlight_color", ["yellow", "green", "blue", "pink", "purple"]);
-export const readingFontFamily = pgEnum("reading_font_family", ["serif", "sans", "dyslexic"]);
 
 export const profiles = pgTable("profiles", {
   id: uuid("id").primaryKey(),
@@ -338,31 +337,42 @@ export const auditLogs = pgTable("audit_logs", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
 });
 
+/**
+ * Preferências do leitor. Texto com CHECK no banco, e não enum: este é
+ * vocabulário de interface — ver `drizzle/0007_reading_sync.sql`.
+ */
 export const readingPreferences = pgTable("reading_preferences", {
   userId: uuid("user_id").primaryKey(),
   theme: text("theme").notNull(),
-  fontFamily: readingFontFamily("font_family").notNull(),
-  fontSize: smallint("font_size").notNull(),
-  lineHeight: numeric("line_height").notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+  fontFamily: text("font_family").notNull(),
+  fontSize: text("font_size").notNull(),
+  lineSpacing: text("line_spacing").notNull(),
+  paragraphSpacing: text("paragraph_spacing").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * Nota de leitura. `verseId` é a **âncora** (primeiro versículo da seleção) e
+ * `verseList` guarda a seleção exata no formato compactado de
+ * `src/domain/reader-marks.ts`: `"5"`, `"3-5"`, `"3-5,9"`.
+ */
 export const verseNotes = pgTable("verse_notes", {
-  id: uuid("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").notNull(),
   verseId: uuid("verse_id").notNull(),
+  verseList: text("verse_list").notNull(),
   body: text("body").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const verseHighlights = pgTable("verse_highlights", {
-  id: uuid("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").notNull(),
   verseId: uuid("verse_id").notNull(),
   color: readingHighlightColor("color").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const chapterReadingProgress = pgTable("chapter_reading_progress", {
@@ -370,7 +380,7 @@ export const chapterReadingProgress = pgTable("chapter_reading_progress", {
   chapterId: uuid("chapter_id").notNull(),
   lastVerseId: uuid("last_verse_id"),
   completedAt: timestamp("completed_at", { withTimezone: true }),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [primaryKey({ columns: [table.userId, table.chapterId] })]);
 
 // ---------------------------------------------------------------------------

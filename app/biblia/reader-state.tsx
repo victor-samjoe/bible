@@ -11,6 +11,23 @@ import {
   type ReactNode,
 } from "react";
 import {
+  defaultPreferences as readerDefaults,
+  sanitizeReaderPreferences,
+  type FontFamily,
+  type FontSize,
+  type ParagraphSpacing,
+  type ReaderPreferences,
+  type ReaderTheme,
+  type Spacing,
+} from "@/src/domain/reader-preferences";
+import { saveChapterMarksAction, savePreferencesAction } from "@/app/_actions/reading";
+import {
+  chapterMarksPayload,
+  mergeMarks,
+  scopesToUpload,
+  type MarkSnapshot,
+} from "@/src/domain/reading-sync";
+import {
   chapterScopeSchema,
   isHighlightColor,
   isMarkInScope,
@@ -22,10 +39,16 @@ import {
   type HighlightColor,
 } from "@/src/domain/reader-marks";
 
-// Estado do leitor que vive SOMENTE nesta sessão do navegador (sessionStorage).
-// Nada aqui é conta, nuvem ou banco: a tarefa C5 liga notas, destaques e progresso
-// às tabelas com RLS depois que o Auth Supabase existir de fato. Até então a
-// interface precisa dizer "local nesta sessão" e não prometer sincronização.
+// Estado do leitor. Tem duas moradas, e a diferença é visível na interface:
+//
+// - **sem conta**: `sessionStorage`, que morre quando a aba fecha. A interface
+//   diz isso com todas as letras e não promete sincronização;
+// - **com conta**: as tabelas pessoais, por Server Action. O `sessionStorage`
+//   continua sendo escrito como cache local, mas a verdade passa a ser o banco.
+//
+// Ao entrar, as duas verdades parciais são conciliadas por
+// `src/domain/reading-sync.ts`: a conta ganha no conflito e o que só existia
+// no navegador sobe. É assim que o trabalho feito antes de entrar não se perde.
 //
 // Modelo da tarefa C13:
 // - seleção múltipla de versículos, que não persiste (é intenção, não marca);
@@ -33,27 +56,21 @@ import {
 // - nota pertencente à seleção que a originou;
 // - "lido" é estado do capítulo inteiro, não do versículo.
 
-export type ReaderTheme = "dark" | "light";
-export type FontFamily = "serif" | "sans" | "literaria" | "humana" | "monospace";
-export type FontSize = "muito-pequeno" | "menor" | "pequeno" | "medio" | "grande";
-export type Spacing = "continuo" | "compacto" | "padrao" | "amplo";
-export type ParagraphSpacing = "junto" | "padrao" | "separado";
 /** Painéis abertos pela barra de seleção. As configurações têm painel próprio. */
 export type ActionPanel = "nota" | "versoes" | "original";
 
-export type ReaderPreferences = {
-  fontFamily: FontFamily;
-  fontSize: FontSize;
-  spacing: Spacing;
-  paragraphSpacing: ParagraphSpacing;
-};
-
-export const defaultPreferences: ReaderPreferences = {
-  fontFamily: "serif",
-  fontSize: "medio",
-  spacing: "padrao",
-  paragraphSpacing: "padrao",
-};
+// O vocabulário das preferências mora em `src/domain/reader-preferences.ts`,
+// porque o Server Action precisa julgar o mesmo valor com a mesma régua. Aqui
+// ficam só as traduções para CSS, que são apresentação.
+export type {
+  FontFamily,
+  FontSize,
+  ParagraphSpacing,
+  ReaderPreferences,
+  ReaderTheme,
+  Spacing,
+} from "@/src/domain/reader-preferences";
+export { defaultPreferences } from "@/src/domain/reader-preferences";
 
 const fontFamilyValue: Record<FontFamily, string> = {
   serif: "Georgia, \"Times New Roman\", serif",
@@ -79,6 +96,18 @@ const spacingValue: Record<Spacing, string> = {
 };
 // "Junto" é leitura corrida: não há bloco visual entre um versículo e outro.
 const paragraphSpacingValue: Record<ParagraphSpacing, string> = { junto: "0", padrao: "1.05rem", separado: "1.7rem" };
+
+/** Estado da conta, carregado no servidor e passado por prop. */
+export type AccountReading = {
+  readonly theme: ReaderTheme | null;
+  readonly preferences: ReaderPreferences | null;
+  readonly marks: MarkSnapshot;
+};
+
+/** Espera entre a última alteração e a gravação, para não escrever por tecla. */
+const SYNC_DELAY_MS = 900;
+/** Capítulos que sobem de uma vez no primeiro acesso autenticado. */
+const MAX_UPLOAD_ON_LOGIN = 25;
 
 const SESSION_KEY = "reader-session-v3";
 const THEME_KEY = "reader-theme";
@@ -152,22 +181,14 @@ type ReaderContextValue = {
   totalVerses: number;
   notice: string;
   setNotice: (notice: string) => void;
+  /**
+   * Onde este estado está sendo guardado. A interface precisa dizer a verdade:
+   * `"session"` some ao fechar a aba, `"account"` acompanha a pessoa.
+   */
+  storage: "session" | "account";
 };
 
 const ReaderContext = createContext<ReaderContextValue | null>(null);
-
-function isFontFamily(value: unknown): value is FontFamily {
-  return value === "serif" || value === "sans" || value === "literaria" || value === "humana" || value === "monospace";
-}
-
-function isFontSize(value: unknown): value is FontSize {
-  return value === "muito-pequeno" || value === "menor" || value === "pequeno" || value === "medio" || value === "grande";
-}
-
-function isSpacing(value: unknown): value is Spacing {
-  return value === "continuo" || value === "compacto" || value === "padrao" || value === "amplo";
-}
-function isParagraphSpacing(value: unknown): value is ParagraphSpacing { return value === "junto" || value === "padrao" || value === "separado"; }
 
 function readSession(): PersistedState | null {
   try {
@@ -203,18 +224,7 @@ function readSession(): PersistedState | null {
       : [];
 
     return {
-      preferences: {
-        fontFamily: isFontFamily(storedPreferences.fontFamily)
-          ? storedPreferences.fontFamily
-          : defaultPreferences.fontFamily,
-        fontSize: isFontSize(storedPreferences.fontSize)
-          ? storedPreferences.fontSize
-          : defaultPreferences.fontSize,
-        spacing: isSpacing(storedPreferences.spacing)
-          ? storedPreferences.spacing
-          : defaultPreferences.spacing,
-        paragraphSpacing: isParagraphSpacing(storedPreferences.paragraphSpacing) ? storedPreferences.paragraphSpacing : defaultPreferences.paragraphSpacing,
-      },
+      preferences: sanitizeReaderPreferences(storedPreferences),
       highlights,
       notes,
       readChapters,
@@ -231,6 +241,7 @@ export function ReaderProvider({
   reference,
   verseNumbers,
   verseTexts,
+  account = null,
 }: {
   children: ReactNode;
   /** `<slug do livro>.<capítulo>`, prefixo de todas as marcas deste capítulo. */
@@ -239,9 +250,11 @@ export function ReaderProvider({
   reference: string;
   verseNumbers: readonly number[];
   verseTexts: readonly { number: number; content: string }[];
+  /** `null` quando não há sessão: o leitor fica só no `sessionStorage`. */
+  account?: AccountReading | null;
 }) {
   const [theme, setThemeState] = useState<ReaderTheme>("dark");
-  const [preferences, setPreferences] = useState<ReaderPreferences>(defaultPreferences);
+  const [preferences, setPreferences] = useState<ReaderPreferences>(readerDefaults);
   const [marks, setMarks] = useState<Marks>(() => ({
     highlights: {},
     notes: {},
@@ -253,6 +266,9 @@ export function ReaderProvider({
   const [panel, setPanel] = useState<ActionPanel | null>(null);
   const [notice, setNotice] = useState("");
   const loaded = useRef(false);
+  /** Última carga já gravada neste capítulo, para não reescrever o igual. */
+  const lastSynced = useRef<string | null>(null);
+  const signedIn = account !== null;
 
   // Trocar de capítulo zera a seleção e fecha painéis: a seleção é intenção sobre
   // o texto que está na tela, não uma marca guardada.
@@ -262,6 +278,7 @@ export function ReaderProvider({
     setPanel(null);
     setSettingsOpen(false);
     setNotice("");
+    lastSynced.current = null;
   }, [scope]);
 
   useEffect(() => {
@@ -276,8 +293,9 @@ export function ReaderProvider({
     return () => window.removeEventListener("keydown", onKey);
   }, [settingsOpen, panel]);
 
-  // Carrega o estado da sessão depois da hidratação: o servidor não conhece o
-  // sessionStorage, então a primeira renderização usa os padrões.
+  // Carrega o estado depois da hidratação: o servidor não conhece o
+  // sessionStorage, então a primeira renderização usa os padrões. Com conta, o
+  // que veio do banco entra aqui já conciliado com o que havia no navegador.
   useEffect(() => {
     let storedTheme: ReaderTheme = "dark";
     try {
@@ -285,17 +303,60 @@ export function ReaderProvider({
     } catch {
       storedTheme = "dark";
     }
-    setThemeState(storedTheme);
     const stored = readSession();
-    if (stored) {
-      setPreferences(stored.preferences);
-      setMarks({
-        highlights: stored.highlights,
-        notes: stored.notes,
-        readChapters: new Set(stored.readChapters),
-      });
+    const local: MarkSnapshot = {
+      highlights: stored?.highlights ?? {},
+      notes: stored?.notes ?? {},
+      readChapters: stored?.readChapters ?? [],
+    };
+
+    if (account === null) {
+      setThemeState(storedTheme);
+      if (stored) {
+        setPreferences(stored.preferences);
+        setMarks({
+          highlights: local.highlights,
+          notes: local.notes,
+          readChapters: new Set(local.readChapters),
+        });
+      }
+      loaded.current = true;
+      return;
     }
+
+    const merged = mergeMarks(account.marks, local);
+    setThemeState(account.theme ?? storedTheme);
+    setPreferences(account.preferences ?? stored?.preferences ?? readerDefaults);
+    setMarks({
+      highlights: merged.highlights,
+      notes: merged.notes,
+      readChapters: new Set(merged.readChapters),
+    });
+
+    // Sobe o que só existia neste navegador. Em sequência, e não em paralelo:
+    // são gravações do mesmo usuário no mesmo banco, e disparar vinte de uma
+    // vez só serve para competir por conexão.
+    const pending = scopesToUpload(account.marks, local, MAX_UPLOAD_ON_LOGIN);
+    if (pending.length > 0) {
+      void (async () => {
+        for (const pendingScope of pending) {
+          try {
+            await saveChapterMarksAction(chapterMarksPayload(pendingScope, merged));
+          } catch {
+            // Sem rede ou sessão expirada: o estado segue em memória e a
+            // próxima alteração tenta de novo.
+            break;
+          }
+        }
+      })();
+    }
+    // O capítulo aberto já está conciliado: marcar como gravado evita uma
+    // escrita idêntica logo depois da montagem.
+    lastSynced.current = JSON.stringify(chapterMarksPayload(scope, merged));
     loaded.current = true;
+    // `account` vem do servidor a cada navegação; conciliar uma vez por
+    // montagem é o comportamento desejado.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -324,6 +385,35 @@ export function ReaderProvider({
       // Sessão sem armazenamento disponível: o estado continua apenas em memória.
     }
   }, [preferences, marks]);
+
+  // Grava as marcas do capítulo aberto na conta. Agrupa alterações: marcar
+  // cinco versículos em sequência é uma gravação, não cinco.
+  useEffect(() => {
+    if (!signedIn || !loaded.current) return;
+    const payload = chapterMarksPayload(scope, {
+      highlights: marks.highlights,
+      notes: marks.notes,
+      readChapters: [...marks.readChapters],
+    });
+    const serialized = JSON.stringify(payload);
+    if (serialized === lastSynced.current) return;
+    const timer = window.setTimeout(() => {
+      void saveChapterMarksAction(payload)
+        .then((saved) => {
+          if (saved) lastSynced.current = serialized;
+        })
+        .catch(() => undefined);
+    }, SYNC_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [marks, scope, signedIn]);
+
+  useEffect(() => {
+    if (!signedIn || !loaded.current) return;
+    const timer = window.setTimeout(() => {
+      void savePreferencesAction(theme, preferences).catch(() => undefined);
+    }, SYNC_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [preferences, theme, signedIn]);
 
   const setTheme = useCallback((next: ReaderTheme) => {
     setThemeState(next);
@@ -522,6 +612,7 @@ export function ReaderProvider({
       totalVerses: verseNumbers.length,
       notice,
       setNotice,
+      storage: signedIn ? "account" : "session",
     }),
     [
       theme,
@@ -554,6 +645,7 @@ export function ReaderProvider({
       verseNumbers,
       verseTexts,
       notice,
+      signedIn,
     ],
   );
 

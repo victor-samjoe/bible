@@ -10,6 +10,7 @@ import {
   previousBookOf,
 } from "@/src/domain/bible-navigation";
 import { chapterScope } from "@/src/domain/reader-marks";
+import { loadAccountReading } from "@/src/server/reading/runtime";
 import { ReaderProvider } from "../../reader-state";
 import { ReaderChapter } from "../../reader-chapter";
 import { ReaderTools } from "../../reader-tools";
@@ -130,12 +131,18 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
   const { translation, book: currentBook, chapter: currentChapter, verses } = loaded;
   const reference = canonicalReference(currentBook.name, currentChapter.number);
 
+  // Estado pessoal de quem está lendo. `null` para visitante sem sessão, e
+  // também quando o banco não responde: nos dois casos o leitor funciona e
+  // guarda apenas no navegador, dizendo isso na tela.
+  const account = await loadAccountReading();
+
   return (
     <ReaderProvider
       scope={chapterScope(currentBook.slug, currentChapter.number)}
       reference={reference}
       verseNumbers={verses.map((verse) => verse.number)}
       verseTexts={verses.map((verse) => ({ number: verse.number, content: verse.content }))}
+      account={account}
     >
       <main className="readerShell">
         <header className="readerTop">

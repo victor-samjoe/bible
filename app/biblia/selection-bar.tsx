@@ -13,7 +13,8 @@ import { useReader } from "./reader-state";
 // - somente BLIVRE está disponível; NVI, NTLH e Almeida ficam "Em licenciamento",
 //   sem data prometida;
 // - original e comparação explicam a indisponibilidade em vez de inventar dado;
-// - destaque, nota e progresso são "local nesta sessão", sem conta.
+// - destaque, nota e progresso vão para a conta quando há sessão, e ficam
+//   "local nesta sessão" quando não há. A frase na tela segue o que for verdade.
 
 const colorLabel: Record<HighlightColor, string> = {
   amarelo: "Amarelo",
@@ -46,7 +47,10 @@ export function SelectionBar() {
     closePanel,
     notice,
     setNotice,
+    storage,
   } = useReader();
+
+  const inAccount = storage === "account";
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [draft, setDraft] = useState("");
@@ -203,8 +207,12 @@ export function SelectionBar() {
                   value={draft}
                   maxLength={10000}
                   rows={5}
-                  placeholder="Escreva sua nota. Ela fica local nesta sessão."
-                  aria-label={`Nota local para ${selectionLabel}`}
+                  placeholder={
+                    inAccount
+                      ? "Escreva sua nota. Ela fica guardada na sua conta."
+                      : "Escreva sua nota. Ela fica local nesta sessão."
+                  }
+                  aria-label={`Nota para ${selectionLabel}`}
                   onChange={(event) => setDraft(event.target.value)}
                 />
                 <div className={styles.actions}>
@@ -215,7 +223,7 @@ export function SelectionBar() {
                       setNotice(
                         draft.trim().length === 0
                           ? "Nota vazia: nada guardado."
-                          : `Nota guardada em ${selectionLabel}, local nesta sessão.`,
+                          : `Nota guardada em ${selectionLabel}, ${inAccount ? "na sua conta" : "local nesta sessão"}.`,
                       );
                       closePanel();
                     }}
@@ -228,7 +236,7 @@ export function SelectionBar() {
                     onClick={() => {
                       removeNote();
                       setDraft("");
-                      setNotice("Nota apagada desta sessão.");
+                      setNotice(inAccount ? "Nota apagada da sua conta." : "Nota apagada desta sessão.");
                       closePanel();
                     }}
                   >
@@ -236,8 +244,10 @@ export function SelectionBar() {
                   </button>
                 </div>
                 <p className={styles.local}>
-                  A nota pertence a esta seleção exata ({selectionLabel}) e fica local nesta sessão:
-                  não há conta, não há sincronização e nada é enviado a servidor.
+                  A nota pertence a esta seleção exata ({selectionLabel}).{" "}
+                  {inAccount
+                    ? "Fica guardada na sua conta e acompanha você em outros aparelhos."
+                    : "Fica local nesta sessão: não há conta, não há sincronização e nada é enviado a servidor."}
                 </p>
               </div>
             )}

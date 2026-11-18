@@ -39,6 +39,7 @@ export function ReaderChapter({
     isChapterRead,
     highlightCount,
     totalVerses,
+    storage,
   } = useReader();
 
   const noteAnchors = new Map(chapterNotes.map((note) => [note.anchor, note]));
@@ -89,9 +90,11 @@ export function ReaderChapter({
         );
       })}
       <p className="readerProgress" role="status">
-        {isChapterRead ? "Capítulo marcado como lido nesta sessão." : "Capítulo ainda não marcado como lido."}{" "}
-        {totalVerses} versículos · destaques: {highlightCount} · notas: {chapterNotes.length}. Tudo
-        local nesta sessão, sem conta e sem sincronização.
+        {isChapterRead ? "Capítulo marcado como lido." : "Capítulo ainda não marcado como lido."}{" "}
+        {totalVerses} versículos · destaques: {highlightCount} · notas: {chapterNotes.length}.{" "}
+        {storage === "account"
+          ? "Guardado na sua conta."
+          : "Tudo local nesta sessão, sem conta e sem sincronização."}
       </p>
     </article>
   );

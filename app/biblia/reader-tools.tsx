@@ -61,6 +61,7 @@ export function ReaderTools() {
     reference,
     isChapterRead,
     toggleChapterRead,
+    storage,
   } = useReader();
 
   useEffect(() => {
@@ -182,8 +183,9 @@ export function ReaderTools() {
               </div>
 
               <p className={styles.local}>
-                Tema, tamanho, fonte e espaçamento são aplicados agora e ficam locais nesta sessão
-                deste navegador. Não são salvos em conta e são descartados ao fechar a aba.
+                {storage === "account"
+                  ? "Tema, tamanho, fonte e espaçamento são aplicados agora e guardados na sua conta: voltam assim no próximo acesso, em qualquer aparelho."
+                  : "Tema, tamanho, fonte e espaçamento são aplicados agora e ficam locais nesta sessão deste navegador. Não são salvos em conta e são descartados ao fechar a aba."}
               </p>
             </div>
           </section>
