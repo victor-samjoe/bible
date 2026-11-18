@@ -85,7 +85,7 @@ Subdomínio de envio: **`auth.bibliabereianos.com.br`**
 | `<sel1>._domainkey.auth` | CNAME | `<sel1>.dkim.amazonses.com` | gerado pelo Easy DKIM do SES |
 | `<sel2>._domainkey.auth` | CNAME | `<sel2>.dkim.amazonses.com` | idem |
 | `<sel3>._domainkey.auth` | CNAME | `<sel3>.dkim.amazonses.com` | idem |
-| `bounce.auth` | MX | `feedback-smtp.sa-east-1.amazonses.com` (prioridade 10) | MAIL FROM próprio, para alinhar SPF ao DMARC |
+| `bounce.auth` | MX | `feedback-smtp.us-east-2.amazonses.com` (prioridade 10) | MAIL FROM próprio, para alinhar SPF ao DMARC |
 | `bounce.auth` | TXT | `v=spf1 include:amazonses.com ~all` | exigido pelo MAIL FROM próprio |
 | `_dmarc.auth` | TXT | `v=DMARC1; p=none; rua=mailto:dmarc@<domínio>; fo=1` | começa em `p=none`; endurecer depois de ler relatórios |
 
@@ -104,14 +104,14 @@ Projeto `samjoe-bible-mvp` (ref `exumjnikkrevlyublrfn`, `sa-east-1`).
 
 | Campo do painel | Valor |
 | --- | --- |
-| Host | `email-smtp.sa-east-1.amazonaws.com` |
+| Host | `email-smtp.us-east-2.amazonaws.com` |
 | Porta | `587` (STARTTLS) |
 | Usuário / senha | credencial **SMTP** do SES, que não é a access key da AWS |
 | Sender e-mail | `nao-responda@auth.bibliabereianos.com.br` |
 | Sender name | Bíblia Bereana |
 
-Confirmar no console que o SES está disponível em `sa-east-1`; se não estiver, `us-east-1` é a
-alternativa e o host e o MX de bounce mudam de região junto.
+A região é **us-east-2**, não `sa-east-1`: uma política da organização nega `ses:*` em todas as
+outras regiões dessa conta. O e-mail não precisa estar na mesma região do banco.
 
 Depois do SMTP configurado, dois ajustes em Authentication:
 
@@ -165,3 +165,70 @@ trocar depois pelo SES é mudança de dois minutos, **sem tocar em uma linha de 
 O que não se deve fazer é usar o Google Workspace da empresa como SMTP transacional: o remetente
 teria de ser uma caixa humana, a cota é diária e um código marcado como spam contamina a reputação
 do e-mail corporativo inteiro.
+
+## 8. Estado real em 18/11/2026 — para quem pegar daqui (humano ou agente)
+
+### Como autenticar
+
+A credencial não está no repositório e não precisa estar. Ela vive no perfil do usuário da máquina:
+
+```
+profile:  samjoe-project        (arquivo ~/.aws/config)
+região:   us-east-2             (única permitida nessa conta)
+teste:    aws sts get-caller-identity --profile samjoe-project
+expirou:  aws login --profile samjoe-project      <- precisa de console Windows real
+```
+
+O `aws login` abre o navegador e **não funciona pelo Git Bash** nem por comando sem terminal:
+devolve `stdin is not a tty` ou `expecting a Windows console`. Rodar no PowerShell, em janela
+normal. A sessão dura algumas horas e vale para qualquer ferramenta na máquina.
+
+A conta é um "projeto" AWS de terceiro (não da pessoa jurídica que opera o produto), usada em
+caráter temporário por decisão do proprietário em 18/11/2026, com migração prevista antes do
+lançamento. **Sair do sandbox não migra**: na conta nova será preciso pedir de novo, recriar a
+identidade, gerar novos tokens de DKIM e reescrever os registros de DNS.
+
+### Restrição que surpreende
+
+Uma Service Control Policy da organização **nega `ses:*` fora de us-east-2**:
+
+```
+AccessDeniedException ... explicit deny in a service control policy
+```
+
+Não insista em outra região: não é falta de permissão do papel, é política acima dele.
+
+### O que já existe
+
+| Recurso | Estado |
+| --- | --- |
+| Identidade `auth.bibliabereianos.com.br` | criada, **verificada para envio** |
+| Easy DKIM (RSA 2048) | **SUCCESS**, três CNAME publicados na Cloudflare, sem proxy |
+| MAIL FROM `bounce.auth.bibliabereianos.com.br` | **SUCCESS**, com MX e SPF próprios |
+| DMARC `_dmarc.auth` | `v=DMARC1; p=none; fo=1` — **sem `rua=`**, falta definir a caixa de relatórios |
+| Usuário IAM `ses-smtp-biblia` | criado, política inline `ses-send-only-biblia`, que só permite `SendEmail`/`SendRawEmail` **nessa identidade** |
+| Chave de acesso do usuário IAM | **nenhuma**, de propósito: credencial só é gerada no momento de ligar o SMTP |
+| Saída do sandbox | **não pedida** — 200/dia, 1/s, só para endereços verificados |
+| SMTP no Supabase | **não configurado** — o app segue no remetente embutido |
+
+### Por que o SMTP ainda não foi ligado
+
+O site está no ar. Em sandbox o SES entrega **somente para endereços verificados um a um**, então
+apontar o Supabase para ele agora melhoraria o teste do operador e quebraria o login de qualquer
+visitante real — o remetente embutido, com seu teto de 2/hora, ao menos entrega para todos.
+
+A ordem correta é: pedir saída do sandbox, aguardar aprovação, só então gerar a chave de acesso,
+derivar a senha SMTP e colar no painel do Supabase. Para teste antecipado, verificar um endereço
+específico com `aws sesv2 create-email-identity --email-identity <endereco>` resolve só para ele.
+
+### Já resolvido no painel do Supabase
+
+`site_url`, `uri_allow_list` e `mailer_otp_length` foram corrigidos em 18/11/2026 (HTTP 200). Os
+**templates** continuam intocados: o plano free com remetente padrão recusa alteração, o que foi
+confirmado por eliminação — o mesmo PATCH sem os campos de template passou. Com SMTP próprio a
+edição deve destravar.
+
+### Regra que não muda
+
+Senha SMTP **somente** no Dashboard do Supabase. Nunca em `.env*`, repositório, log, print,
+documento ou mensagem de chat. Se precisar rotacionar, apague a chave antiga no IAM e crie outra.
