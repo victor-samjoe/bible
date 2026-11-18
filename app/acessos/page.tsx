@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { roleLabel } from "@/src/domain/account-access";
-import { authorize } from "@/src/server/auth";
 import { getAccountSession } from "@/src/server/auth/runtime";
 
 export const metadata = {
@@ -22,39 +21,19 @@ export const dynamic = "force-dynamic";
  * promessa falsa, e construir a atribuição sem auditoria seria pior do que não
  * ter a tela.
  */
-const roles = [
-  ["reader", "Leitor", "Acesso à própria conta e à leitura."],
-  ["editor", "Editor", "Fluxo editorial sujeito a revisão."],
-  ["admin", "Administrador", "Concedido somente por operação administrativa."],
-] as const;
-
 export default async function AccessControlPage() {
   const session = await getAccountSession();
   const viewer = session.state === "authenticated" ? session.viewer : null;
-  // Mesmo com sessão, administrar papéis exigiria `admin`: a verificação fica
-  // registrada aqui para a tela não sugerir uma permissão que ninguém tem.
-  const administrates = authorize(viewer, "admin").ok;
 
   return <main className="page" aria-labelledby="access-title">
     <p className="eyebrow">CONTROLE DE ACESSO</p>
     <h1 id="access-title">Acessos da conta.</h1>
-    <p className="muted">
-      Seu papel é conferido no servidor. O navegador não concede permissões.
-    </p>
+    <p className="muted">Seu nível de acesso.</p>
 
     <section className="notice" aria-label="Seu papel">
       {viewer === null
-        ? <><strong>Sem sessão nesta visita.</strong><br />Nenhum papel é atribuído a visitantes, e nenhum dado pessoal é acessível sem conta.</>
-        : <><strong>Seu papel: {roleLabel(viewer.role)}.</strong><br />{administrates
-            ? "A atribuição de papéis a outras pessoas ainda não existe na aplicação: ela depende de trilha de auditoria, que não foi construída."
-            : "Alterar o próprio papel não é possível, por construção: o banco recusa a mudança vinda da aplicação."}</>}
-    </section>
-
-    <section className="role-list" aria-label="Papéis disponíveis">
-      {roles.map(([id, label, description]) => <article key={id}>
-        <div><span className="tag">{viewer?.role === id ? "SEU PAPEL" : "PAPEL"}</span><h2>{label}</h2></div>
-        <p>{description}</p>
-      </article>)}
+        ? <><strong>Sem sessão ativa.</strong><br />Entre para ver seu acesso.</>
+        : <><strong>{roleLabel(viewer.role)}.</strong></>}
     </section>
 
     <p>

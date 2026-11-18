@@ -20,11 +20,6 @@ export const dynamic = "force-dynamic";
  * dispositivos e duas etapas continuam indisponíveis — são recursos que não
  * foram construídos, e dizer o contrário aqui seria inventar.
  */
-const pendingSections = [
-  ["Sincronização", "Notas, destaques e preferências ainda ficam neste navegador."],
-  ["Segurança", "O acesso já é sem senha; a segunda etapa será adicionada depois."],
-] as const;
-
 export default async function ProfilePage() {
   const session = await getAccountSession();
 
@@ -33,7 +28,7 @@ export default async function ProfilePage() {
       <p className={styles.eyebrow}>PERFIL</p>
       {session.state === "authenticated" ? <>
         <h1 id="profile-title">Sua identidade nesta conta.</h1>
-        <p>Guardamos o mínimo: o e-mail que recebe o código de acesso e o papel da conta. Para sair ou solicitar exclusão, use a área de conta.</p>
+        <p>Seus dados de acesso.</p>
         <dl className={styles.identity}>
           <div><dt>E-mail</dt><dd>{session.email === null ? "não informado pelo provedor" : maskEmail(session.email)}</dd></div>
           <div><dt>Papel</dt><dd>{roleLabel(session.viewer.role)}</dd></div>
@@ -42,23 +37,17 @@ export default async function ProfilePage() {
       </> : null}
       {session.state === "degraded" ? <>
         <h1 id="profile-title">Perfil indisponível agora.</h1>
-        <p>Sua identidade foi confirmada, mas o registro de perfil não respondeu. Nenhum dado pessoal é exibido e nenhuma permissão é concedida enquanto isso.</p>
-        <Link className={styles.login} href="/conta">Ir para conta</Link>
+        <p>Tente novamente em alguns minutos.</p>
       </> : null}
       {session.state === "anonymous" ? <>
-        <h1 id="profile-title">Sua área pessoal está protegida.</h1>
-        <p>Não há sessão ativa neste navegador. Entre com o código enviado ao seu e-mail para acessar os dados da conta.</p>
+        <h1 id="profile-title">Seu perfil.</h1>
+        <p>Entre para ver seus dados.</p>
         <Link className={styles.login} href="/entrar">Entrar</Link>
       </> : null}
       {session.state === "unconfigured" ? <>
-        <h1 id="profile-title">Sua área pessoal ainda está protegida.</h1>
-        <p>A identidade não está configurada neste ambiente. Entre quando a autenticação segura estiver disponível para acessar dados pessoais e sincronização.</p>
-        <Link className={styles.login} href="/entrar">Ver acesso à conta</Link>
+        <h1 id="profile-title">Seu perfil.</h1>
+        <Link className={styles.login} href="/entrar">Entrar</Link>
       </> : null}
     </section>
-
-    <ul className="profile-availability" aria-label="Recursos em evolução">
-      {pendingSections.map(([title, text]) => <li key={title}><strong>{title}</strong><span>{text}</span></li>)}
-    </ul>
   </main>;
 }

@@ -8,14 +8,12 @@ export const metadata = {
 export default function MaterialsPage() {
   return <main className="page">
       <p className="eyebrow">CATÁLOGO EDITORIAL</p>
-      <h1>Materiais para apoiar a leitura.</h1>
-      <p className="muted">Estas são fichas editoriais locais. A publicação de conteúdo, fontes e direitos continua sujeita à revisão.</p>
+      <h1>Materiais.</h1>
       <section className="catalog" aria-label="Materiais editoriais">
         {materialFixtures.map((material) => <article key={material.id} className="study-card">
           <span className="tag">{material.access === "free" ? "LIVRE ·" : "EM PREPARAÇÃO ·"} {material.format.toUpperCase()}</span>
           <h2>{material.title}</h2>
           <p>{material.summary}</p>
-          <p className="muted">Tema: {material.theme}</p>
         </article>)}
       </section>
     </main>;

@@ -7,7 +7,6 @@ import {
   appAreas,
   isAreaActive,
   isAreaAvailable,
-  unavailableReason,
 } from "@/src/domain/app-navigation";
 import styles from "./app-shell.module.css";
 
@@ -81,23 +80,19 @@ export function AppShell({ children }: { children: ReactNode }) {
         aria-label="Áreas do aplicativo"
       >
         <div className={styles.sideHeader}>
-          <span className={styles.sideBrand}>
-            <b>Bíblia Bereana</b>
-            <span>Leitura e estudo</span>
-          </span>
+          <b className={styles.sideBrand}>Bíblia Bereana</b>
           <button
             type="button"
             ref={closeButton}
             className={styles.closeButton}
             onClick={() => setOpen(false)}
           >
-            <span aria-hidden="true">×</span> Fechar
+            <span aria-hidden="true">×</span><span className={styles.srOnly}>Fechar menu</span>
           </button>
         </div>
 
         <ul className={styles.areas}>
           {appAreas.map((area) => {
-            const reason = unavailableReason(area);
             const active = isAreaActive(pathname, area);
             return (
               <li key={area.id}>
@@ -110,22 +105,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                     {area.label}
                   </Link>
                 ) : (
-                  <div className={`${styles.area} ${styles.areaOff}`}>
-                    <b>
-                      {area.label} <em>indisponível</em>
-                    </b>
-                    <small>{reason}</small>
-                  </div>
+                  <div className={`${styles.area} ${styles.areaOff}`}>{area.label}</div>
                 )}
               </li>
             );
           })}
         </ul>
-
-        <p className={styles.sideNote}>
-          As áreas marcadas como indisponíveis dependem de autenticação ou de licença ainda não
-          liberada. Nada nesta tela cria conta ou cobra.
-        </p>
       </nav>
 
       {/* `tabIndex` negativo deixa o atalho "ir para o conteúdo" mover o foco de
