@@ -69,6 +69,7 @@ async function verifySblgnt(): Promise<boolean> {
   let verses = 0;
   let tokens = 0;
   let issues = 0;
+  let empty = 0;
   for (const file of files) {
     // "61-Mt.txt" -> sigla "Mt", que é o código usado nas referências do arquivo.
     const code = file.replace(/^\d+-/, "").replace(/\.txt$/, "");
@@ -76,6 +77,10 @@ async function verifySblgnt(): Promise<boolean> {
     verses += result.book.verses.length;
     tokens += countTokens(result.book);
     issues += result.issues.length;
+    if (result.book.verses.length === 0) {
+      empty += 1;
+      console.log(`  FALHA ${file}: nenhum versículo reconhecido`);
+    }
     if (result.issues.length > 0) {
       console.log(`  ${file}: ${result.issues.length} linha(s) recusada(s)`);
       for (const issue of result.issues.slice(0, 3)) {
@@ -84,8 +89,10 @@ async function verifySblgnt(): Promise<boolean> {
     }
   }
   console.log(`  livros: ${files.length} · versículos: ${verses} · tokens: ${tokens}`);
-  console.log(`  checksums divergentes: ${bad} · linhas recusadas: ${issues}`);
-  return bad === 0 && issues === 0;
+  console.log(
+    `  checksums divergentes: ${bad} · linhas recusadas: ${issues} · livros sem texto: ${empty}`,
+  );
+  return bad === 0 && issues === 0 && empty === 0;
 }
 
 async function verifyMorphhb(): Promise<boolean> {
@@ -101,11 +108,18 @@ async function verifyMorphhb(): Promise<boolean> {
     console.log("  extração ausente: descompacte o tar.gz em extracted/ antes de verificar");
     return false;
   }
-  const files = (await readdir(wlc)).filter((name) => name.endsWith(".xml")).sort();
+  // `VerseMap.xml` não é livro: é o catálogo de diferenças de versificação entre
+  // WLC e KJV que a própria fonte distribui no mesmo diretório. Contá-lo como
+  // livro faria o relatório dizer 40 livros onde o corpus hebraico tem 39.
+  const NOT_A_BOOK = new Set(["VerseMap.xml"]);
+  const files = (await readdir(wlc))
+    .filter((name) => name.endsWith(".xml") && !NOT_A_BOOK.has(name))
+    .sort();
   let verses = 0;
   let tokens = 0;
   let morphemes = 0;
   let issues = 0;
+  let empty = 0;
   for (const file of files) {
     const code = file.replace(/\.xml$/, "");
     const result = parseMorphhbBook(await readFile(join(wlc, file), "utf8"), code);
@@ -113,12 +127,23 @@ async function verifyMorphhb(): Promise<boolean> {
     tokens += countHebrewTokens(result);
     morphemes += countHebrewMorphemes(result);
     issues += result.issues.length;
-    if (result.issues.length > 0) console.log(`  ${file}: ${result.issues.length} problema(s)`);
+    // Arquivo de livro que não rendeu versículo nenhum é falha de leitura, não
+    // "livro vazio": precisa aparecer como pendência e não passar batido.
+    if (result.verses.length === 0) {
+      empty += 1;
+      console.log(`  FALHA ${file}: nenhum versículo reconhecido`);
+    }
+    if (result.issues.length > 0) {
+      console.log(`  ${file}: ${result.issues.length} problema(s)`);
+      for (const issue of result.issues.slice(0, 3)) {
+        console.log(`    ${issue.osisId}: ${issue.reason}`);
+      }
+    }
   }
   console.log(`  livros: ${files.length} · versículos: ${verses}`);
   console.log(`  tokens: ${tokens} · morfemas: ${morphemes}`);
-  console.log(`  checksums divergentes: ${bad} · problemas: ${issues}`);
-  return bad === 0;
+  console.log(`  checksums divergentes: ${bad} · problemas: ${issues} · livros sem texto: ${empty}`);
+  return bad === 0 && empty === 0;
 }
 
 async function verifyWlcPackage(): Promise<boolean> {

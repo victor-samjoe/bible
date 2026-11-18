@@ -1,6 +1,6 @@
 # Fontes de idiomas originais — Bíblia Bereana
 
-**Estado:** pesquisa documental; nenhuma fonte abaixo está marcada como importada ou aprovada para produção. Antes de baixar/importar, registrar URL exata, release/tag, data, licença copiada, checksum SHA-256 dos bytes e revisor humano.
+**Estado:** as três fontes foram **coletadas e conferidas por checksum** (ver "Proveniência da coleta"), e **nenhuma está aprovada para exibição no app**. A aprovação é humana e não existe ainda: nada de hebraico, grego, lema ou morfologia aparece em qualquer tela. Antes de baixar/importar, registrar URL exata, release/tag, data, licença copiada, checksum SHA-256 dos bytes e revisor humano.
 
 ## Princípio de separação
 
@@ -8,11 +8,11 @@ Texto-base, segmentação, lema/morfologia, glossário/definições, Strong's, t
 
 ## Candidatos confirmados documentalmente
 
-| Fonte | Escopo proposto | Licença/evidência | Situação |
+| Fonte | Escopo proposto | Licença/evidência | Situação (atualizada em 2026-11-17) |
 | --- | --- | --- | --- |
-| [Westminster Leningrad Codex (WLC)](https://open.bible/bibles/westminster-leningrad-codex) | Texto hebraico do AT, vocalização massorética | A página do provedor o classifica como **Public Domain**, identifica Westminster Hebrew Institute/United Bible Societies e oferece USX/USFM/Word. | Candidato para texto; ainda requer pin de arquivo e checksum. |
-| [Open Scriptures Hebrew Bible / MorphHB](https://github.com/openscriptures/morphhb) | Hebraico, segmentação, lema e morfologia | O `LICENSE.md` declara base WLC e **CC BY 4.0**. A atribuição pedida é: `Original work of the Open Scriptures Hebrew Bible available at https://github.com/openscriptures/morphhb`. | Candidato para dados linguísticos do AT; não importar sem release/tag fixado. |
-| [SBL Greek New Testament (SBLGNT)](https://sblgnt.com/) | Texto grego koiné do NT | O site do SBLGNT declara **CC BY 4.0** e disponibiliza download; o contrato exige atribuição, link da licença, indicação de modificações e preservação de avisos aplicáveis. | Candidato para texto do NT; não inclui, por si só, licença de léxico/morfologia. |
+| [Westminster Leningrad Codex (WLC)](https://open.bible/bibles/westminster-leningrad-codex) | Texto hebraico do AT, vocalização massorética | A página do provedor o classifica como **Public Domain**, identifica Westminster Hebrew Institute/United Bible Societies e oferece USX/USFM/Word. | Coletado com checksum conferido; guardado como evidência do texto-base. Não aprovado para exibição. |
+| [Open Scriptures Hebrew Bible / MorphHB](https://github.com/openscriptures/morphhb) | Hebraico, segmentação, lema e morfologia | O `LICENSE.md` declara base WLC e **CC BY 4.0**. A atribuição pedida é: `Original work of the Open Scriptures Hebrew Bible available at https://github.com/openscriptures/morphhb`. | Coletado na tag `v.2.2` com checksum conferido; é a origem do texto e da morfologia hebraicos. Não aprovado para exibição. |
+| [SBL Greek New Testament (SBLGNT)](https://sblgnt.com/) | Texto grego koiné do NT | O site do SBLGNT declara **CC BY 4.0** e disponibiliza download; o contrato exige atribuição, link da licença, indicação de modificações e preservação de avisos aplicáveis. | Coletado (27 arquivos) com checksum conferido; somente texto, sem aparato nem morfologia. Não aprovado para exibição. |
 
 ### Atribuições de produto
 
@@ -68,6 +68,53 @@ reading_progress(id, user_id, translation_edition_id, canonical_ref, completed_a
 - Contexto produzido por IA é rotulado como tal, com fontes, escopo e possibilidade de erro; nunca apresentado como tradução ou dado filológico primário.
 - Busca, notas, cores e progresso exigem identidade autenticada para sincronização; sem login, somente armazenamento local explícito.
 - Auditoria confirma direitos, checksum, atribuição, versificação e amostra de UI antes de liberar cada idioma/versão.
+
+## Proveniência da coleta (tarefa C14)
+
+Os bytes oficiais ficam em `data/sources/originals/<id>/`, que o `.gitignore`
+mantém **fora do Git e fora do bundle**. Como os `MANIFEST.json` também não são
+versionados, o registro de proveniência exigido pela tarefa fica aqui, em arquivo
+versionado. Coleta em **2026-11-17** (`collected_at` `2026-11-17T22:44:57.379Z`).
+
+| Fonte | Ativo que fornece | Versão fixada | Licença declarada |
+| --- | --- | --- | --- |
+| `wlc-ebible` | texto hebraico (evidência de domínio público do texto-base) | pacote USFM corrente do eBible na data da coleta — **sem tag**, fixado só pelo SHA-256 | Domínio público, declarado pela fonte |
+| `oshb-morphhb` | texto + segmentação, lema e morfologia hebraicos | tag `v.2.2`, commit `6a5db284c715c18b239422e57bb89684e6a19f00` | CC BY 4.0 (base WLC) |
+| `sblgnt` | texto grego do NT | arquivos correntes de `sblgnt.com/download` na data da coleta — **sem tag**, fixados só pelo SHA-256 | CC BY 4.0 |
+
+### Checksums verificados
+
+Reconferidos byte a byte em 2026-11-17 contra os manifestos: **32 de 32 arquivos
+conferem** (2 arquivos compactados, 3 evidências de licença e os 27 arquivos de
+texto do SBLGNT).
+
+| Arquivo | SHA-256 |
+| --- | --- |
+| `wlc-ebible/hebwlc_usfm.zip` | `7c28c57832c0a1ed3a5c35604c7a99c3fb76b99294466cff3ac3ef0a08838fd3` |
+| `wlc-ebible/EVIDENCIA-LICENCA.html` | `4feb87b2f89ff4c34457d5c7957e2cf20798a3573e4797b07985fb45dd3e2e2d` |
+| `oshb-morphhb/morphhb-v.2.2.tar.gz` | `e8646225bccd145d8cb899eadf6edd705102ce6f39d1459175721d36863758c8` |
+| `oshb-morphhb/LICENSE.md` | `9bf4a2890c25372e4c1dc750d550bfb4eacfbfcb63c53123b0628159370d1878` |
+| `sblgnt/LICENCA.html` | `837f5a5e3f0454134aae2e95141b4d8b887cdc6c8e536bf2fe204d5b7ad4ad75` |
+
+Os 27 SHA-256 dos arquivos de texto do SBLGNT ficam em
+`data/sources/originals/sblgnt/MANIFEST.json`, com a URL oficial de cada um, e
+são reconferidos por `scripts/verify-original-corpus.ts`.
+
+### Limitação de versionamento, registrada de propósito
+
+WLC (eBible) e SBLGNT (sblgnt.com) são servidos como **arquivos correntes, sem
+release nem tag**. Logo, o único pino real dessas duas é o SHA-256 acima: se a
+fonte republicar o arquivo, o checksum deixa de conferir e a verificação falha
+fechada — o que é o comportamento desejado, mas significa que não existe como
+rebaixar para uma versão anterior pela própria fonte. Só o MorphHB tem tag e
+commit verdadeiros.
+
+### Qual digitalização do WLC está em uso
+
+O texto hebraico que os importadores leem vem do **OSIS do MorphHB**, não do USFM
+do eBible. Os dois são digitalizações do mesmo códice; misturá-las sob o mesmo
+rótulo produziria texto de procedência ambígua. O pacote do eBible fica guardado
+como evidência independente de que o texto-base é de domínio público.
 
 ## Fontes consultadas
 

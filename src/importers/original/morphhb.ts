@@ -119,6 +119,13 @@ export function parseMorphhbBook(xml: string, bookCode: string): MorphhbParseRes
       issues.push({ osisId, reason: "osisID fora do formato Livro.Capítulo.Versículo" });
       continue;
     }
+    // O livro declarado no arquivo manda. Sem esta conferência, um versículo de
+    // outro livro seria gravado com o `bookCode` recebido — ou seja, com uma
+    // referência que a fonte não afirma. Relatar, nunca corrigir em silêncio.
+    if (parts[0] !== bookCode) {
+      issues.push({ osisId, reason: `livro ${String(parts[0])} diverge do arquivo ${bookCode}` });
+      continue;
+    }
     if (seen.has(osisId)) {
       issues.push({ osisId, reason: "versículo repetido" });
       continue;

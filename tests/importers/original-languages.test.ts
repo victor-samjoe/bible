@@ -155,6 +155,18 @@ describe("MorphHB: parser de texto, lema e morfologia hebraicos", () => {
     ]);
   });
 
+  it("recusa versículo cujo livro diverge do arquivo, em vez de reetiquetar", () => {
+    const foreign = `<osis>
+      <verse osisID="Te.1.1"><w lemma="1" morph="H" id="a">aa</w></verse>
+      <verse osisID="Outro.1.1"><w lemma="1" morph="H" id="b">bb</w></verse>
+    </osis>`;
+    const result = parseMorphhbBook(foreign, "Te");
+    expect(result.verses.map((verse) => verse.canonicalRef)).toEqual(["Te 1:1"]);
+    expect(result.issues).toEqual([
+      { osisId: "Outro.1.1", reason: "livro Outro diverge do arquivo Te" },
+    ]);
+  });
+
   it("é idempotente e ordena por capítulo e versículo", () => {
     const shuffled = `<osis>
       <verse osisID="Te.2.1"><w lemma="1" morph="H" id="a">bb</w></verse>

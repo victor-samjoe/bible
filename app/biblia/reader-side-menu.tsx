@@ -2,20 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { appAreas, isAreaAvailable, unavailableReason } from "@/src/domain/app-navigation";
 import styles from "./reader-side-menu.module.css";
 
-const entries = [
-  // "Início" é o painel da tarefa C15: ele é a única entrada acrescentada aqui,
-  // para o painel ser alcançável a partir do leitor.
-  { href: "/inicio", label: "Início" },
-  { href: "/biblia", label: "Bíblia" },
-  { href: "/estudos", label: "Estudos" },
-  { href: "/materiais", label: "Materiais" },
-  { href: "/notas", label: "Minhas notas" },
-  { href: "/cursos", label: "Cursos" },
-  { href: "/planos", label: "Planos" },
-  { href: "/perfil", label: "Perfil" },
-] as const;
+// As entradas vêm de `src/domain/app-navigation.ts` (tarefa C15), que é a mesma
+// lista usada pela casca do aplicativo. Antes elas estavam escritas à mão aqui e
+// "Minhas notas" apontava para `/notas`, rota que não existe: o link dava 404.
+// Área sem página publicada agora aparece como texto com o motivo, não como
+// link — a mesma regra da casca, para o leitor não prometer o que não existe.
 
 /** Menu de navegação principal. Ele abre pelo botão e também pelo gesto para a
  * direita no texto, disparado pelo ReaderChapter. */
@@ -48,9 +42,16 @@ export function ReaderSideMenu() {
               <button type="button" onClick={() => setOpen(false)} aria-label="Fechar menu">×</button>
             </header>
             <nav>
-              {entries.map((entry) => (
-                <Link key={entry.href} href={entry.href} onClick={() => setOpen(false)}>{entry.label}</Link>
-              ))}
+              {appAreas.map((area) =>
+                isAreaAvailable(area) ? (
+                  <Link key={area.id} href={area.href} onClick={() => setOpen(false)}>{area.label}</Link>
+                ) : (
+                  <span key={area.id} className={styles.off}>
+                    {area.label} <em>indisponível</em>
+                    <small>{unavailableReason(area)}</small>
+                  </span>
+                ),
+              )}
             </nav>
           </aside>
         </div>
