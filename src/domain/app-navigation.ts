@@ -30,10 +30,8 @@ const available: AreaAvailability = { kind: "available" };
  * Ordem da fila C15: Início, Bíblia, Materiais, Notas, Estudos, Cursos, Planos
  * e Perfil.
  *
- * `notas` continua indisponível porque depende de Auth Supabase real (C5/C10):
- * não existe `app/notas`, e linkar para lá daria 404. `perfil` passou a
- * disponível quando a frente C17b publicou `app/perfil/page.tsx` — a página
- * existe e é honesta sobre exigir autenticação.
+ * Notas e perfil têm páginas próprias: ambas exibem apenas dados que já existem
+ * (na conta ou na sessão atual) e não prometem recursos ainda ausentes.
  */
 export const appAreas: readonly AppArea[] = [
   {
@@ -61,12 +59,8 @@ export const appAreas: readonly AppArea[] = [
     id: "notas",
     label: "Notas",
     href: "/notas",
-    description: "Biblioteca de notas e destaques da conta.",
-    availability: {
-      kind: "unavailable",
-      reason:
-        "Exige conta autenticada para guardar e sincronizar. Hoje notas e destaques ficam apenas nesta sessão do navegador, dentro do leitor.",
-    },
+    description: "Biblioteca das anotações feitas durante a leitura.",
+    availability: available,
   },
   {
     id: "estudos",

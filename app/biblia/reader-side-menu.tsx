@@ -7,9 +7,8 @@ import styles from "./reader-side-menu.module.css";
 
 // As entradas vêm de `src/domain/app-navigation.ts` (tarefa C15), que é a mesma
 // lista usada pela casca do aplicativo. Antes elas estavam escritas à mão aqui e
-// "Minhas notas" apontava para `/notas`, rota que não existe: o link dava 404.
-// Área sem página publicada agora aparece como texto com o motivo, não como
-// link — a mesma regra da casca, para o leitor não prometer o que não existe.
+// A lista é a mesma da casca do aplicativo. Assim, uma área só aparece como
+// link no leitor quando existe uma página publicada para ela.
 
 /** Menu de navegação principal. Ele abre pelo botão e também pelo gesto para a
  * direita no texto, disparado pelo ReaderChapter. */

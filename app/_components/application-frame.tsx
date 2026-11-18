@@ -40,7 +40,7 @@ export function ApplicationFrame({ children }: { children: ReactNode }) {
 
   const startTransition = (event: MouseEvent<HTMLDivElement>) => {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    const anchor = (event.target as HTMLElement).closest("a[href]");
+    const anchor = (event.target as HTMLElement).closest<HTMLAnchorElement>("a[href]");
     if (!anchor || anchor.target || anchor.hasAttribute("download")) return;
     const destination = new URL(anchor.href, window.location.href);
     if (destination.origin !== window.location.origin || destination.pathname === pathname) return;
