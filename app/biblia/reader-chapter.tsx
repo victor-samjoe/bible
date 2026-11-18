@@ -43,7 +43,14 @@ export function ReaderChapter({
 
   return (
     <article className="scripture" aria-labelledby="chapter-title" onTouchStart={(event) => { const touch = event.touches[0]; touchStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null; }} onTouchEnd={(event) => { const start = touchStart.current; const touch = event.changedTouches[0]; touchStart.current = null; if (!start || !touch || Math.abs(touch.clientY - start.y) >= 55) return; if (touch.clientX - start.x > 80) window.dispatchEvent(new Event("reader-open-menu")); if (start.x - touch.clientX > 80) window.dispatchEvent(new Event("reader-open-tools")); }}>
-      <p className="scriptureMeta">{translationName.toUpperCase()}</p>
+      <button
+        type="button"
+        className="scriptureMeta translationLink"
+        onClick={() => window.dispatchEvent(new Event("reader-open-versions"))}
+        aria-label={`Mudar versão, atual ${translationName}`}
+      >
+        {translationName.toUpperCase()}
+      </button>
       <h1 id="chapter-title" style={{ textAlign: "center" }}>
         {bookName} <span>{chapterNumber}</span>
       </h1>

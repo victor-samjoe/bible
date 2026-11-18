@@ -2,7 +2,7 @@
    variáveis --reader-* e fallback, para o app não trocar de identidade entre
    telas. No celular a navegação é gaveta; a partir de 900px ela fica fixa. */
 
-.shell{min-height:100svh;background:var(--reader-page,#171819);color:var(--reader-text,#f5f2ea);font-family:Arial,Helvetica,sans-serif}
+.shell{min-height:100svh;background:var(--reader-page,#171819);color:var(--reader-text,#f5f2ea);font-family:var(--reader-fontFamily,Georgia,"Times New Roman",serif);line-height:var(--reader-lineHeight,1.55)}
 
 .skip{position:absolute;left:-9999px;top:8px;z-index:30;padding:10px 14px;border-radius:999px;background:#d6aa4f;color:#17231e;font-weight:800}
 .skip:focus{left:12px}

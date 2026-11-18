@@ -19,14 +19,12 @@ export function ChapterPicker({
   currentChapter,
   totalChapters,
   chapterCounts,
-  translationCode,
 }: {
   books: readonly NavigationBook[];
   currentBook: NavigationBook;
   currentChapter: number;
   totalChapters: number;
   chapterCounts: Readonly<Record<string, number>>;
-  translationCode: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -68,6 +66,12 @@ export function ChapterPicker({
     return () => window.removeEventListener("keydown", onKey);
   }, [close, open]);
 
+  useEffect(() => {
+    const openVersions = () => setVersionsOpen(true);
+    window.addEventListener("reader-open-versions", openVersions);
+    return () => window.removeEventListener("reader-open-versions", openVersions);
+  }, []);
+
   return (
     <>
       <div className="readerPick">
@@ -86,15 +90,6 @@ export function ChapterPicker({
           onClick={() => (open === "capitulo" ? close() : setOpen("capitulo"))}
         >
           {currentChapter}
-        </button>
-        <button
-          type="button"
-          className="readerTranslation"
-          aria-expanded={versionsOpen}
-          onClick={() => setVersionsOpen((value) => !value)}
-          style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
-        >
-          Bíblia Livre · {translationCode}
         </button>
       </div>
 

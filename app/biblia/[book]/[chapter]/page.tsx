@@ -95,8 +95,8 @@ export async function generateMetadata({
   }
   const reference = canonicalReference(loaded.chapter.book.name, loaded.chapter.chapter.number);
   return {
-    title: `${reference} · Bíblia Livre (BLIVRE) | Bíblia Bereana`,
-    description: `${reference} na tradução Bíblia Livre (BLIVRE), licenciada em Creative Commons Atribuição 4.0 Brasil.`,
+    title: `${reference} | Bíblia Bereana`,
+    description: `${reference} para leitura e estudo na Bíblia Bereana.`,
     alternates: { canonical: chapterPath(loaded.chapter.book.slug, loaded.chapter.chapter.number) },
   };
 }
@@ -144,7 +144,6 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
             currentChapter={currentChapter.number}
             totalChapters={totalChapters}
             chapterCounts={loaded.chapterCounts}
-            translationCode="BLIVRE"
           />
           <div className="readerActions" aria-label="Ações do capítulo">
             <nav aria-label="Navegação rápida entre capítulos" style={{ display: "flex", gap: 4 }}>

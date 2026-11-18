@@ -1,0 +1,20 @@
+/* Preferências do leitor são a régua tipográfica de todo o aplicativo. */
+body {
+  font-family: var(--reader-fontFamily, Georgia, "Times New Roman", serif);
+  font-size: var(--reader-fontSize, 1rem);
+  line-height: var(--reader-lineHeight, 1.55);
+}
+
+.scriptureMeta.translationLink {
+  display: block;
+  width: fit-content;
+  margin: 0 auto 20px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: center;
+}
+
+.translationLink:hover { text-decoration: underline; text-underline-offset: 4px; }
+.translationLink:focus-visible { outline: 2px solid #d6aa4f; outline-offset: 5px; }
