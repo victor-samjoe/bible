@@ -5,11 +5,12 @@ export default function BibliaLoading() {
       className="readerShell"
       aria-busy="true"
       aria-label="Carregando leitura"
-      style={{ minHeight: "100svh", background: "#000", display: "grid", placeItems: "center" }}
+      style={{ minHeight: "100svh", background: "#191a1b", display: "grid", placeItems: "center", animation: "readerLoadingIn 180ms ease-out" }}
     >
-      <div style={{ display: "grid", justifyItems: "center", gap: 12, color: "#c9c4ba", fontFamily: "Arial, Helvetica, sans-serif", fontSize: ".82rem" }}>
-        <span aria-hidden="true" style={{ width: 30, height: 30, border: "3px solid #555", borderTopColor: "#d6aa4f", borderRadius: "50%", animation: "spin .7s linear infinite" }} />
-        Carregando capítulo
+      <style>{`@keyframes readerLoadingIn{from{opacity:0}to{opacity:1}}@keyframes readerLoadingPulse{50%{opacity:.45}}`}</style>
+      <div style={{ display: "grid", justifyItems: "center", gap: 10, color: "#c9c4ba", fontFamily: "Arial, Helvetica, sans-serif", fontSize: ".8rem", letterSpacing: ".03em" }}>
+        <span aria-hidden="true" style={{ width: 38, height: 1, background: "#d6aa4f", animation: "readerLoadingPulse 1.1s ease-in-out infinite" }} />
+        Preparando leitura
       </div>
     </main>
   );

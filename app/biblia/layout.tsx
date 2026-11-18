@@ -17,6 +17,7 @@ import "./reader-theme-surfaces.css";
 export default function BibliaLayout({ children }: { children: ReactNode }) {
   return (
     <>
+      <style>{`html,body{background:#191a1b;color-scheme:dark}`}</style>
       <ReadingPointer />
       {children}
     </>
