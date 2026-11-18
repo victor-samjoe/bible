@@ -1,7 +1,7 @@
 /* Painel de início (C15). Mesma superfície e mesmas variáveis --reader-* das
    outras telas de app, para a identidade não mudar entre leitor e painel. */
 
-.page{padding:26px clamp(18px,4vw,56px) 60px;max-width:1040px}
+.page{padding:26px clamp(18px,4vw,56px) 60px;max-width:1040px;margin:0 auto}
 
 .hero{max-width:680px;margin-bottom:34px}
 .eyebrow{margin:0 0 10px;color:#d6aa4f;font-weight:800;font-size:.72rem;letter-spacing:.12em}

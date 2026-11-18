@@ -36,23 +36,23 @@ export default async function LoginPage({
   // Único erro que a query carrega, e sem detalhe: ver `app/auth/callback/route.ts`.
   const linkFailed = (await searchParams).erro === "link";
 
-  return <main className={styles.page}>
+  return <main className={styles.page} data-compact-page="login">
     <section className={styles.content} aria-labelledby="login-title">
       <p className={styles.eyebrow}>ÁREA PESSOAL</p>
       {configured ? <>
-        <h1 id="login-title">Entre com um código enviado ao seu e-mail.</h1>
-        <p className={styles.lede}>Sem senha: você recebe um código de uso único e entra com ele. A sessão sincroniza preferências, notas e leituras entre dispositivos.</p>
+        <h1 id="login-title">Entre na sua conta.</h1>
+        <p className={styles.lede}>Informe seu e-mail para receber um código de acesso. Sem senha.</p>
         {linkFailed ? <div className={styles.notice} role="status">
           <strong>O link do e-mail não pôde ser usado.</strong> Ele vale uma vez e expira em poucos minutos. Peça um novo código abaixo.
         </div> : null}
         <AccessForm
           action={submitAccess.bind(null, "sign_in")}
           requestLabel="Receber código de acesso"
-          requestHint="Usamos seu e-mail apenas para enviar o código e identificar sua conta. Se ainda não houver conta para este endereço, use “Criar conta”."
+          requestHint="Usamos seu e-mail apenas para enviar o código. Ainda não tem conta? Crie uma em seguida."
         />
       </> : <>
-        <h1 id="login-title">Entre quando a conta estiver pronta.</h1>
-        <p className={styles.lede}>Estamos preparando um acesso seguro para sincronizar preferências, notas e leituras entre dispositivos.</p>
+        <h1 id="login-title">Acesso em preparação.</h1>
+        <p className={styles.lede}>A conta permitirá sincronizar sua leitura entre dispositivos.</p>
         <div className={styles.notice} role="status" id="integracao-pendente">
           <strong>Integração de autenticação pendente.</strong> Nenhum e-mail, senha ou código é solicitado ou enviado nesta etapa.
         </div>

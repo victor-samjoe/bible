@@ -21,16 +21,14 @@ export const dynamic = "force-dynamic";
  * foram construídos, e dizer o contrário aqui seria inventar.
  */
 const pendingSections = [
-  ["Preferências sincronizadas", "Tema, fonte e espaçamento continuam apenas na sessão atual do leitor; a sincronização por conta ainda não foi construída."],
-  ["Leituras e notas", "Notas, destaques e capítulos lidos ainda ficam no navegador e não são vinculados à conta."],
-  ["Dispositivos", "A lista de dispositivos conectados não existe: o provedor de identidade não expõe essa informação nesta integração."],
-  ["Segurança e duas etapas", "A verificação em duas etapas não foi construída. Hoje o acesso já é sem senha, por código de uso único no e-mail."],
+  ["Sincronização", "Notas, destaques e preferências ainda ficam neste navegador."],
+  ["Segurança", "O acesso já é sem senha; a segunda etapa será adicionada depois."],
 ] as const;
 
 export default async function ProfilePage() {
   const session = await getAccountSession();
 
-  return <main className={styles.page}>
+  return <main className={styles.page} data-compact-page="profile">
     <section className={styles.intro} aria-labelledby="profile-title">
       <p className={styles.eyebrow}>PERFIL</p>
       {session.state === "authenticated" ? <>
@@ -59,14 +57,8 @@ export default async function ProfilePage() {
       </> : null}
     </section>
 
-    <section className={styles.grid} aria-label="Recursos de perfil ainda não construídos">
-      {pendingSections.map(([title, text]) => <article className={styles.card} key={title}>
-        <span>NÃO DISPONÍVEL</span><h2>{title}</h2><p>{text}</p><button type="button" disabled aria-disabled="true">Indisponível</button>
-      </article>)}
-    </section>
-
-    <p className={styles.footnote}>
-      Esta página mostra apenas dados da sua própria conta e nunca os de outra pessoa. Sem sessão, nada é exibido.
-    </p>
+    <ul className="profile-availability" aria-label="Recursos em evolução">
+      {pendingSections.map(([title, text]) => <li key={title}><strong>{title}</strong><span>{text}</span></li>)}
+    </ul>
   </main>;
 }

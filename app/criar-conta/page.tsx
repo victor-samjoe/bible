@@ -26,12 +26,12 @@ export default async function CreateAccountPage() {
   return <main className="page" aria-labelledby="create-account-title">
     <p className="eyebrow">CONTA</p>
     {configured ? <>
-      <h1 id="create-account-title">Crie sua conta com um código enviado por e-mail.</h1>
-      <p className="muted">Sem senha. Informe o e-mail, receba um código de uso único e confirme. Guardamos apenas o endereço de e-mail e o papel da conta.</p>
+      <h1 id="create-account-title">Crie sua conta.</h1>
+      <p className="muted">Sem senha: confirme um código enviado ao seu e-mail.</p>
       <AccessForm
         action={submitAccess.bind(null, "sign_up")}
         requestLabel="Enviar código de criação"
-        requestHint="Ao confirmar o código, a conta é criada com papel de leitor. Você pode solicitar a exclusão da conta a qualquer momento em “Conta”."
+        requestHint="A conta começa como leitora. Você pode solicitar exclusão a qualquer momento."
       />
     </> : <>
       <h1 id="create-account-title">Crie sua conta quando o acesso seguro estiver ativo.</h1>

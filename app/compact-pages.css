@@ -1,0 +1,50 @@
+/* Camada compacta para áreas do aplicativo fora do leitor. A leitura bíblica
+   mantém suas próprias medidas e não recebe estas regras. */
+
+[data-compact-page]{max-width:760px;margin:0 auto}
+[data-compact-page] h1{font-size:clamp(2.15rem,4.8vw,3.55rem);line-height:1;letter-spacing:-.045em;margin-bottom:12px}
+[data-compact-page] .muted{font-size:.95rem;line-height:1.55}
+
+/* Catálogos, planos e páginas legais usam `.page`; esta regra alcança essas
+   rotas sem interferir no leitor, que não usa essa classe global. */
+.page{max-width:780px;padding:48px 24px 64px}
+.page h1{font-size:clamp(2.15rem,4.8vw,3.65rem);line-height:1;letter-spacing:-.045em;margin-bottom:15px}
+.page .muted{font-size:.95rem;line-height:1.55}
+.page .catalog{gap:10px;margin-top:28px}.page .study-card{padding:18px}.page .study-card h2{font-size:1.35rem;line-height:1.15;margin:6px 0}.page .tag{font-size:.66rem}
+.page .notice{padding:13px 15px;border-left-width:3px;font-size:.9rem;line-height:1.5}.page .plan-grid{gap:10px;margin-top:26px}.page .plan{padding:20px}.page .plan h2{font-size:1.5rem}.page .price{font-size:2.2rem;margin-top:12px}
+
+[data-compact-page="login"]{padding-top:42px!important;padding-bottom:64px!important}
+[data-compact-page="login"] [class*="content"]{max-width:520px}
+[data-compact-page="login"] [class*="eyebrow"]{font-size:.66rem;margin-bottom:10px}
+[data-compact-page="login"] [class*="content"] h1{font-size:clamp(2.2rem,5vw,3.5rem);line-height:1;letter-spacing:-.045em;margin-bottom:12px}
+[data-compact-page="login"] [class*="lede"]{font-size:1rem;line-height:1.55;margin-bottom:22px}
+[data-compact-page="login"] [class*="notice"]{padding:13px 15px;border-left-width:3px;font-size:.92rem}
+[data-compact-page="login"] [class*="links"]{margin-top:22px;gap:14px}
+
+[data-compact-page="account"],[data-compact-page="profile"]{padding-top:38px!important;padding-bottom:56px!important}
+[data-compact-page="account"] [class*="hero"],[data-compact-page="profile"] [class*="intro"]{max-width:600px;margin-bottom:26px}
+[data-compact-page="account"] [class*="hero"] h1,[data-compact-page="profile"] [class*="intro"] h1{font-size:clamp(2.2rem,4.8vw,3.55rem);line-height:1;letter-spacing:-.045em;margin-bottom:12px}
+[data-compact-page="account"] [class*="hero"] > p:not([class*="eyebrow"]),[data-compact-page="profile"] [class*="intro"] > p:not([class*="eyebrow"]){font-size:1rem;line-height:1.55}
+[data-compact-page="account"] [class*="data"],[data-compact-page="account"] [class*="plan"],[data-compact-page="profile"] [class*="availability"]{border-radius:12px;padding:18px}
+[data-compact-page="account"] [class*="plan"]{margin-top:10px;gap:16px}
+[data-compact-page="account"] [class*="list"],[data-compact-page="profile"] [class*="identity"]{gap:12px;margin-top:18px}
+[data-compact-page="account"] [class*="recovery"]{margin-top:20px;padding-top:18px}
+[data-compact-page="profile"] [class*="login"],[data-compact-page="account"] [class*="login"]{margin-top:18px;padding:10px 14px}
+
+.compact-catalog{gap:10px;margin-top:28px}.compact-catalog .study-card{padding:18px}.compact-catalog .study-card h2{font-size:1.35rem;line-height:1.15;margin:6px 0}.compact-catalog .tag{font-size:.66rem}
+
+@media(max-width:700px){
+  .page{padding:34px 16px 52px}
+  [data-compact-page="login"],[data-compact-page="account"],[data-compact-page="profile"]{padding:30px 16px 48px!important}
+  [data-compact-page="login"] [class*="links"]{flex-direction:column;align-items:flex-start;gap:10px}
+}
+
+.profile-availability{max-width:600px;margin:22px auto 0;padding:0;list-style:none;border-top:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 14%,transparent)}
+.profile-availability li{display:grid;grid-template-columns:minmax(110px,150px) 1fr;gap:14px;padding:13px 0;border-bottom:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 10%,transparent)}
+.profile-availability strong{font:700 .88rem/1.3 Arial,Helvetica,sans-serif}.profile-availability span{color:var(--reader-muted,#c9c4ba);font-size:.9rem;line-height:1.5}
+@media(max-width:600px){.profile-availability li{grid-template-columns:1fr;gap:3px}}
+
+.role-list{display:grid;gap:0;margin:24px 0;max-width:620px;border-top:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 14%,transparent)}
+.role-list article{display:grid;grid-template-columns:minmax(120px,170px) 1fr;gap:14px;padding:14px 0;border-bottom:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 10%,transparent)}
+.role-list h2{margin:0;font:700 1rem/1.3 Georgia,"Times New Roman",serif}.role-list p{margin:0;color:var(--reader-muted,#c9c4ba);font-size:.9rem;line-height:1.5}.role-list .tag{display:block;margin-bottom:3px}
+@media(max-width:600px){.role-list article{grid-template-columns:1fr;gap:4px}}

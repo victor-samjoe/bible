@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./compact-pages.css";
 import "./reader-settings.css";
 import { PwaRegistration } from "./pwa-registration";
 import { ApplicationFrame } from "./_components/application-frame";

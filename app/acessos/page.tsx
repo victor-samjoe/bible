@@ -23,9 +23,9 @@ export const dynamic = "force-dynamic";
  * ter a tela.
  */
 const roles = [
-  ["reader", "Leitor", "Leitura, notas, destaques e preferências da própria conta. É o papel de toda conta nova."],
-  ["editor", "Editor", "Acesso ao fluxo editorial, sempre sujeito a revisão e a verificação de permissão no servidor."],
-  ["admin", "Administrador", "Gestão de papéis e controles de segurança. Concedido fora da aplicação, por operação administrativa."],
+  ["reader", "Leitor", "Acesso à própria conta e à leitura."],
+  ["editor", "Editor", "Fluxo editorial sujeito a revisão."],
+  ["admin", "Administrador", "Concedido somente por operação administrativa."],
 ] as const;
 
 export default async function AccessControlPage() {
@@ -37,10 +37,9 @@ export default async function AccessControlPage() {
 
   return <main className="page" aria-labelledby="access-title">
     <p className="eyebrow">CONTROLE DE ACESSO</p>
-    <h1 id="access-title">Papéis verificados no servidor.</h1>
+    <h1 id="access-title">Acessos da conta.</h1>
     <p className="muted">
-      Permissão é decidida no servidor a cada requisição, lendo o papel da tabela de perfis. Nada do que o
-      navegador envia — cookie, formulário ou cabeçalho — concede acesso.
+      Seu papel é conferido no servidor. O navegador não concede permissões.
     </p>
 
     <section className="notice" aria-label="Seu papel">
@@ -51,10 +50,9 @@ export default async function AccessControlPage() {
             : "Alterar o próprio papel não é possível, por construção: o banco recusa a mudança vinda da aplicação."}</>}
     </section>
 
-    <section className="catalog" aria-label="Papéis disponíveis">
-      {roles.map(([id, label, description]) => <article className="study-card" key={id}>
-        <span className="tag">{viewer?.role === id ? "SEU PAPEL" : "DEFINIDO NO SERVIDOR"}</span>
-        <h2>{label}</h2>
+    <section className="role-list" aria-label="Papéis disponíveis">
+      {roles.map(([id, label, description]) => <article key={id}>
+        <div><span className="tag">{viewer?.role === id ? "SEU PAPEL" : "PAPEL"}</span><h2>{label}</h2></div>
         <p>{description}</p>
       </article>)}
     </section>

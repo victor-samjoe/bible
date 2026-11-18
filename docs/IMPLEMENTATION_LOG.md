@@ -712,3 +712,54 @@ autorização.
 
 Nada aplicado em AWS. Nenhum registro DNS escrito. Nenhum provedor contratado. Nenhuma mensagem
 enviada. `.env*` intocado.
+
+## 2026-11-18 — SES da Bíblia: pedido de produção e teste controlado
+
+Com autorização explícita do proprietário, foi usada a sessão local AWS do perfil
+`samjoe-project`, na única região permitida para SES (`us-east-2`). Nenhuma credencial foi
+copiada, exibida ou registrada.
+
+### Estado confirmado antes da ação
+
+- A identidade `auth.bibliabereianos.com.br` já estava verificada para envio, com Easy DKIM e
+  MAIL FROM `SUCCESS`.
+- A conta estava no sandbox: cota de 200 mensagens por dia, 1 por segundo e sem acesso de
+  produção.
+
+### Ações executadas
+
+- Foi submetido o pedido de acesso de produção como e-mail `TRANSACTIONAL`, para
+  `https://bibliabereianos.com.br`, com uma descrição limitada a códigos de acesso e magic links
+  disparados pela própria pessoa usuária. A revisão retornou `PENDING`.
+- Foram criados destinatários de teste no SES; os endereços em si não são registrados neste
+  repositório. Um destinatário foi confirmado pelo respectivo titular.
+- Foi enviada uma única mensagem técnica direta, do domínio autenticado para esse destinatário
+  confirmado. O SES aceitou a mensagem e o titular confirmou o recebimento, incluindo a entrega
+  ponta a ponta.
+
+### Limites preservados e próximo passo
+
+- O SMTP do Supabase **não** foi configurado: enquanto o SES estiver em sandbox, isso limitaria o
+  login a destinatários verificados e afetaria visitantes reais.
+- Não houve alteração de `.env*`, segredo, DNS, migration ou código de autenticação.
+- Aguardar a decisão da AWS. Depois de `ProductionAccessEnabled = true`, gerar a credencial SMTP
+  no IAM, configurá-la exclusivamente no Dashboard do Supabase, ajustar o limite de envio e testar
+  o fluxo real de código/magic link.
+
+## 2026-11-18 — Revisão compacta das áreas de conta e catálogos
+
+Por solicitação do proprietário, as páginas fora do leitor foram simplificadas para reduzir blocos
+grandes, texto promocional e informação repetida, preservando os fluxos de autenticação.
+
+- `app/compact-pages.css` aplica uma camada compacta e responsiva às páginas de catálogo, planos,
+  conta, perfil e acesso, sem atingir o leitor bíblico.
+- `/entrar` e `/criar-conta` passaram a ter títulos e explicações diretas; o formulário e o fluxo
+  OTP não foram alterados.
+- `/perfil` substituiu quatro cartões desabilitados por uma lista curta de recursos em evolução.
+- `/conta` removeu o painel de recursos em preparação e a chamada redundante de planos.
+- `/acessos` e `/cursos` agora mostram somente o resumo necessário, sem listas longas de itens ainda
+  indisponíveis.
+
+Verificação: lint das páginas alteradas, `tsc --noEmit` e build de produção em diretório isolado
+concluíram. Permanecem apenas avisos preexistentes do leitor, BKR e utilitário de importação. Não
+houve commit, deploy, alteração de segredo, banco ou provedor.

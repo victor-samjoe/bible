@@ -30,25 +30,6 @@ export const dynamic = "force-dynamic";
  * Nenhum dado de outra pessoa é lido aqui, e nada é escrito fora das duas Server
  * Actions, que confirmam a identidade no servidor antes de agir.
  */
-const accountSteps = [
-  {
-    title: "Entrar",
-    text: "Acesse suas notas, leituras e preferências quando a autenticação estiver liberada.",
-  },
-  {
-    title: "Criar conta",
-    text: "Crie uma conta para sincronizar sua biblioteca entre dispositivos.",
-  },
-  {
-    title: "Recuperar acesso",
-    text: "Receba um código de uso único no e-mail da conta.",
-  },
-  {
-    title: "Verificação em duas etapas",
-    text: "Adicione uma segunda camada de proteção à sua conta.",
-  },
-];
-
 function formatDate(value: Date): string {
   try {
     return new Intl.DateTimeFormat("pt-BR", { dateStyle: "long", timeZone: "UTC" }).format(value);
@@ -66,7 +47,7 @@ export default async function ContaPage({
   const deletion = (await searchParams).exclusao;
 
   return (
-    <main className={styles.page}>
+    <main className={styles.page} data-compact-page="account">
       {deletion === "solicitada" ? (
         <p className={styles.alert} role="status">
           <strong>Pedido de exclusão registrado.</strong> Sua sessão foi encerrada em todos os dispositivos. A
@@ -212,31 +193,9 @@ export default async function ContaPage({
             </p>
           </section>
 
-          <section className={styles.grid} aria-label="Recursos de conta em preparação">
-            {accountSteps.map((item) => (
-              <article key={item.title} className={styles.card}>
-                <span className={styles.status}>EM PREPARAÇÃO</span>
-                <h2>{item.title}</h2>
-                <p>{item.text}</p>
-                <button type="button" disabled aria-disabled="true">Em breve</button>
-              </article>
-            ))}
-          </section>
-
-          <p className={styles.note}>
-            Nenhum login é solicitado nesta etapa e nenhum dado de conta é coletado por esta página.
-          </p>
         </>
       ) : null}
 
-      <section className={styles.plan} aria-labelledby="plan-title">
-        <div>
-          <p className={styles.eyebrow}>PLANOS</p>
-          <h2 id="plan-title">Plano gratuito primeiro.</h2>
-          <p>Planos pagos e checkout só aparecerão depois de a conta e a sincronização estarem prontas.</p>
-        </div>
-        <button type="button" disabled aria-disabled="true">Ver planos em breve</button>
-      </section>
     </main>
   );
 }
