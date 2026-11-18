@@ -2,10 +2,10 @@
 
 - **Status:** todo
 - **Prioridade:** P0
-- **Responsável:** Victor para conta AWS/e-mails + agente para configuração, DNS e testes
+- **Responsável:** Victor para console AWS + agente para DNS, Supabase e testes
 - **Macro-item:** `P3-01` de `docs/PRODUCT_MVP_BACKLOG.md`
-- **Depende de:** conta AWS de gerenciamento da proponente; aprovação do subdomínio de envio;
-  autorização para escrever DNS na zona
+- **Depende de:** aprovação do subdomínio de envio; autorização para escrever DNS na zona.
+  **Não depende mais de abrir conta AWS**: decisão de 18/11/2026 é usar a conta existente
 - **Arquitetura:** `docs/EMAIL_DELIVERY_ARCHITECTURE.md`
 - **Equivalente no jurídico:** `E:\Sistema Juridico\tasks\auth\AUTH-003-smtp-confirmacao-email.md`
   (status `todo`, parado nos mesmos bloqueadores desde 27/08/2026)
@@ -34,8 +34,7 @@ US$ 200 em créditos do AWS Free Tier nos primeiros seis meses.
 
 ## Escopo
 
-- criar a conta-membro `sj-email-biblia-prod` na AWS Organization da proponente;
-- configurar orçamento e alertas de gasto em US$ 1, US$ 5 e US$ 10 na conta-membro;
+- configurar orçamento e alertas de gasto em US$ 1, US$ 5 e US$ 10 na conta AWS existente;
 - criar a identidade de envio `auth.bibliabereianos.com.br` no SES da região escolhida;
 - escrever na zona Cloudflare os registros SPF, três CNAME de DKIM, MX e TXT de MAIL FROM e DMARC
   em `p=none`, conforme a tabela de `docs/EMAIL_DELIVERY_ARCHITECTURE.md`;
@@ -84,9 +83,9 @@ template, e os dois campos de template iam no mesmo corpo. Um PATCH sem eles iso
 - [x] arquitetura definida: conta de gerenciamento + conta-membro por produto;
 - [x] domínio da plataforma ativo e servindo produção;
 - [x] projeto Supabase alvo confirmado: `samjoe-bible-mvp`, `exumjnikkrevlyublrfn`, `sa-east-1`;
-- [ ] e-mail corporativo e pessoa jurídica da proponente definidos;
-- [ ] conta AWS, MFA raiz e AWS Organization criados por Victor;
-- [ ] endereço da conta-membro e caixa de relatórios DMARC criados;
+- [x] conta AWS definida: a existente, por decisão de 18/11/2026;
+- [x] `site_url`, `uri_allow_list` e `mailer_otp_length` corrigidos em 18/11/2026 (HTTP 200);
+- [ ] caixa de relatórios DMARC definida;
 - [ ] subdomínio `auth.bibliabereianos.com.br` aprovado;
 - [ ] autorização para escrever DNS na zona;
 - [ ] disponibilidade do SES em `sa-east-1` confirmada no console;

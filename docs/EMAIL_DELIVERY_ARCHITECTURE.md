@@ -37,9 +37,22 @@ Três regras herdadas do runbook, que valem aqui sem alteração:
 - credencial SMTP vive **somente no Dashboard do Supabase do projeto**, nunca no repositório,
   frontend, log, print ou documento.
 
-A Bíblia é produto próprio da SamJoE, não escritório de cliente, mas recebe conta-membro pelo mesmo
-motivo: isolar reputação. Um problema de entrega no jurídico não pode derrubar o login do app, nem
-o contrário.
+### Decisão do proprietário em 18/11/2026: usar a conta AWS existente
+
+A Bíblia **não** abre conta nova. O desenho de conta-membro acima foi escrito para vender o SaaS a
+escritórios, onde separar cobrança e reputação por cliente é parte do produto. A Bíblia é produto
+próprio da SamJoE, então usa a conta AWS que já existe.
+
+O que **não** muda com isso, porque é o que de fato isola reputação: o remetente continua em
+subdomínio exclusivo (`auth.bibliabereianos.com.br`) com DKIM próprio. Reputação de envio é por
+domínio, não por conta AWS.
+
+O que se aceita como risco, declarado: **limite de envio e suspensão do SES são por conta AWS e
+região.** Se algum dia outro uso dentro dessa mesma conta gerar reclamação e a AWS suspender o
+envio, o login do app para junto. Hoje nada mais envia por ali, então o risco é teórico.
+
+Se um dia valer a pena separar, mover é barato: verificar o domínio na outra conta, gerar nova
+credencial SMTP e colar no painel do Supabase. **Nenhuma linha de código muda.**
 
 ## 3. O que a Bíblia acrescenta à estrutura
 
@@ -126,19 +139,19 @@ Alertas de orçamento em US$ 1, US$ 5 e US$ 10, como manda o runbook. Nada de IP
 
 ## 6. Bloqueadores
 
-### Do proprietário, herdados e ainda abertos desde 27/08/2026
+Com a decisão de usar a conta AWS existente, a lista encurtou para três itens:
 
-- [ ] e-mail corporativo controlado pela proponente;
-- [ ] razão social/CNPJ que operará e faturará;
-- [ ] telefone corporativo e meio de pagamento;
-- [ ] quem tem acesso ao e-mail e aos códigos de recuperação;
-- [ ] conta AWS criada, MFA no usuário raiz, AWS Organization com `all features`.
-
-### Específicos da Bíblia
-
+- [x] conta AWS — já existe, decisão de 18/11/2026;
 - [ ] aprovar `auth.bibliabereianos.com.br` como subdomínio de envio;
-- [ ] criar o endereço da conta-membro e a caixa de relatórios DMARC;
+- [ ] definir a caixa que recebe os relatórios DMARC;
 - [ ] autorizar a escrita dos registros DNS na zona (é mudança ao ar).
+
+Caiu daqui o que era exigência do modelo de revenda: e-mail corporativo novo, CNPJ da proponente,
+AWS Organization e conta-membro. Esses itens continuam valendo para o sistema jurídico, em
+`AUTH-003` de lá, não para a Bíblia.
+
+Observação de custo que vale conferir no console: se essa conta AWS **já usava SES antes de
+21/07/2026**, o free tier de 3.000 mensagens/mês pode ainda estar ativo até fechar os 12 meses.
 
 Enquanto isso não existir, o login continua funcionando com o remetente embutido a 2/hora: honesto,
 suficiente para teste, insuficiente para público.
