@@ -7,6 +7,7 @@ import "./theme.css";
 import "./reader-header.css";
 import "./reader-balance.css";
 import "./reader-theme-surfaces.css";
+import "./reader-transition.css";
 
 // Estilos do leitor ficam no layout para valerem tanto em /biblia quanto em
 // /biblia/[book]/[chapter], sem duplicar import em cada rota.

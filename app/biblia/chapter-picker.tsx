@@ -27,13 +27,14 @@ export function ChapterPicker({
   chapterCounts: Readonly<Record<string, number>>;
 }) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const { isReadScope } = useReader();
   const [open, setOpen] = useState<"livro" | "capitulo" | null>(null);
   const [selectedBook, setSelectedBook] = useState<NavigationBook>(currentBook);
   const [query, setQuery] = useState("");
   const [versionsOpen, setVersionsOpen] = useState(false);
   const [destination, setDestination] = useState<string | null>(null);
+  const [showLoading, setShowLoading] = useState(false);
 
   const filteredBooks = useMemo(() => {
     const normalized = query.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim();
@@ -54,7 +55,8 @@ export function ChapterPicker({
     const path = chapterPath(bookSlug, number);
     setDestination(`${selectedBook.name} ${number}`);
     setOpen(null);
-    startTransition(() => router.push(path));
+    setShowLoading(true);
+    window.setTimeout(() => startTransition(() => router.push(path)), 1000);
   }, [router, selectedBook.name]);
 
   useEffect(() => {
@@ -168,7 +170,7 @@ export function ChapterPicker({
         </div>
       )}
 
-      {destination && isPending ? <div className={styles.loading} role="status" aria-live="polite"><span /><strong>Abrindo {destination}</strong><p>Carregando o capítulo selecionado…</p></div> : null}
+      {destination && showLoading ? <div className={styles.loading} role="status" aria-live="polite"><span /><strong>Abrindo {destination}</strong><p>Preparando leitura…</p></div> : null}
 
       {versionsOpen ? (
         <div className={styles.backdrop} role="presentation" onClick={() => setVersionsOpen(false)}>

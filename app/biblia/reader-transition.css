@@ -1,0 +1,3 @@
+.readerShell{animation:readerChapterReveal .42s ease-out both}
+@keyframes readerChapterReveal{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.readerShell{animation:none}}
