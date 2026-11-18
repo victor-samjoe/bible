@@ -95,6 +95,14 @@ de licença.
 - Testes de parser, importador, autorização e rota passam; validação em banco
   descartável ocorre antes de qualquer escrita remota.
 
+### Tarefas do leitor de originais
+
+| ID | Entrega | Dependência |
+| --- | --- | --- |
+| `ORIGINAL-READER-001` | Repositório/contrato de consulta por seleção, com limite de referência e atribuição da edição | Importador local validado |
+| `ORIGINAL-READER-002` | Painel “Consultar original”: AT mostra hebraico e NT mostra grego apenas para edição aprovada | `ORIGINAL-READER-001` + aprovação editorial |
+| `ORIGINAL-VERSIONS-001` | Ativar HEB (MorphHB) e GRC (SBLGNT) no seletor de versões, preservando indisponibilidade honesta até a aprovação | `ORIGINAL-READER-002` |
+
 ## Sequência e delegação
 
 1. Claude CLI: produzir desenho técnico e checklist executável para as duas

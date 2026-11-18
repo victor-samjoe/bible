@@ -17,6 +17,7 @@ import { ChapterPicker } from "../../chapter-picker";
 import { SelectionBar } from "../../selection-bar";
 import { ReaderUnavailable } from "../../reader-unavailable";
 import { ReaderSideMenu } from "../../reader-side-menu";
+import { ChapterQuickNavigation } from "../../chapter-quick-navigation";
 
 // Leitor ligado ao corpus (tarefa C4). O cap�tulo vem do banco pelo contrato de
 // leitura (`src/server/bible/**`), que s� entrega vers�culo publicado de tradu��o
@@ -82,10 +83,10 @@ async function DeferredChapterNavigation({ currentBookSlug, currentChapter }: { 
     chaptersInBook: Math.max(navigation.chapterCounts[currentBook.slug] ?? 0, currentChapter),
     chaptersInPreviousBook,
   });
-  return <nav className="chapterQuickNav" aria-label="Navegação entre capítulos">
-    {previous ? <Link href={chapterPath(previous.book.slug, previous.chapter)} rel="prev" aria-label={`Capítulo anterior: ${canonicalReference(previous.book.name, previous.chapter)}`}>← <span>{canonicalReference(previous.book.name, previous.chapter)}</span></Link> : <span />}
-    {next ? <Link href={chapterPath(next.book.slug, next.chapter)} rel="next" aria-label={`Próximo capítulo: ${canonicalReference(next.book.name, next.chapter)}`}><span>{canonicalReference(next.book.name, next.chapter)}</span> →</Link> : <span />}
-  </nav>;
+  return <ChapterQuickNavigation
+    previous={previous ? { href: chapterPath(previous.book.slug, previous.chapter), label: canonicalReference(previous.book.name, previous.chapter) } : null}
+    next={next ? { href: chapterPath(next.book.slug, next.chapter), label: canonicalReference(next.book.name, next.chapter) } : null}
+  />;
 }
 
 export async function generateMetadata({

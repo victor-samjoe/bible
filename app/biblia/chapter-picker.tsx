@@ -174,6 +174,8 @@ export function ChapterPicker({
             <header><div><h2>Versões</h2><p>A versão muda por este nome, nunca por uma ação de seleção.</p></div><button type="button" onClick={() => setVersionsOpen(false)} aria-label="Fechar versões">×</button></header>
             <div className={styles.versions}>
               <button type="button" className={styles.current} aria-pressed="true">BLIVRE <span>Bíblia Livre · disponível</span></button>
+              <button type="button" disabled>HEB <span>Hebraico · MorphHB · aguardando aprovação</span></button>
+              <button type="button" disabled>GRC <span>Grego · SBLGNT · aguardando aprovação</span></button>
               {['NVI', 'NTLH', 'Almeida'].map((version) => <button type="button" key={version} disabled>{version} <span>Em licenciamento</span></button>)}
             </div>
           </section>
