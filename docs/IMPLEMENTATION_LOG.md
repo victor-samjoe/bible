@@ -471,3 +471,114 @@ divergente, linha recusada, problema ou livro sem texto. As edições continuam
 Os commits `b354a2f` e `9344934` registraram C14--C17 localmente; o Worker
 `samjoe-estudos` foi publicado depois da validação. Nenhuma migration foi
 aplicada e nenhum corpus privado foi enviado ao Git ou ao bundle público.
+
+## 2026-11-18 — Frente A do plano de conta: autenticação, cadastro e acesso reais
+
+Executada por uma sessão headless do Claude CLI neste mesmo workspace
+(`session_id 5dfb9cff-9e79-476c-a54c-7ce9eb01d9bb`; registro integral em
+`.claude/auth-cli.log`), encerrada às 11:09 de 18/11/2026. Esta entrada foi
+escrita depois, por ordem do operador: a sessão executora não registrou aqui
+porque a instrução dela limitava a documentação à seção de infraestrutura do
+`docs/ACCOUNT_AND_ORIGINALS_EXECUTION_PLAN.md`.
+
+Isto encerra o que o C17 deixava como esqueleto. As telas de conta deixaram de
+ser marcadores inertes e passaram a falar com o Supabase Auth de verdade,
+falhando fechada enquanto as chaves não existirem: sem configuração, cada tela
+declara a indisponibilidade em vez de simular sessão.
+
+### Servidor — `src/server/auth/`
+
+| Arquivo | Papel |
+| --- | --- |
+| `config.ts` (estendido) | Validação de ambiente; aceita `PUBLIC_SITE_URL` (`https`, ou `http` apenas em localhost) e decide se o cookie pode ser `Secure` |
+| `client.ts` (novo) | Contrato do cliente; tipos de verificação restritos a `email`/`magiclink`/`signup` |
+| `gotrue.ts` (novo) | Cliente HTTP do Supabase Auth escrito à mão sobre `fetch`, **sem instalar dependência**, porque `package.json` não podia ser tocado. Cobre OTP, verify, refresh, user e logout `scope=global`, com prazo por chamada e nenhuma mensagem do provedor atravessando para a interface |
+| `session.ts` (novo) | Formato e validação do cookie `samjoe_session` (`httpOnly`, `SameSite=Lax`, `Secure`, 7 dias de inatividade) |
+| `rate-limit.ts` (novo) | Limite em janela fixa, puro, com chave em hash |
+| `profiles.ts` (novo) | Papel lido de `profiles` — nunca de cookie ou metadado —, criação de perfil no primeiro acesso e registro de pedido de exclusão |
+| `runtime.ts` (novo) | Única fiação entre ambiente, cookie, provedor e banco. Máquina de estados `unconfigured → anonymous → degraded → authenticated` |
+| `index.ts` (estendido) | `createAuth` com verify por código, verify por link, refresh, `signOut` e `getIdentity`; mais `authorize`, `toViewer` e `looksLikeEmail` |
+
+### Interface e ações
+
+`/entrar` e `/criar-conta` com formulário real de dois passos
+(`app/_components/access-form.tsx` e seu CSS module), `/auth/callback` para o
+link do e-mail, `/conta` com sessão, dados mínimos, sair e solicitar exclusão,
+e `/perfil` e `/acessos` refletindo a sessão real. Server Actions em
+`app/_actions/account-access.ts`. Contrato puro em
+`src/domain/account-access.ts`; navegação ajustada em
+`src/domain/app-navigation.ts`.
+
+### Banco
+
+`drizzle/0006_account_access.sql`, **não aplicada em nenhum banco**: RLS em
+`profiles`, gatilho de criação de perfil em `auth.users`, gatilho que recusa
+mudança de `role` pelo papel de aplicação, e tabela
+`account_deletion_requests` com RLS e índice parcial único. `drizzle/schema.ts`
+e `drizzle/meta/_journal.json` acompanham.
+
+### Decisões de segurança
+
+Registradas por extenso no plano; em resumo: o cookie **não é assinado por
+nós**, porque não há segredo próprio configurado e inventar um seria pior — a
+integridade vem do provedor, e toda decisão de autorização chama
+`GET /auth/v1/user`, sem decodificar o JWT localmente. `/auth/callback` ignora
+`next` de propósito, para não abrir redirecionamento, e todos os erros caem em
+`/entrar?erro=link` sem distinguir "não existe" de "expirou". O modo
+entrar/cadastrar é argumento vinculado da Server Action, não campo de
+formulário, então um POST forjado não cria conta pela tela de entrar. Papel
+fora do enum é ausência de papel, nunca `reader`; banco fora do ar vira
+`degraded`, que explica e não concede nada. A exclusão registra o pedido e
+revoga a sessão globalmente, mas não apaga no clique, porque a política de
+retenção não foi aprovada.
+
+### Verificações
+
+Relatadas pela sessão executora: `npx tsc --noEmit` limpo, `npx eslint` limpo
+nos arquivos alterados, `npx vitest run` com 188 testes em 23 arquivos
+(6 arquivos novos de auth/domínio, 41 testes na frente), `npx next build` com
+sucesso e rotas de conta dinâmicas, e smoke test com `next start` em que
+`/entrar`, `/criar-conta`, `/conta`, `/perfil` e `/acessos` respondem 200 no
+estado honesto de indisponibilidade — as chaves estão vazias — e
+`/auth/callback` devolve 303 para `/entrar`.
+
+Reconferidas em 18/11/2026, entre 11:11 e 11:17, por outra sessão e sem alterar
+código: `npx tsc --noEmit` limpo; `npx eslint` nos diretórios desta frente
+limpo; `npx vitest run` com **188 testes em 23 arquivos, todos passando**;
+e `npx next build` com sucesso, exit 0. O build foi feito com
+`SAMJOE_NEXT_DIST_DIR=.next-verify` para não disputar o cache `.next` com os
+dois servidores de desenvolvimento ativos no momento (portas 3008 e 3011); o
+diretório temporário foi removido depois da conferência. `/entrar`,
+`/criar-conta`, `/conta`, `/perfil`, `/acessos` e `/auth/callback` saem
+dinâmicas, como relatado. Os únicos avisos são os pré-existentes e alheios a
+esta frente: `useMemo` em `reader-state.tsx`, `<img>` em página do BKR e
+`dirname` não usado em `src/cli/import-theology.ts`. O smoke test com
+`next start` não foi repetido.
+
+### Pendências que continuam, e de quem são
+
+1. **Infraestrutura do proprietário**, detalhada na seção "Dados de
+   infraestrutura que faltam" do plano: `SUPABASE_PUBLISHABLE_KEY`,
+   `PUBLIC_SITE_URL`, Site URL e redirecionamentos no painel Supabase, template
+   de e-mail com `token_hash`, conexão Postgres no Worker (`wrangler.jsonc`
+   ainda não declara `HYPERDRIVE`), armazenamento compartilhado para o limite
+   de tentativas, política de retenção publicada e `SUPABASE_SECRET_KEY`.
+   Enquanto faltarem, a frente fica `unconfigured` ou `degraded` por desenho.
+2. **`drizzle/0003_reading_personal_data.sql` e `drizzle/0006_account_access.sql`
+   não aplicadas**, e só devem ser aplicadas depois de ler o baseline remoto.
+3. **Nada commitado.** A frente inteira está na árvore de trabalho sobre
+   `39f960b`.
+4. **`next.config.ts` e `tsconfig.json` aparecem modificados sem terem sido
+   editados por esta frente**: o `distDir` via `SAMJOE_NEXT_DIST_DIR` e a
+   entrada `.next-bkr/types` vêm do trabalho paralelo do BKR (`app/bkr/`,
+   `.next-bkr/`), e a reformatação do `tsconfig.json` é o próprio Next
+   reescrevendo o arquivo no build. Não foram revertidos para não atropelar a
+   outra frente. `package.json` e `package-lock.json` já estavam modificados
+   antes, com `@next/swc-win32-x64-msvc` como única diferença, e também não
+   foram tocados.
+5. **Os dois worktrees `.claude/worktrees/auth-readiness` e
+   `auth-readiness-v2`** ficaram no commit `12622c7`, com árvore limpa: são
+   sobra de tentativa anterior e podem ser removidos quando o operador quiser.
+
+Nenhuma migration aplicada. Nenhum deploy. `.env*` intocado. Nenhum segredo
+exposto.

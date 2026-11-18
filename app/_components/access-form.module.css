@@ -1,0 +1,28 @@
+/* Paleta igual à de `app/entrar/page.module.css` e `app/conta/page.module.css`,
+   para o formulário ativo não parecer colado em cima da página escura. */
+
+.form{display:grid;gap:10px;margin-top:30px;max-width:420px}
+.feedback{display:grid;gap:10px}
+.feedback:empty{display:none}
+.notice{margin:0;border-left:4px solid #d6aa4f;background:#28382f;padding:14px 16px;font-size:.94rem;line-height:1.55}
+.error{margin:0;border-left:4px solid #c86a4f;background:#38282a;padding:14px 16px;font-size:.94rem;line-height:1.55}
+.sentTo{margin:4px 0 0;color:#c9c4ba;font-size:.92rem;line-height:1.5}
+.sentTo strong{color:#f5f2ea;font-weight:700;word-break:break-all}
+.label{font-size:.88rem;font-weight:800}
+.input{border:1px solid #555650;border-radius:3px;background:#272829;color:#f5f2ea;padding:14px;font:inherit;width:100%}
+.input:focus-visible{outline:3px solid #d6aa4f;outline-offset:2px;border-color:#d6aa4f}
+.input[aria-invalid="true"]{border-color:#c86a4f}
+.actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:6px}
+.primary{border:0;border-radius:3px;background:#d6aa4f;color:#1b1c1d;padding:13px 18px;font:inherit;font-weight:800;cursor:pointer}
+.primary:hover:not(:disabled){background:#e4bc67}
+.secondary{border:1px solid #555650;border-radius:3px;background:transparent;color:#f5f2ea;padding:12px 16px;font:inherit;font-weight:700;cursor:pointer}
+.secondary:hover:not(:disabled){border-color:#d6aa4f}
+.primary:disabled,.secondary:disabled{cursor:progress;opacity:.7}
+.primary:focus-visible,.secondary:focus-visible{outline:3px solid #d6aa4f;outline-offset:3px}
+.hint{color:#b9b5ac;font-size:.88rem;line-height:1.5;margin:3px 0 0}
+
+@media(max-width:600px){
+  .form{max-width:none}
+  .actions{flex-direction:column;align-items:stretch}
+  .primary,.secondary{width:100%;text-align:center}
+}

@@ -93,18 +93,19 @@ export const appAreas: readonly AppArea[] = [
     id: "perfil",
     label: "Perfil",
     href: "/perfil",
-    // A página existe (frente C17b) e por isso a área é alcançável. Ela não
-    // mostra dado pessoal algum: explica que identidade, dispositivos e
-    // segurança exigem autenticação, que ainda não existe. A descrição abaixo
-    // precisa dizer isso, para o menu não prometer o que a página nega.
-    description: "Área pessoal; identidade e segurança exigem autenticação, que ainda não existe.",
+    // A página existe (frente C17b) e por isso a área é alcançável. Desde a
+    // frente de contas ela reflete a sessão real: com sessão mostra e-mail
+    // mascarado e papel; sem sessão mostra o caminho para entrar. Sincronização
+    // de preferências e notas continua não existindo, e a descrição não a
+    // promete.
+    description: "Área pessoal; identidade e papel da conta, sem sincronização de notas ou preferências.",
     availability: available,
   },
   {
     id: "acessos",
     label: "Acessos",
     href: "/acessos",
-    description: "Papéis e controle de acesso, aguardando autenticação segura.",
+    description: "Papéis e como a permissão é verificada no servidor.",
     availability: available,
   },
 ];

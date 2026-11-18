@@ -53,6 +53,42 @@ de licença.
 - Testes unitários, integração com RLS em banco descartável e E2E do fluxo OTP
   passam antes do deploy.
 
+### Dados de infraestrutura que faltam
+
+Registrado em 2026-11-18. A base de autenticação, cadastro e controle de acesso
+está implementada e testada, e falha fechada: enquanto os itens abaixo não
+existirem, `/entrar`, `/criar-conta`, `/conta`, `/perfil` e `/acessos` declaram a
+indisponibilidade em vez de simular conta. Nada aqui é segredo: são os valores e
+decisões que só o proprietário pode fornecer.
+
+| Item | Onde | Sem ele |
+| --- | --- | --- |
+| `SUPABASE_PUBLISHABLE_KEY` (ou a legada `SUPABASE_ANON_KEY`) | `wrangler secret put` em produção; `.env.local` em desenvolvimento. Hoje vazia nos dois | Toda a frente fica `unconfigured`: nenhum e-mail sai, nenhum campo aceita digitação |
+| `PUBLIC_SITE_URL` | Mesma origem pública do app, com `https` (ou `http://localhost:3000` em desenvolvimento). Variável nova, ainda não declarada em nenhum ambiente | O link do e-mail usa a Site URL do projeto Supabase em vez de `<origem>/auth/callback`; o código de 6 dígitos continua funcionando |
+| Site URL e lista de redirecionamentos no painel Supabase Auth | Authentication → URL Configuration. Precisa conter `<origem>/auth/callback` | O provedor recusa o `redirect_to` e o link do e-mail não volta para o app |
+| Provedor de e-mail e template com `token_hash` | Authentication → Providers (e-mail habilitado, senha desabilitada) e Email Templates com `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email` | O código digitado funciona; o atalho por link não |
+| Conexão Postgres no Worker: binding `HYPERDRIVE` em `wrangler.jsonc` ou `DATABASE_URL` no ambiente do Worker | `wrangler.jsonc` hoje não declara `HYPERDRIVE` | Papel e pedido de exclusão não podem ser lidos nem gravados: a sessão autenticada cai em `degraded`, sem conceder permissão alguma |
+| Aplicação de `drizzle/0003_reading_personal_data.sql` e `drizzle/0006_account_access.sql`, depois de ler o baseline remoto | Supabase remoto. Nenhuma das duas foi aplicada | Sem `profiles` com RLS, sem gatilho de criação de perfil e sem `account_deletion_requests`, a conta autenticada permanece em `degraded` |
+| Armazenamento compartilhado para limite de tentativas (KV, Durable Object ou tabela) | Cloudflare. Hoje o limite é por isolate, em memória | O limite por e-mail e por IP contém repetição no mesmo isolate, mas não é global; o teto efetivo passa a ser o do próprio Supabase |
+| Política de retenção aprovada e canal de suporte publicado | Decisão do proprietário, com reflexo em `/privacidade` e `/contato` | O pedido de exclusão registra e revoga a sessão, mas a remoção dos dados não tem prazo nem responsável definidos |
+| `SUPABASE_SECRET_KEY` | `wrangler secret put`. Vazia hoje | A exclusão definitiva do usuário no provedor (Admin API) continua manual; não é usada por nenhum código atual |
+
+Decisões tomadas nesta frente, para o proprietário confirmar ou reverter:
+
+- **Método único:** código de 6 dígitos digitado no app, com o link do e-mail como
+  atalho. O link é frágil por natureza — verificador de e-mail que faz pré-busca
+  consome o token de uso único —, por isso não é o caminho principal.
+- **Sem senha e sem duas etapas:** não há senha para vazar nem recuperação para
+  sequestrar. Duas etapas não foi construída e as telas não a prometem.
+- **Sessão em cookie `httpOnly`, `SameSite=Lax`, `Secure` fora de localhost**,
+  com janela de inatividade de 7 dias. O cookie carrega os tokens do provedor e
+  não é assinado por nós: não existe segredo próprio configurado e inventar um
+  seria pior. A integridade vem do provedor, que valida o JWT a cada requisição.
+- **Papel só de `profiles`**, lido no servidor. Papel fora do enum é tratado como
+  ausência de papel, nunca como `reader`.
+- **Exclusão é pedido registrado + revogação imediata da sessão**, não apagamento
+  no clique, porque a política de retenção ainda não foi aprovada.
+
 ## Frente B — grego e hebraico
 
 ### Estado já verificado

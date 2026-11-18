@@ -22,6 +22,12 @@
 
   "observability": { "enabled": true },
 
+  // Origem publica usada para montar o `redirect_to` do link de e-mail da
+  // autenticacao. Nao e segredo: e o endereco publico do app, por isso fica
+  // aqui e nao em `wrangler secret`. Ver `src/server/auth/config.ts`, que
+  // exige origem absoluta, sem path nem query, e https fora de localhost.
+  "vars": { "PUBLIC_SITE_URL": "https://bibliabereianos.com.br" },
+
   // Bindings de R2, fila e Hyperdrive entram somente quando a aplicação
   // realmente consumir cache incremental ou Postgres diretamente no Worker.
   // O MVP atual mantém autorização e dados sensíveis fora do cache público.

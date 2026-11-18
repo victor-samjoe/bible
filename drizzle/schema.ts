@@ -617,3 +617,22 @@ export const lexiconEntries = pgTable("lexicon_entries", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
 });
+
+// ---------------------------------------------------------------------------
+// Conta e controle de acesso (drizzle/0006_account_access.sql).
+// O SQL segue sendo a autoridade: RLS de `profiles`, gatilho de criação de
+// perfil em `auth.users`, proteção de `role` e o índice parcial que garante um
+// pedido de exclusão aberto por pessoa vivem na migration, não aqui.
+// ---------------------------------------------------------------------------
+
+export const accountDeletionRequestState = pgEnum("account_deletion_request_state", ["requested", "in_progress", "completed", "canceled"]);
+
+export const accountDeletionRequests = pgTable("account_deletion_requests", {
+  id: uuid("id").primaryKey(),
+  userId: uuid("user_id").notNull(),
+  state: accountDeletionRequestState("state").notNull(),
+  requestedAt: timestamp("requested_at", { withTimezone: true }).notNull(),
+  resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+  resolvedBy: uuid("resolved_by"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+});
