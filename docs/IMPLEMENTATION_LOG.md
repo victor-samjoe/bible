@@ -808,3 +808,62 @@ Fica registrado o risco que não foi resolvido aqui: `src/server/auth/rate-limit
 em memória, portanto não é um limite global. O teto de 100 por hora no Supabase contém o custo de
 um bot, mas limite compartilhado ou CAPTCHA continua necessário antes de divulgar o site.
 
+## 2026-11-18 — Leitura pessoal guardada na conta
+
+O leitor guardava preferências, destaques, notas e capítulos lidos em
+`sessionStorage`, que morre quando a aba fecha. Com o login funcionando, isso
+deixou de ser uma limitação honesta e virou perda de dado: quem escrevia uma
+nota e fechava o navegador perdia a nota. As tabelas pessoais existiam desde a
+migration `0003`, vazias, esperando o Auth que agora existe.
+
+**A migration 0007 alinha o banco ao leitor.** A `0003` foi escrita antes do
+leitor ficar pronto e as duas descrições divergiram em três pontos. As
+preferências eram número — `font_size smallint`, `line_height numeric` — e o
+leitor não oferece número, oferece escolhas nomeadas; guardar 18 e 1.70
+obrigaria a inventar uma conversão que não é fiel ao que a pessoa escolheu. O
+enum de fonte tinha três opções e nenhuma das duas que o leitor realmente usa.
+Espaçamento de parágrafo não existia. E a nota, que no leitor pertence à
+seleção que a originou e pode ser `3-5,9`, só cabia em um versículo: `verse_id`
+passa a ser a âncora e `verse_list` guarda a seleção exata, no mesmo formato
+compactado que `src/domain/reader-marks.ts` produz, com CHECK no banco e UNIQUE
+por seleção.
+
+As colunas novas são `text` com CHECK em vez de enum, de propósito: é
+vocabulário de interface, que muda quando o leitor ganha uma opção, e enum
+exigiria `ALTER TYPE` e migration a cada ajuste de produto.
+
+**O isolamento entre pessoas é garantido no servidor, não pelo RLS.** As
+políticas de `0003` comparam `auth.uid()` com `user_id`, o que só vale para
+quem fala com o banco carregando um JWT. O app não faz isso: conecta como
+`postgres`, que tem `rolbypassrls`, então toda política é ignorada nas
+consultas dele — medido, não suposto. Por isso nenhuma consulta de dado pessoal
+existe sem filtro por `userId`, o `userId` vem sempre de `getViewer()` e nenhum
+Server Action aceita identidade como argumento. O RLS continua valendo como
+segunda tranca para o dia em que algo falar com o banco pela chave anônima.
+
+**Conciliação ao entrar.** Quem leu sem conta e depois entrou tem duas verdades
+parciais. `src/domain/reading-sync.ts` une as duas: a conta vence no conflito,
+porque é o que sobreviveu a fechar o navegador e porque a alternativa seria uma
+aba antiga sobrescrever anotação feita em outro aparelho; e o que só existia no
+navegador sobe, em até 25 capítulos por vez, para não virar uma rajada de
+gravações. O resto sobe quando a pessoa abrir aquele capítulo.
+
+**As frases da interface passaram a depender de onde o estado está.** O leitor
+dizia "local nesta sessão, sem conta e sem sincronização" em seis lugares. Isso
+era verdade e virou mentira no instante em que a conta passou a guardar. O
+contexto expõe `storage: "session" | "account"` e cada frase segue o que for
+verdade para quem está lendo. Prometer sincronização que não existe e esconder
+a que existe são o mesmo erro em direções opostas.
+
+Verificação: 207 testes (eram 189), `tsc --noEmit` e lint limpos. O caminho de
+escrita foi exercitado contra o banco de produção dentro de uma transação
+revertida — preferências com os valores que só o leitor tem, nota de seleção
+com buraco (`genesis.1.3-5,9`) gravada e lida de volta inteira, `verse_list`
+malformada recusada pelo CHECK e seleção repetida recusada pelo UNIQUE; depois
+do `rollback`, zero linhas. Migration aplicada (ledger 7 → 8) e deploy
+publicado na versão `da763a34-47bf-438c-a10d-ada7a35fe60c`.
+
+Fica por fazer, e não foi entregue: `/inicio` ainda lê apenas o
+`sessionStorage` e continua dizendo que nada é sincronizado. É consumidor dos
+mesmos dados e precisa do mesmo tratamento.
+
