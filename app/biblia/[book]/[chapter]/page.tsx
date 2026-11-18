@@ -1,4 +1,4 @@
-import { cache } from "react";
+import { cache, Suspense } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -8,7 +8,6 @@ import {
   chapterNeighbours,
   chapterPath,
   previousBookOf,
-  type NavigationBook,
 } from "@/src/domain/bible-navigation";
 import { chapterScope } from "@/src/domain/reader-marks";
 import { ReaderProvider } from "../../reader-state";
@@ -35,49 +34,59 @@ type RouteParams = { book: string; chapter: string };
  */
 const loadChapter = cache(async (book: string, chapter: string) => {
   const reader = await getBlivreReader();
-  // Três consultas independentes, em paralelo. Antes o seletor disparava uma
-  // consulta por livro (66 ao todo) depois de já carregar o capítulo atual.
-  const [chapterResult, booksResult, countsResult] = await Promise.all([
-    reader.readChapter(book, chapter),
-    reader.listBooks(),
-    reader.listChapterCounts(),
-  ]);
-  if (!chapterResult.ok) {
-    return {
-      chapter: chapterResult,
-      books: null,
-      totalChapters: 0,
-      chapterCounts: {},
-      chaptersInPreviousBook: 0,
-    };
-  }
-  const books = booksResult.ok ? booksResult.books : null;
+  return reader.readChapter(book, chapter);
+});
+
+// Dados do seletor não podem atrasar o texto. Esta promessa é compartilhada
+// pelos dois Suspense abaixo e roda em paralelo com o capítulo principal.
+const loadNavigation = cache(async () => {
+  const reader = await getBlivreReader();
+  const [booksResult, countsResult] = await Promise.all([reader.listBooks(), reader.listChapterCounts()]);
+  if (!booksResult.ok) return null;
+  const books = booksResult.books;
   const countsByBookId = countsResult.ok
     ? new Map(countsResult.counts.map((entry) => [entry.bookId, entry.count]))
     : new Map<string, number>();
   const chapterCounts = Object.fromEntries(
-    (books ?? []).map((entry) => [entry.slug, countsByBookId.get(entry.id) ?? 0]),
+    books.map((entry) => [entry.slug, countsByBookId.get(entry.id) ?? 0]),
   );
+  return { books, chapterCounts };
+});
 
-  // No cap�tulo 1, o link de "anterior" precisa saber onde o livro anterior
-  // termina. Essa consulta extra s� acontece nesse caso, e sem ela o link
-  // apontaria para o cap�tulo 1 do livro anterior em vez do �ltimo.
+function PickerFallback({ name, chapter }: { name: string; chapter: number }) {
+  return <div className="readerPick" aria-busy="true"><span>{name}</span><b>{chapter}</b></div>;
+}
+
+async function DeferredChapterPicker({ currentBook, currentChapter }: { currentBook: { id: string; slug: string; name: string; code: string; orderNo: number }; currentChapter: number }) {
+  const navigation = await loadNavigation();
+  if (!navigation) return <PickerFallback name={currentBook.name} chapter={currentChapter} />;
+  return <ChapterPicker books={navigation.books} currentBook={currentBook} currentChapter={currentChapter} totalChapters={Math.max(navigation.chapterCounts[currentBook.slug] ?? 0, currentChapter)} chapterCounts={navigation.chapterCounts} />;
+}
+
+async function DeferredChapterNavigation({ currentBookSlug, currentChapter }: { currentBookSlug: string; currentChapter: number }) {
+  const navigation = await loadNavigation();
+  if (!navigation) return null;
+  const currentBook = navigation.books.find((book) => book.slug === currentBookSlug);
+  if (!currentBook) return null;
   let chaptersInPreviousBook = 0;
-  if (chapterResult.chapter.number === 1 && books) {
-    const previousBook = previousBookOf(books, chapterResult.book.slug);
+  if (currentChapter === 1) {
+    const previousBook = previousBookOf(navigation.books, currentBook.slug);
     if (previousBook) {
-      chaptersInPreviousBook = chapterCounts[previousBook.slug] ?? 0;
+      chaptersInPreviousBook = navigation.chapterCounts[previousBook.slug] ?? 0;
     }
   }
-
-  return {
-    chapter: chapterResult,
-    books,
-    totalChapters: chapterCounts[chapterResult.book.slug] ?? 0,
-    chapterCounts,
+  const { previous, next } = chapterNeighbours({
+    books: navigation.books,
+    currentBookSlug,
+    currentChapter,
+    chaptersInBook: Math.max(navigation.chapterCounts[currentBook.slug] ?? 0, currentChapter),
     chaptersInPreviousBook,
-  };
-});
+  });
+  return <nav className="chapterQuickNav" aria-label="Navegação entre capítulos">
+    {previous ? <Link href={chapterPath(previous.book.slug, previous.chapter)} rel="prev" aria-label={`Capítulo anterior: ${canonicalReference(previous.book.name, previous.chapter)}`}>← <span>{canonicalReference(previous.book.name, previous.chapter)}</span></Link> : <span />}
+    {next ? <Link href={chapterPath(next.book.slug, next.chapter)} rel="next" aria-label={`Próximo capítulo: ${canonicalReference(next.book.name, next.chapter)}`}><span>{canonicalReference(next.book.name, next.chapter)}</span> →</Link> : <span />}
+  </nav>;
+}
 
 export async function generateMetadata({
   params,
@@ -86,7 +95,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { book, chapter } = await params;
   const loaded = await loadChapter(book, chapter);
-  if (!loaded.chapter.ok) {
+  if (!loaded.ok) {
     return {
       title: "Leitura indisponível | Bíblia Bereana",
       description:
@@ -94,11 +103,11 @@ export async function generateMetadata({
       robots: { index: false },
     };
   }
-  const reference = canonicalReference(loaded.chapter.book.name, loaded.chapter.chapter.number);
+  const reference = canonicalReference(loaded.book.name, loaded.chapter.number);
   return {
     title: `${reference} | Bíblia Bereana`,
     description: `${reference} para leitura e estudo na Bíblia Bereana.`,
-    alternates: { canonical: chapterPath(loaded.chapter.book.slug, loaded.chapter.chapter.number) },
+    alternates: { canonical: chapterPath(loaded.book.slug, loaded.chapter.number) },
   };
 }
 
@@ -106,26 +115,17 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
   const { book, chapter } = await params;
   const loaded = await loadChapter(book, chapter);
 
-  if (!loaded.chapter.ok) {
+  if (!loaded.ok) {
     // Refer�ncia inexistente ou malformada � 404; falta de banco, tradu��o n�o
     // aprovada ou cap�tulo sem publica��o s�o estados explicados ao leitor.
-    if (loaded.chapter.reason === "not_found" || loaded.chapter.reason === "invalid_reference") {
+    if (loaded.reason === "not_found" || loaded.reason === "invalid_reference") {
       notFound();
     }
-    return <ReaderUnavailable reason={loaded.chapter.reason} />;
+    return <ReaderUnavailable reason={loaded.reason} />;
   }
 
-  const { translation, book: currentBook, chapter: currentChapter, verses } = loaded.chapter;
+  const { translation, book: currentBook, chapter: currentChapter, verses } = loaded;
   const reference = canonicalReference(currentBook.name, currentChapter.number);
-  const books: readonly NavigationBook[] = loaded.books ?? [currentBook];
-  const totalChapters = Math.max(loaded.totalChapters, currentChapter.number);
-  const { previous, next } = chapterNeighbours({
-    books,
-    currentBookSlug: currentBook.slug,
-    currentChapter: currentChapter.number,
-    chaptersInBook: totalChapters,
-    chaptersInPreviousBook: loaded.chaptersInPreviousBook,
-  });
 
   return (
     <ReaderProvider
@@ -139,13 +139,9 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
           <div className="readerMenu">
             <ReaderSideMenu />
           </div>
-          <ChapterPicker
-            books={books}
-            currentBook={currentBook}
-            currentChapter={currentChapter.number}
-            totalChapters={totalChapters}
-            chapterCounts={loaded.chapterCounts}
-          />
+          <Suspense fallback={<PickerFallback name={currentBook.name} chapter={currentChapter.number} />}>
+            <DeferredChapterPicker currentBook={currentBook} currentChapter={currentChapter.number} />
+          </Suspense>
           <div className="readerActions" aria-label="Ações do capítulo">
             <ReaderTools />
           </div>
@@ -156,30 +152,11 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
           chapterNumber={currentChapter.number}
           translationName={translation.name.includes("Livre") ? "Bíblia Livre" : translation.name}
           verses={verses}
-          previous={previous ? { href: chapterPath(previous.book.slug, previous.chapter), label: canonicalReference(previous.book.name, previous.chapter) } : null}
-          next={next ? { href: chapterPath(next.book.slug, next.chapter), label: canonicalReference(next.book.name, next.chapter) } : null}
+          navigation={<Suspense fallback={null}><DeferredChapterNavigation currentBookSlug={currentBook.slug} currentChapter={currentChapter.number} /></Suspense>}
         />
 
         {/* Barra de ações: aparece apenas quando há versículo selecionado. */}
         <SelectionBar />
-
-        <nav className="chapterNav" aria-label="Navegação entre capítulos">
-          {previous ? (
-            <Link href={chapterPath(previous.book.slug, previous.chapter)} rel="prev">
-              <span aria-hidden="true">←</span>{" "}
-              {canonicalReference(previous.book.name, previous.chapter)}
-            </Link>
-          ) : (
-            <span />
-          )}
-          {next ? (
-            <Link href={chapterPath(next.book.slug, next.chapter)} rel="next">
-              {canonicalReference(next.book.name, next.chapter)} <span aria-hidden="true">→</span>
-            </Link>
-          ) : (
-            <span />
-          )}
-        </nav>
 
         <footer className="readerFooter">
           <Link href="/estudos">Contexto e estudos</Link>

@@ -66,7 +66,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           aria-controls={navigationId}
           onClick={() => setOpen((value) => !value)}
         >
-          <span aria-hidden="true">☰</span> Áreas
+          <span aria-hidden="true">☰</span>
         </button>
         <span className={styles.brand}>BÍBLIA BEREANA</span>
       </header>
