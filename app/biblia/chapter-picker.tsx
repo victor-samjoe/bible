@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./chapter-picker.module.css";
 import { chapterPath, chapterRange, type NavigationBook } from "@/src/domain/bible-navigation";
 import { chapterScope } from "@/src/domain/reader-marks";
@@ -28,11 +28,14 @@ export function ChapterPicker({
   chapterCounts: Readonly<Record<string, number>>;
   translationCode: string;
 }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const { isReadScope } = useReader();
   const [open, setOpen] = useState<"livro" | "capitulo" | null>(null);
   const [selectedBook, setSelectedBook] = useState<NavigationBook>(currentBook);
   const [query, setQuery] = useState("");
   const [versionsOpen, setVersionsOpen] = useState(false);
+  const [destination, setDestination] = useState<string | null>(null);
 
   const filteredBooks = useMemo(() => {
     const normalized = query.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim();
@@ -48,6 +51,13 @@ export function ChapterPicker({
     setOpen(null);
     setQuery("");
   }, []);
+
+  const navigateToChapter = useCallback((bookSlug: string, number: number) => {
+    const path = chapterPath(bookSlug, number);
+    setDestination(`${selectedBook.name} ${number}`);
+    setOpen(null);
+    startTransition(() => router.push(path));
+  }, [router, selectedBook.name]);
 
   useEffect(() => {
     if (!open) return;
@@ -143,15 +153,15 @@ export function ChapterPicker({
               <ul className={styles.chapters}>
                 {chapterRange(chapterCounts[selectedBook.slug] ?? (selectedBook.slug === currentBook.slug ? totalChapters : 0)).map((number) => (
                   <li key={number}>
-                    <Link
-                      href={chapterPath(selectedBook.slug, number)}
+                    <button
+                      type="button"
                       aria-current={selectedBook.slug === currentBook.slug && number === currentChapter ? "page" : undefined}
                       className={selectedBook.slug === currentBook.slug && number === currentChapter ? styles.current : undefined}
-                      onClick={() => setOpen(null)}
+                      onClick={() => navigateToChapter(selectedBook.slug, number)}
                     >
                       {isReadScope(chapterScope(selectedBook.slug, number)) ? <span className={styles.readFlag} aria-label="Capítulo lido">⚑</span> : null}
                       {number}
-                    </Link>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -159,6 +169,8 @@ export function ChapterPicker({
           </section>
         </div>
       )}
+
+      {destination && isPending ? <div className={styles.loading} role="status" aria-live="polite"><span /><strong>Abrindo {destination}</strong><p>Carregando o capítulo selecionado…</p></div> : null}
 
       {versionsOpen ? (
         <div className={styles.backdrop} role="presentation" onClick={() => setVersionsOpen(false)}>

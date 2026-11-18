@@ -60,7 +60,8 @@
   grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
 }
 .books button,
-.chapters a {
+.chapters a,
+.chapters button {
   display: flex;
   align-items: center;
   justify-content:center;
@@ -76,17 +77,18 @@
   cursor:pointer;
 }
 .readFlag{color:#d6aa4f;font-size:.82rem;line-height:1;margin-right:4px}
-.chapters a {
+.chapters a,
+.chapters button {
   justify-content: center;
   padding: 12px 6px;
   font-variant-numeric: tabular-nums;
 }
 .books button:hover,
-.chapters a:hover {
+.chapters a:hover,.chapters button:hover {
   background: #efe9de;
 }
 .books button:focus-visible,
-.chapters a:focus-visible,
+.chapters a:focus-visible,.chapters button:focus-visible,
 .sheet header > button:focus-visible {
   outline: 2px solid #264d3a;
   outline-offset: 2px;
@@ -126,3 +128,4 @@
   outline: 2px solid #264d3a;
   outline-offset: 2px;
 }
+.loading{position:fixed;inset:0;z-index:60;display:grid;place-content:center;gap:9px;text-align:center;background:#191a1be8;color:#f5f2ea;font-family:Arial,Helvetica,sans-serif}.loading span{width:34px;height:34px;margin:auto;border:3px solid #77746c;border-top-color:#d6aa4f;border-radius:50%;animation:spin .7s linear infinite}.loading strong{font:700 1.1rem Georgia,serif}.loading p{margin:0;color:#c9c4ba;font-size:.85rem}@keyframes spin{to{transform:rotate(360deg)}}
