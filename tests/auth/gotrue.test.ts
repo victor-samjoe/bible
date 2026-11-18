@@ -46,7 +46,7 @@ describe("cliente Supabase Auth por requisição", () => {
     expect(init.headers.Authorization).toBe("Bearer sb_publishable_exemplo");
     expect(JSON.parse(String(init.body))).toEqual({ email: "pessoa@example.com", create_user: false });
     expect(init.cache).toBe("no-store");
-    expect(init.redirect).toBe("error");
+    expect(init.redirect).toBe("manual");
   });
 
   it("verifica código e `token_hash` e normaliza o prazo da sessão", async () => {

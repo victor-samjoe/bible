@@ -107,7 +107,10 @@ export function createGoTrueClient(
       ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }),
       ...(signal ? { signal } : {}),
       cache: "no-store",
-      redirect: "error",
+      // O runtime do Cloudflare Workers não implementa `redirect: "error"` e
+      // lança TypeError antes da subrequisição. `manual` preserva a resposta
+      // 3xx para que o mesmo tratamento por status continue seguro.
+      redirect: "manual",
     });
     let payload: unknown = null;
     try {
