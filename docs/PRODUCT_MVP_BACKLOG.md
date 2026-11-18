@@ -26,9 +26,13 @@ O leitor é a tela principal. A área pessoal dá continuidade à leitura; mater
 
 | ID | Entrega | Dependência | Critério de aceite |
 | --- | --- | --- | --- |
-| P3-01 | Login/cadastro/reset de senha | Supabase Auth configurado | Fluxos reais de e-mail, erros seguros e sessão server-side. |
+| P3-01 | Login/cadastro/reset de senha | Supabase Auth configurado; entrega de e-mail em `tasks/auth/AUTH-E01-ses-smtp.md` | Fluxos reais de e-mail, erros seguros e sessão server-side. |
 | P3-02 | Perfil | P3-01 + Storage | Nome, foto opcional, preferências e exclusão/exportação de dados. |
-| P3-03 | 2FA | Supabase Auth + política | TOTP/MFA real, recuperação segura e testes de acesso. |
+| P3-03 | 2FA | Descoberta em `tasks/auth/AUTH-2FA-01-descoberta-tokens-whatsapp-sms.md` + política | TOTP/MFA real, recuperação segura e testes de acesso. |
+
+Login e cadastro já estão publicados e ligados ao Supabase Auth; o que falta em P3-01 é entrega de
+e-mail própria, especificada em `docs/EMAIL_DELIVERY_ARCHITECTURE.md`. P3-03 não começa antes da
+descoberta de canal aprovada: nenhuma tela promete segunda etapa hoje.
 
 ## Fase P4 — planos e checkout
 

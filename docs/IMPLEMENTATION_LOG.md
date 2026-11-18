@@ -656,3 +656,59 @@ real e consome o limite de envio.
    Serve para testar, não para abrir ao público: exige SMTP próprio.
 5. Limite de tentativas continua por isolate, em memória, e a política de
    retenção continua não aprovada — os dois já estavam registrados no plano.
+
+## 2026-11-18 — Estrutura de entrega de e-mail e descoberta de 2FA
+
+Ordem do operador: encaixar a Bible na arquitetura de envio que a SamJoE desenhou no sistema
+juridico e abrir uma tarefa de descoberta para token de 2FA por WhatsApp e SMS. Nada executado em
+AWS, DNS, provedor ou painel nesta passagem: a entrega e documental.
+
+### Levantamento que precedeu
+
+Antes de escrever, foi medido o que existe. Em `E:\Sistema Juridico`: `src/lib/auth-email.ts`
+registra, em comentario datado de 19/09/2026, que o projeto Supabase de producao esta com
+`smtp_user = "email-delivery-disabled"` e que nenhum e-mail de Auth sai em nenhum ambiente;
+`src/lib/email/send-email.ts` e adaptador de webhook que retorna `disabled` por padrao;
+`tasks/auth/AUTH-003-smtp-confirmacao-email.md` esta `todo` desde 27/08/2026; e os seis bloqueadores
+do `RUNBOOK_CONTA_AWS_E_AMAZON_SES.md` seguem desmarcados. Na Cloudflare: uma conta, quatro Workers,
+nenhum jurdico, `samjoe.com.br` em Google Workspace e `bibliabereianos.com.br` com um unico
+registro DNS. Email Routing `unconfigured` nas duas zonas.
+
+Conclusao: **nao existe credencial de e-mail a reaproveitar**. O que se reaproveita e a arquitetura.
+
+### Arquivos criados
+
+- `docs/EMAIL_DELIVERY_ARCHITECTURE.md`: a Bible entra na AWS Organization da proponente como
+  conta-membro `sj-email-biblia-prod`, ao lado de `sj-email-expatritax-prod`. Especifica os quatro
+  enderecos de e-mail necessarios, a tabela completa de DNS para o subdominio de envio
+  `auth.bibliabereianos.com.br` (SPF, tres CNAME de DKIM, MX e TXT de MAIL FROM, DMARC em `p=none`),
+  os campos de SMTP do painel do Supabase, o custo por uso e os bloqueadores separados por dono.
+- `tasks/auth/AUTH-E01-ses-smtp.md`: tarefa de execucao no mesmo template do AUTH-003 do juridico.
+- `tasks/auth/AUTH-2FA-01-descoberta-tokens-whatsapp-sms.md`: descoberta, nao implementacao.
+- `docs/PRODUCT_MVP_BACKLOG.md`: P3-01 e P3-03 passam a apontar para as tarefas.
+
+### Decisoes registradas nos documentos
+
+- **Subdominio exclusivo de autenticacao** (`auth.bibliabereianos.com.br`), com DKIM proprio, para
+  que a reputacao de envio da Biblia fique isolada da do juridico. O apice nao recebe MX.
+- **Credencial SMTP somente no Dashboard do Supabase**, regra herdada do runbook, nunca em `.env*`.
+- **DMARC comeca em `p=none`** e endurece depois de ler relatorio; pular para `reject` derruba o
+  login.
+- **Google Workspace como SMTP transacional fica documentado como nao recomendado**: remetente
+  teria de ser caixa humana e um codigo marcado como spam contamina a reputacao corporativa.
+- **A descoberta de 2FA compara TOTP antes de SMS e WhatsApp**, porque TOTP nao tem custo por
+  mensagem nem dependencia de operadora.
+- **O gateway nao oficial de WhatsApp que o `samjoe-sales-engine` ja usa (Evolution API) nao pode
+  ser assumido como caminho**: a tarefa exige resposta citando os termos da Meta sobre OTP, porque
+  banimento do numero levaria embora tambem o canal comercial.
+
+### Pendencia que nao depende de nada disso
+
+Os tres campos do painel de Auth seguem errados e continuam sendo o que impede o login hoje:
+`site_url` em `http://localhost:3000`, `uri_allow_list` vazia e `mailer_otp_length` em 8 contra os
+seis digitos que a interface promete. O `HTTP 400` da Management API em 18/11 provavelmente vem da
+restricao de template no plano free; um PATCH sem os campos de template isola a causa e aguarda
+autorizacao.
+
+Nada aplicado em AWS. Nenhum registro DNS escrito. Nenhum provedor contratado. Nenhuma mensagem
+enviada. `.env*` intocado.
