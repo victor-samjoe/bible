@@ -303,3 +303,171 @@ Tarefa escolhida por exclusão: C14 estava sendo executada por outra instância 
 - Limites respeitados: nenhum banco, Auth, pagamento, rede, migration, `.env*`, deploy ou commit. Nenhuma página de `app/perfil/**`, `app/conta/**` ou `app/entrar/**` foi criada ou editada, por causa da reserva de C17. Nenhuma tela de notas foi criada, por causa do bloqueio de C10.
 - **Verificação pendente de aprovação do operador:** neste ambiente os comandos de terminal (`git`, `npm`) exigem aprovação manual e foram recusados, então `lint`, `typecheck`, `test` e `build` não puderam ser executados por esta frente. O código novo é autocontido (dois módulos puros, uma casca de UI, uma página e dois arquivos de teste), mas o aceite só se fecha depois de rodar os quatro comandos.
 - **Defeito encontrado e não corrigido, por ser de outra frente:** `app/biblia/[book]/[chapter]/page.tsx` tem 19 sequências de bytes inválidos em UTF-8, e parte delas é texto visível ao leitor: as setas de "anterior"/"seguinte" na navegação entre capítulos, o separador do rodapé e do `<title>`, o `aria-label` "Navega��o entre cap�tulos" e o título/descrição do estado indisponível ("Leitura indispon�vel"). O arquivo tem codificação mista — outros acentos no mesmo arquivo estão corretos. Não editei: qualquer ferramenta que reescreva o arquivo inteiro transformaria esses bytes em `U+FFFD` de forma definitiva, e a decisão sobre quais glifos restaurar é da frente do leitor. Nenhum outro arquivo de `app/`, `src/`, `tests/` ou `scripts/` tem o problema.
+
+## 2026-11-17 — Finalização de C14 e C15
+
+Passagem de fechamento sobre as duas frentes que estavam em andamento na árvore.
+Não toquei em C13, C16, C17, `app/entrar/**`, `app/perfil/**`, `app/materiais/**`,
+`app/cursos/**`, `src/content/catalog-fixtures.ts` nem `src/domain/catalog.ts`.
+Nenhuma tarefa bloqueada (C5, C6, C10, C11) foi iniciada.
+
+### Limite de ambiente, declarado antes dos resultados
+
+Nesta sessão **`npm`, `npx`, `node` e `git` foram recusados pela camada de
+permissão** (`git` também acusa `dubious ownership`, porque `.git` pertence à
+conta `CodexSandboxOffline`, e a exceção `safe.directory` exigiria alterar
+configuração global, o que também foi recusado). Portanto:
+
+- **não executei** `npm run lint`, `npm run typecheck`, `npm run test`,
+  `npm run build`, `npx playwright test` nem
+  `node --experimental-strip-types scripts/verify-original-corpus.ts`;
+- **não inspecionei a árvore por Git**: o levantamento do que estava modificado
+  foi feito por data de modificação de arquivo (`find -newermt`), não por
+  `git status`;
+- o que verifiquei de fato foi **checksum real** (`sha256sum`, permitido) e
+  revisão estática de código, tipos, nomes exportados e chaves de CSS module.
+
+Isso vale para as duas frentes: o aceite formal de C14 e C15 só fecha quando os
+quatro comandos e o script de verificação rodarem. A pendência registrada na
+entrada anterior do C15 **continua aberta** por esse motivo.
+
+### C14 — corpora originais
+
+**O portão de licença/arquivo oficial foi satisfeito, então não houve bloqueio a
+registrar.** A coleta já estava feita por outra instância, em
+`data/sources/originals/`, e reconferi os bytes localmente, sem rede:
+
+- **32 de 32 arquivos conferem o SHA-256 do manifesto**: `hebwlc_usfm.zip`,
+  `morphhb-v.2.2.tar.gz`, as 3 evidências de licença e os 27 arquivos de texto
+  do SBLGNT. Nenhuma divergência.
+- **Licença verificável nos arquivos locais**, não por memória nem por rede:
+  `oshb-morphhb/LICENSE.md` declara base WLC em domínio público, CC BY 4.0 e a
+  frase de atribuição exigida; `sblgnt/LICENCA.html` contém o texto da
+  "Creative Commons Attribution 4.0 International Public License";
+  `wlc-ebible/EVIDENCIA-LICENCA.html` declara `Public Domain`.
+- Versão fixada: MorphHB tem tag (`v.2.2`) e commit
+  (`6a5db284c715c18b239422e57bb89684e6a19f00`) reais. WLC (eBible) e SBLGNT
+  (sblgnt.com) **não têm release nem tag**: são arquivos correntes, e o único
+  pino é o SHA-256. Registrei isso como limitação, em vez de chamar de "versão".
+- As três fontes seguem `collected_pending_human_approval`. **Nada de hebraico,
+  grego, lema ou morfologia aparece em qualquer tela**, e nenhuma edição está
+  aprovada. O corpus está fora de `public/`, e `.gitignore` o mantém fora do Git.
+
+**Lacuna fechada — proveniência não estava versionada.** `.gitignore` ignora
+`data/sources/originals/` inteiro, inclusive os `MANIFEST.json`. Ou seja, o
+registro de URL oficial, licença, atribuição, versão/commit e checksum que a
+tarefa exige vivia só em arquivo ignorado, e se perderia. Passei esse registro
+para `docs/ORIGINAL_LANGUAGE_SOURCES.md`, que é versionado: tabela de
+proveniência com data de coleta, versão fixada e licença de cada fonte, os cinco
+checksums principais, a limitação de "sem tag" acima e a explicação de qual
+digitalização do WLC está em uso. A coluna "Situação" da tabela de candidatos
+deixou de dizer "ainda requer pin de arquivo e checksum", que já não era verdade.
+
+**Defeito real encontrado e corrigido** em `scripts/verify-original-corpus.ts`:
+o script varria `wlc/*.xml` e contava os 40 arquivos como livros, mas um deles é
+`VerseMap.xml` — o catálogo de diferenças de versificação entre WLC e KJV que a
+própria fonte distribui no mesmo diretório. O relatório afirmaria **40 livros
+hebraicos onde o corpus tem 39**. `VerseMap.xml` não produzia versículo falso
+(seus `<verse wlc=… kjv=…/>` não têm `osisID`, então o parser os ignora), mas o
+arquivo entrava na contagem e nada avisava que ele rendeu zero. Agora é excluído
+explicitamente e, nos dois corpora, **arquivo de livro que não rende versículo
+nenhum é falha** (`livros sem texto`) em vez de passar batido.
+
+**Endurecimento em `src/importers/original/morphhb.ts`:** o parser do hebraico
+lia `osisID` e usava o `bookCode` recebido como `canonBook` sem conferir o livro
+declarado no próprio `osisID`. Um versículo de outro livro seria gravado com uma
+referência que a fonte não afirma. O parser do grego já relatava divergência de
+sigla; o do hebraico agora relata `livro X diverge do arquivo Y` e descarta a
+linha, em vez de reetiquetar em silêncio. Teste novo em
+`tests/importers/original-languages.test.ts`.
+
+**O que não fiz em C14, de propósito:** não existe parser do USFM do eBible, e
+não criei um. O texto hebraico vem do OSIS do MorphHB; o pacote do eBible fica
+como evidência independente de domínio público do texto-base. São duas
+digitalizações do mesmo códice, e misturá-las sob o mesmo rótulo daria texto de
+procedência ambígua. A decisão está escrita no script e agora também no doc. Não
+rodei `scripts/fetch-original-sources.ts` (usa rede) e não apliquei
+`drizzle/0005_original_languages.sql` em banco algum, local ou remoto.
+
+### C15 — app shell e dashboard
+
+Concluí só UI local e fixtures honestas; nada de banco, Auth ou pagamento.
+
+**Defeito real corrigido — link que dava 404.** `app/biblia/reader-side-menu.tsx`
+tinha a lista de áreas escrita à mão, com `{ href: "/notas", label: "Minhas
+notas" }`. **`app/notas` não existe**, então essa entrada do menu do leitor levava
+a 404 — exatamente o que `src/domain/app-navigation.ts` existe para evitar, e que
+a entrada anterior deste registro já havia apontado como pendência. O menu passou
+a derivar de `appAreas`, a mesma lista da casca: área disponível vira `Link`, área
+sem página publicada vira texto com o motivo. Uma fonte de verdade, não duas.
+Acrescentei a classe `.off` em `reader-side-menu.module.css` (claro e escuro).
+
+**Afirmação vencida corrigida:** `perfil` estava marcada `unavailable` com o
+motivo "área pessoal em construção", mas `app/perfil/page.tsx` **passou a existir**
+(frente C17b, 20:03). Pela própria regra de C15 — só é `available` a área com
+página publicada — a área virou disponível, com descrição que não promete nada:
+"identidade e segurança exigem autenticação, que ainda não existe". A página em si
+continua dizendo que cada recurso exige autenticação; não simulei sessão nem
+editei `app/perfil/**`. Isso também atende o aceite de C17b, que pede a área
+alcançável pelo app shell quando o link existir. `notas` segue indisponível, com
+motivo, porque continua sem página. `tests/domain/app-navigation.test.ts` foi
+atualizado para a realidade nova (perfil disponível e ativo em `/perfil`; notas
+indisponível e nunca ativa).
+
+Conferi estaticamente o resto do C15: todas as classes usadas em
+`app-shell.tsx` e `dashboard.tsx` existem nos respectivos CSS modules (17 e 15
+nomes), `@/*` resolve para a raiz pelo `tsconfig.json`, as chaves que
+`src/domain/reading-session.ts` lê (`reader-session-v3`, `highlights`, `notes`,
+`readChapters`) batem com `app/biblia/reader-state.tsx`, e os regex reusados de
+`reader-marks.ts` não têm flag `g` — então `.test()` compartilhado não carrega
+estado entre chamadas. `src/content/platform-updates.ts` continua factual depois
+do C14: a entrada que diz que o painel de originais segue sem grego ou hebraico
+aprovado permanece verdadeira, porque coletar não é aprovar.
+
+### Arquivos alterados nesta passagem
+
+`src/domain/app-navigation.ts`, `app/biblia/reader-side-menu.tsx`,
+`app/biblia/reader-side-menu.module.css`, `tests/domain/app-navigation.test.ts`,
+`src/importers/original/morphhb.ts`, `tests/importers/original-languages.test.ts`,
+`scripts/verify-original-corpus.ts`, `docs/ORIGINAL_LANGUAGE_SOURCES.md` e este
+registro.
+
+### Pendências que continuam, e de quem são
+
+1. **Rodar `lint`, `typecheck`, `test`, `build` e o script de verificação do
+   corpus.** Recusados nesta sessão; é o que falta para fechar o aceite de C14 e
+   C15. O script deve imprimir 27 livros gregos e **39** hebraicos.
+2. **Aprovação humana das três edições originais** (C6 depende disso). Coleta e
+   checksum estão feitos; aprovar é decisão do operador, com revisão de direitos,
+   integridade e amostra, e fica registrada em `docs/ORIGINAL_LANGUAGE_SOURCES.md`.
+3. **`drizzle/0005_original_languages.sql` não foi aplicada** em nenhum banco, e
+   não foi validada em Postgres local nesta sessão (sem `node`/`docker`).
+4. **Mojibake em `app/biblia/[book]/[chapter]/page.tsx` continua** — conferido
+   agora: linha 90 (`"Leitura indispon�vel | B�blia Bereana"`) e linha 165
+   (`aria-label="Navega��o entre cap�tulos"`). É texto visível ao usuário, é da
+   frente do leitor e não foi causado por C14 nem por C15, então não editei.
+5. **Casca não envolve `/materiais`, `/estudos`, `/cursos` e `/planos`**, que usam
+   o tema claro de `app/globals.css`. Envolvê-las exige reestilizar páginas da
+   frente C16, fora do alcance desta passagem.
+
+Nada commitado. Nenhuma rede. `.env*` intocado. Nenhuma migration aplicada.
+Nenhum deploy.
+
+### Adendo de validação e publicação — 17/11/2026
+
+Após essa passagem, o responsável pela integração executou as validações no mesmo
+workspace: `npm run build` terminou com sucesso (inclui lint e checagem de
+tipos), e `npx vitest run tests/importers/original-languages.test.ts
+tests/domain/app-navigation.test.ts` passou com 23 testes. Permanecem apenas os
+warnings pré-existentes de `useMemo` em `reader-state.tsx` e de `dirname` não
+usado em `src/cli/import-theology.ts`.
+
+`node --experimental-strip-types scripts/verify-original-corpus.ts` confirmou:
+SBLGNT 27 livros / 7.927 versículos / 137.542 tokens; MorphHB 39 livros /
+23.213 versículos / 306.785 tokens / 471.674 morfemas; nenhum checksum
+divergente, linha recusada, problema ou livro sem texto. As edições continuam
+`collected_pending_human_approval` e não foram expostas no aplicativo.
+
+Os commits `b354a2f` e `9344934` registraram C14--C17 localmente; o Worker
+`samjoe-estudos` foi publicado depois da validação. Nenhuma migration foi
+aplicada e nenhum corpus privado foi enviado ao Git ou ao bundle público.
