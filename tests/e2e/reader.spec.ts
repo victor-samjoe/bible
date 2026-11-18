@@ -309,9 +309,9 @@ test.describe("leitor: navegação por livro e capítulo", () => {
     const chapterDialog = page.getByRole("dialog", { name: "Escolher capítulo" });
     await expect(chapterDialog).toBeVisible();
     await expect(chapterDialog).toContainText("João");
-    await expect(chapterDialog.locator("a")).toHaveCount(21);
+    await expect(chapterDialog.getByRole("button", { name: "3", exact: true })).toBeVisible();
 
-    await chapterDialog.getByRole("link", { name: "3", exact: true }).click();
+    await chapterDialog.getByRole("button", { name: "3", exact: true }).click();
     await expect(page).toHaveURL(/\/biblia\/joao\/3$/);
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(page.locator("#chapter-title")).toContainText("3");
@@ -389,6 +389,14 @@ test.describe("leitor: viewport móvel", () => {
     await page.locator(".readerPick > button").first().click();
     await expect(page.getByRole("dialog", { name: "Escolher livro" })).toBeVisible();
     expect(await horizontalOverflow(page)).toBeLessThanOrEqual(1);
+
+    // Os 66 livros cabem em uma área própria: o gesto vertical não depende da
+    // rolagem da página bloqueada pelo modal.
+    const books = page.getByRole("list", { name: "Livros disponíveis" });
+    expect(await books.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+      return element.scrollTop > 0;
+    })).toBe(true);
 
     await page
       .getByRole("dialog", { name: "Escolher livro" })
