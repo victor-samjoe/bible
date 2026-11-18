@@ -1,1 +1,5 @@
 .trigger{display:block;margin:0 auto 18px;border:1px solid #555a52;border-radius:999px;background:transparent;color:inherit;padding:7px 14px;font:600 .76rem Arial,sans-serif}.backdrop{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.52);display:grid;place-items:end center;animation:fade .18s ease}.sheet{width:min(620px,100%);box-sizing:border-box;background:#f8f5ee;color:#202522;border-radius:22px 22px 0 0;padding:22px;animation:up .22s cubic-bezier(.2,.8,.2,1)}.sheet header{display:flex;justify-content:space-between;align-items:center}.sheet h2{font:1.5rem Georgia,serif;margin:0}.sheet header button{border:0;border-radius:50%;width:36px;height:36px;font-size:1.5rem}.sheet p{font:1rem/1.55 Arial,sans-serif;color:#526057}@keyframes fade{from{opacity:0}to{opacity:1}}@keyframes up{from{transform:translateY(16px)}to{transform:none}}
+
+:global([data-reader-theme="dark"]) .sheet{background:#202123;color:#f1eee9;border:1px solid #3b3c3e}
+:global([data-reader-theme="dark"]) .sheet header button{background:#303134;color:#f1eee9}
+:global([data-reader-theme="dark"]) .sheet p{color:#c9c4ba}

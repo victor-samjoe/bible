@@ -11,3 +11,19 @@
 .controls button.on,.choices button.on,.actions button.on{background:#365e49;border-color:#4f8a6c}
 .translation{border-color:#3b3c3e;color:#f1eee9}
 .translation em{color:#b8b5ae}
+
+/* Gaveta lateral: permite acompanhar a alteração no texto ao lado. */
+.backdrop{background:transparent;align-items:stretch;justify-content:flex-end;padding:14px}
+.sheet{width:min(380px,68vw);max-height:calc(100svh - 28px);border-radius:18px;box-shadow:-15px 0 45px rgba(0,0,0,.28)}
+:global([data-reader-theme="light"]) .sheet{background:#f8f5ee;color:#202522;border-color:#ded6c9}
+:global([data-reader-theme="light"]) .sheet header p,:global([data-reader-theme="light"]) .content h3,:global([data-reader-theme="light"]) .selected,:global([data-reader-theme="light"]) .local{color:#536258}
+:global([data-reader-theme="light"]) .sheet header>button{background:#e6dfd4;color:#202522}
+:global([data-reader-theme="light"]) .controls button,:global([data-reader-theme="light"]) .choices button,:global([data-reader-theme="light"]) .actions button,:global([data-reader-theme="light"]) .note{background:#fffdf7;border-color:#cfc6b8;color:#26332c}
+:global([data-reader-theme="dark"]) .sheet{background:#202123;color:#f1eee9;border:1px solid #3b3c3e}
+:global([data-reader-theme="dark"]) .sheet header p,:global([data-reader-theme="dark"]) .content h3,:global([data-reader-theme="dark"]) .selected,:global([data-reader-theme="dark"]) .local{color:#b8b5ae}
+:global([data-reader-theme="dark"]) .sheet header>button{background:#303134;color:#f1eee9}
+:global([data-reader-theme="dark"]) .controls button,:global([data-reader-theme="dark"]) .choices button,:global([data-reader-theme="dark"]) .actions button,:global([data-reader-theme="dark"]) .note{background:#292a2c;border-color:#494a4c;color:#f1eee9}
+:global([data-reader-theme="dark"]) .controls button.on,:global([data-reader-theme="dark"]) .choices button.on,:global([data-reader-theme="dark"]) .actions button.on{background:#365e49;border-color:#4f8a6c}
+:global([data-reader-theme="dark"]) .translation{border-color:#3b3c3e;color:#f1eee9}
+:global([data-reader-theme="dark"]) .translation em{color:#b8b5ae}
+@media(max-width:650px){.backdrop{padding:10px}.sheet{width:min(350px,68vw);max-height:calc(100svh - 20px)}}

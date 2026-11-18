@@ -153,6 +153,11 @@
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
 }
 
+:global([data-reader-theme="dark"]) .menu{background:#202123;color:#f1eee9;border-color:#3b3c3e}
+:global([data-reader-theme="dark"]) .group{color:#b8b5ae}
+:global([data-reader-theme="dark"]) .color,:global([data-reader-theme="dark"]) .actions button{background:#292a2c;border-color:#494a4c;color:#f1eee9}
+:global([data-reader-theme="dark"]) .color:disabled{color:#a8a49c}
+
 @media (max-width: 650px) {
   .menu {
     top: 78px;

@@ -135,3 +135,8 @@
   outline-offset: 2px;
 }
 .loading{position:fixed;inset:0;z-index:60;display:grid;place-content:center;gap:9px;text-align:center;background:#191a1be8;color:#f5f2ea;font-family:Arial,Helvetica,sans-serif}.loading span{width:34px;height:34px;margin:auto;border:3px solid #77746c;border-top-color:#d6aa4f;border-radius:50%;animation:spin .7s linear infinite}.loading strong{font:700 1.1rem Georgia,serif}.loading p{margin:0;color:#c9c4ba;font-size:.85rem}@keyframes spin{to{transform:rotate(360deg)}}
+
+:global([data-reader-theme="dark"]) .sheet,:global([data-reader-theme="dark"]) .sheet header{background:#202123;color:#f1eee9;border-color:#3b3c3e}
+:global([data-reader-theme="dark"]) .sheet header p,:global([data-reader-theme="dark"]) .filter{color:#b8b5ae}
+:global([data-reader-theme="dark"]) .books button,:global([data-reader-theme="dark"]) .chapters button,:global([data-reader-theme="dark"]) .filter input,:global([data-reader-theme="dark"]) .back,:global([data-reader-theme="dark"]) .sheet header>button{background:#292a2c;color:#f1eee9;border-color:#494a4c}
+:global([data-reader-theme="dark"]) .books button:hover,:global([data-reader-theme="dark"]) .chapters button:hover{background:#343638}
