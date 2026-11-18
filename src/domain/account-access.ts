@@ -22,11 +22,16 @@ export type ConfirmFailureReason =
   | "provider_error";
 
 /**
- * Frase única do envio. Sujeito indefinido de propósito: "se este e-mail puder
- * receber acesso" não confirma nem nega a existência da conta.
+ * Frase do envio. Já foi condicional — "se este e-mail puder receber acesso" —
+ * para não confirmar nem negar a existência da conta. A proteção era inútil
+ * aqui por duas razões: pedir código em `/criar-conta` cria a conta, então todo
+ * e-mail pode receber acesso e não há existência a esconder; e a tela seguinte
+ * já diz "Código enviado para ***", desmentindo a condicional na linha de
+ * baixo. O que restava era hesitação sem segurança, e isso custa confiança numa
+ * tela de login. A frase direta diz o que aconteceu e o que fazer em seguida.
  */
 export const ACCESS_CODE_SENT_NOTICE =
-  "Se este e-mail puder receber acesso, enviamos um código de 6 dígitos agora. Confira a caixa de entrada e a pasta de spam.";
+  "Pronto, o código está a caminho. Chega em segundos — se não aparecer, confira a pasta de spam.";
 
 export const ACCESS_UNAVAILABLE_NOTICE =
   "O acesso por conta ainda não está configurado neste ambiente. Nenhum e-mail foi enviado e nenhum dado foi guardado.";

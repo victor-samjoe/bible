@@ -87,7 +87,7 @@ export function AccessForm({ action, requestLabel, requestHint }: AccessFormProp
             </button>
           </div>
           <p className={styles.hint}>
-            O código expira em poucos minutos e vale uma vez. Nenhuma senha é criada ou guardada.
+            O código vale por 1 hora e serve uma única vez. Nenhuma senha é criada ou guardada.
           </p>
         </>
       ) : (

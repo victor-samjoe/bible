@@ -43,7 +43,7 @@ export default async function LoginPage({
         <h1 id="login-title">Entre na sua conta.</h1>
         <p className={styles.lede}>Informe seu e-mail para receber um código de acesso. Sem senha.</p>
         {linkFailed ? <div className={styles.notice} role="status">
-          <strong>O link do e-mail não pôde ser usado.</strong> Ele vale uma vez e expira em poucos minutos. Peça um novo código abaixo.
+          <strong>O link do e-mail não pôde ser usado.</strong> Ele vale uma vez e expira em 1 hora. Peça um novo código abaixo.
         </div> : null}
         <AccessForm
           action={submitAccess.bind(null, "sign_in")}
