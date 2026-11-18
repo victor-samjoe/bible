@@ -6,17 +6,18 @@
   z-index: 30;
   background: rgba(0, 0, 0, 0.52);
   display: flex;
-  align-items: end;
+  align-items: center;
   justify-content: center;
+  padding: 16px;
   font-family: Arial, Helvetica, sans-serif;
 }
 .sheet {
-  width: min(640px, 100%);
-  max-height: 82vh;
+  width: min(640px, calc(100% - 32px));
+  max-height: calc(100svh - 32px);
   overflow: auto;
   background: #f8f5ee;
   color: #202522;
-  border-radius: 22px 22px 0 0;
+  border-radius: 22px;
   padding: 20px 22px 28px;
   box-shadow: 0 -15px 45px rgba(0, 0, 0, 0.28);
 }
@@ -103,7 +104,7 @@
   color: #f3efe6 !important;
   font-weight: 700;
 }
-.filter{display:grid;gap:6px;margin:0 0 14px;font-size:.8rem;font-weight:700;color:#465149}.filter input{width:100%;border:1px solid #cfc6b8;border-radius:9px;padding:12px 13px;background:#fffdf7;color:#202522;font:inherit}.filter input:focus{outline:2px solid #264d3a;outline-offset:2px}.empty{grid-column:1/-1;padding:20px 4px;color:#667168;text-align:center}.versions{display:grid;gap:8px}.versions button{display:flex;justify-content:space-between;align-items:center;gap:14px;width:100%;border:1px solid #ded6c9;border-radius:9px;padding:14px;background:#fffdf7;color:#27352d;font:600 1rem Arial,sans-serif;text-align:left}.versions button span{font-size:.8rem;font-weight:400;color:#667168}.versions button:disabled{cursor:not-allowed;opacity:.65}.versions .current{background:#264d3a;color:#f3efe6;border-color:#264d3a}.versions .current span{color:#dbe5dc}
+.filter{display:grid;gap:6px;margin:0 0 14px;font-size:.8rem;font-weight:700;color:#465149}.filter input{width:100%;border:1px solid #cfc6b8;border-radius:9px;padding:12px 13px;background:#fffdf7;color:#202522;font:inherit;font-size:16px}.filter input:focus{outline:2px solid #264d3a;outline-offset:2px}.empty{grid-column:1/-1;padding:20px 4px;color:#667168;text-align:center}.versions{display:grid;gap:8px}.versions button{display:flex;justify-content:space-between;align-items:center;gap:14px;width:100%;border:1px solid #ded6c9;border-radius:9px;padding:14px;background:#fffdf7;color:#27352d;font:600 1rem Arial,sans-serif;text-align:left}.versions button span{font-size:.8rem;font-weight:400;color:#667168}.versions button:disabled{cursor:not-allowed;opacity:.65}.versions .current{background:#264d3a;color:#f3efe6;border-color:#264d3a}.versions .current span{color:#dbe5dc}
 @media (max-width: 480px) {
   .sheet {
     padding: 18px 16px 26px;

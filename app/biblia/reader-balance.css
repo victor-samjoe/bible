@@ -5,6 +5,12 @@
 
 .readerMenu { justify-self: start; }
 .readerActions { justify-self: end; margin-left: 0; }
+.readerPick {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
 
 .chapterQuickNav {
   display: grid;

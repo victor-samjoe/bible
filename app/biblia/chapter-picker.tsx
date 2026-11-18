@@ -127,7 +127,7 @@ export function ChapterPicker({
               <>
                 <label className={styles.filter}>
                   <span>Filtrar livros</span>
-                  <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Ex.: João, Salmos, Gênesis" autoFocus />
+                  <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Ex.: João, Salmos, Gênesis" />
                 </label>
                 <ul className={styles.books} aria-label="Livros disponíveis">
                 {filteredBooks.map((book) => (
