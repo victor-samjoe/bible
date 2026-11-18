@@ -5,6 +5,9 @@ import { useEffect, useState } from "react";
 import styles from "./reader-side-menu.module.css";
 
 const entries = [
+  // "Início" é o painel da tarefa C15: ele é a única entrada acrescentada aqui,
+  // para o painel ser alcançável a partir do leitor.
+  { href: "/inicio", label: "Início" },
   { href: "/biblia", label: "Bíblia" },
   { href: "/estudos", label: "Estudos" },
   { href: "/materiais", label: "Materiais" },

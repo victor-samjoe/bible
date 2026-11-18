@@ -81,6 +81,24 @@ Criar catálogos UI/contratos para materiais, estudos/análises e cursos por tem
 
 Criar telas/contratos de login, cadastro, recuperação, perfil e 2FA com integração pendente. Sem simular Auth, guardar senhas, e-mail ou deploy.
 
+> **Reserva de execução:** C17a e C17b estão em execução pelo assistente principal. Outra instância não deve editar `app/entrar/**`, `app/perfil/**`, `app/conta/**` nem os testes/documentação exclusivos de C17 até a conclusão ou liberação explícita desta reserva.
+
+### C17a — Página de login
+
+Executar como UI isolada. Substituir o marcador em `app/entrar/page.tsx` por uma página responsiva e acessível, alinhada ao leitor. Exibir e-mail e acesso por link seguro/OTP somente como interface inativa, com caminhos para cadastro e recuperação. Toda ação deve declarar **“Integração de autenticação pendente”** e não pode fazer requisição de rede.
+
+Não coletar, guardar, validar no servidor ou transmitir senha/e-mail; não instalar SDK/provedor, alterar `.env*`, criar rota de API, mudar RLS/banco, publicar ou criar commit. Reaproveitar componentes/estilos existentes onde fizer sentido e não usar dados pessoais fictícios.
+
+**Aceite:** controles navegáveis por teclado/leitor de tela, foco visível, labels e mensagens de estado corretos; layout para mobile e desktop; `npm run lint`, `npm run typecheck`, `npm run test` e `npm run build` quando o ambiente permitir.
+
+### C17b — Página de perfil
+
+Executar após C17a ou em árvore sem conflito. Criar a rota explícita `/perfil` e conectá-la somente aos pontos de navegação existentes que não causem conflito. Representar uma área pessoal não autenticada: identidade, preferências sincronizadas, leituras, notas, dispositivos e segurança/2FA precisam indicar que exigem autenticação e ficar indisponíveis. Não mostrar números, avatar, histórico ou quaisquer dados fictícios. Disponibilizar entrada em `/entrar` e retorno à Bíblia.
+
+Não simular sessão, persistir perfil, exibir formulário de dados pessoais, instalar Auth/Supabase, alterar `.env*`, banco, RLS, API, deploy ou commit.
+
+**Aceite:** rota funciona sem Auth configurado; HTML semântico e estados acessíveis; links internos usam `next/link`; viewport móvel preservado; lint/typecheck/test/build passam quando possível.
+
 ## C18 — Cobrança neutra
 
 Criar contratos e testes para planos, assinaturas, webhooks e entitlements; falha fechada e reutilização de `canAccess`. Sem provedor, credenciais, checkout ou cobrança real.
@@ -311,3 +329,57 @@ abertos.
    `com.samjoe.estudos` (documentação). É permanente na loja; decidir uma vez.
 7. **`RightsSchema` de BKF-P0-001** — aceita `verified_by`/`proof` só com espaços;
    endurecido no catálogo, mas a correção na raiz é em `src/domain/bkf/**`.
+
+---
+
+# Adendo 3 ao relatório — C15 executada
+
+Detalhe completo em `docs/IMPLEMENTATION_LOG.md`, entrada "C15: app shell e painel de início".
+
+## Por que C15 e não C14
+
+C14 estava em execução por outra instância no mesmo momento (gravações em
+`src/importers/original/**`, `scripts/fetch-original-sources.ts` e
+`drizzle/0005_original_languages.sql` entre 19h44 e 19h54) e C17a/C17b estão sob
+reserva da instância `c17-login-perfil`. C15 tinha o portão satisfeito (C13
+concluída) e nenhum arquivo em disputa, então foi a próxima tarefa livre na ordem.
+
+## O que foi entregue
+
+| Item da tarefa | Situação |
+| --- | --- |
+| Navegação lateral responsiva para as oito áreas | **feita** — `app/_components/app-shell.tsx`, gaveta até 900px e barra fixa acima disso |
+| Dashboard com retomar leitura, leituras concluídas e novidades | **feito** — `/inicio` |
+| Sem dados inventados; deixar claro o que é local ou indisponível | **feito** — contagens só de chaves válidas do registro local; "Notas" e "Perfil" aparecem indisponíveis com motivo |
+| Sem banco, Auth, pagamentos, deploy ou commit | **respeitado** |
+
+Arquivos novos: `src/domain/app-navigation.ts`, `src/domain/reading-session.ts`,
+`src/content/platform-updates.ts`, `app/_components/app-shell.tsx` (+ CSS),
+`app/inicio/page.tsx`, `app/inicio/dashboard.tsx` (+ CSS),
+`app/biblia/reading-pointer.tsx`, `tests/domain/app-navigation.test.ts`,
+`tests/domain/reading-session.test.ts`.
+
+Arquivos alterados fora dos novos, ambos de forma aditiva: `app/biblia/layout.tsx`
+(monta o ponteiro de leitura, que não renderiza nada) e
+`app/biblia/reader-side-menu.tsx` (uma entrada "Início", para o painel ser
+alcançável a partir do leitor).
+
+## O que depende de você
+
+1. **Rodar lint, typecheck, test e build.** Neste ambiente `git` e `npm` exigem
+   aprovação manual e foram recusados, então nenhuma verificação pôde ser
+   executada por esta frente. O aceite de C15 só fecha depois dos quatro comandos.
+2. **Bytes inválidos em `app/biblia/[book]/[chapter]/page.tsx`** — 19 sequências
+   fora de UTF-8, parte delas visível ao leitor: as setas de anterior/seguinte, o
+   separador do rodapé e do `<title>`, o `aria-label` da navegação entre capítulos
+   e o título/descrição de "Leitura indisponível". O arquivo tem codificação mista
+   e é da frente do leitor; não foi editado para não transformar esses bytes em
+   `U+FFFD` de forma definitiva.
+3. **Menu do leitor ainda aponta para `/notas` e `/perfil`**, que não existem (404).
+   A casca nova mostra essas áreas como indisponíveis; igualar o menu do leitor
+   depende de C10 (Auth) e da reserva de C17.
+4. **Casca nas telas de catálogo** — `/materiais`, `/estudos`, `/cursos` e `/planos`
+   usam o tema claro de `app/globals.css`, enquanto a casca segue a superfície
+   escura do leitor e de `/conta`. Envolvê-las exigiria reestilizar essas páginas,
+   que são da frente C16; por isso a casca ficou em `/inicio` e o acesso às áreas
+   vem do menu.

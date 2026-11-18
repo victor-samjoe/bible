@@ -86,8 +86,8 @@ export function ReaderTools() {
             </header>
 
             <div className={styles.content}>
-              <h3>Tema</h3>
-              <div className={styles.choices}>
+              <h3 id="ajuste-tema">Tema</h3>
+              <div className={styles.choices} role="group" aria-labelledby="ajuste-tema">
                 {themes.map((item) => (
                   <button
                     key={item.value}
@@ -101,8 +101,8 @@ export function ReaderTools() {
                 ))}
               </div>
 
-              <h3>Tamanho do texto</h3>
-              <div className={styles.choices}>
+              <h3 id="ajuste-tamanho">Tamanho do texto</h3>
+              <div className={styles.choices} role="group" aria-labelledby="ajuste-tamanho">
                 {fontSizes.map((item) => (
                   <button
                     key={item.value}
@@ -116,8 +116,8 @@ export function ReaderTools() {
                 ))}
               </div>
 
-              <h3>Fonte</h3>
-              <div className={styles.choices}>
+              <h3 id="ajuste-fonte">Fonte</h3>
+              <div className={styles.choices} role="group" aria-labelledby="ajuste-fonte">
                 {fontFamilies.map((item) => (
                   <button
                     key={item.value}
@@ -131,8 +131,8 @@ export function ReaderTools() {
                 ))}
               </div>
 
-              <h3>Espaçamento</h3>
-              <div className={styles.choices}>
+              <h3 id="ajuste-espacamento">Espaçamento</h3>
+              <div className={styles.choices} role="group" aria-labelledby="ajuste-espacamento">
                 {spacings.map((item) => (
                   <button
                     key={item.value}

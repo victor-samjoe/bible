@@ -526,3 +526,94 @@ export const bkfReviews = pgTable("bkf_reviews", {
   notes: text("notes").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
 });
+
+// ---------------------------------------------------------------------------
+// Corpora de idiomas originais (drizzle/0005_original_languages.sql).
+// Texto, morfologia e lexico sao ativos separados, com licenca e aprovacao
+// proprias. O SQL segue sendo a autoridade: constraints, trigger de licenca da
+// morfologia e defaults vivem na migration.
+// ---------------------------------------------------------------------------
+
+export const originalLanguage = pgEnum("original_language", ["hbo", "grc"]);
+export const originalAssetKind = pgEnum("original_asset_kind", ["text", "text_morphology"]);
+export const originalEditionStatus = pgEnum("original_edition_status", ["collected", "under_review", "approved", "blocked"]);
+
+export const originalEditions = pgTable("original_editions", {
+  id: uuid("id").primaryKey(),
+  code: text("code").notNull(),
+  language: originalLanguage("language").notNull(),
+  assetKind: originalAssetKind("asset_kind").notNull(),
+  corpus: text("corpus").notNull(),
+  version: text("version").notNull(),
+  sourceUrl: text("source_url").notNull(),
+  licenseId: uuid("license_id"),
+  licenseDeclared: text("license_declared").notNull(),
+  attribution: text("attribution").notNull(),
+  sourceSha256: text("source_sha256").notNull(),
+  status: originalEditionStatus("status").notNull(),
+  approvedBy: uuid("approved_by"),
+  approvedAt: timestamp("approved_at", { withTimezone: true }),
+  importedAt: timestamp("imported_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+});
+
+export const originalVerses = pgTable("original_verses", {
+  id: uuid("id").primaryKey(),
+  editionId: uuid("edition_id").notNull(),
+  canonBook: text("canon_book").notNull(),
+  chapter: integer("chapter").notNull(),
+  verse: integer("verse").notNull(),
+  canonicalRef: text("canonical_ref").notNull(),
+  text: text("text").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+});
+
+export const originalTokens = pgTable("original_tokens", {
+  id: uuid("id").primaryKey(),
+  verseId: uuid("verse_id").notNull(),
+  position: integer("position").notNull(),
+  surface: text("surface").notNull(),
+  normalized: text("normalized").notNull(),
+  sourceTokenId: text("source_token_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+});
+
+export const lemmas = pgTable("lemmas", {
+  id: uuid("id").primaryKey(),
+  language: originalLanguage("language").notNull(),
+  lemma: text("lemma").notNull(),
+  strongId: text("strong_id"),
+  transliteration: text("transliteration"),
+  sourceEditionId: uuid("source_edition_id").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+});
+
+export const originalMorphemes = pgTable("original_morphemes", {
+  id: uuid("id").primaryKey(),
+  tokenId: uuid("token_id").notNull(),
+  morphologyEditionId: uuid("morphology_edition_id").notNull(),
+  position: integer("position").notNull(),
+  surface: text("surface").notNull(),
+  lemmaId: uuid("lemma_id"),
+  morphologyCode: text("morphology_code").notNull(),
+  sourceMorphemeId: text("source_morpheme_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+});
+
+export const lexiconEntries = pgTable("lexicon_entries", {
+  id: uuid("id").primaryKey(),
+  lemmaId: uuid("lemma_id").notNull(),
+  language: text("language").notNull(),
+  definition: text("definition").notNull(),
+  gloss: text("gloss"),
+  sourceName: text("source_name").notNull(),
+  sourceUrl: text("source_url").notNull(),
+  licenseId: uuid("license_id"),
+  licenseDeclared: text("license_declared").notNull(),
+  attribution: text("attribution").notNull(),
+  approvedBy: uuid("approved_by"),
+  approvedAt: timestamp("approved_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+});

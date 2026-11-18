@@ -60,6 +60,14 @@ Criar UI e contratos puros para Materiais, Estudos/Análises e Cursos por tema. 
 C17 — Esqueletos de conta e segurança
 Criar somente telas e contratos de login, cadastro, recuperação de senha, perfil e 2FA com estados “integração pendente”. Não simular autenticação, não instalar provedor, não enviar e-mails, não armazenar senhas, não fazer deploy/commit.
 
+RESERVA DE EXECUÇÃO — C17a e C17b estão em execução pelo assistente principal. Outra instância não deve editar `app/entrar/**`, `app/perfil/**`, `app/conta/**` nem os testes/documentação exclusivos de C17 até a conclusão ou liberação explícita desta reserva.
+
+C17a — Página de login
+Executar como tarefa de UI isolada dentro de C17. Substituir o marcador atual de `app/entrar/page.tsx` por uma página de login responsiva, acessível e coerente com a identidade visual do leitor. Deve oferecer campos de e-mail e acesso por link seguro/OTP apenas como interface inativa, além de links para criar conta e recuperar acesso. Todos os fluxos devem deixar explícito “Integração de autenticação pendente”; o envio deve estar desabilitado ou mostrar esse estado sem requisição de rede. Não coletar, guardar, validar no servidor ou transmitir senha/e-mail; não instalar SDK/provedor, não alterar `.env*`, não criar API route, não mudar RLS/banco, não fazer deploy/commit. Reutilizar estilos e componentes existentes quando couber; evitar dados pessoais fictícios. Aceite: teclado e leitores de tela alcançam todos os controles; foco visível, labels e mensagens de estado corretos; layout mobile e desktop; `npm run lint`, `npm run typecheck`, `npm run test` e `npm run build` quando o ambiente permitir.
+
+C17b — Página de perfil
+Executar somente após C17a ou em árvore sem conflito. Criar uma página de perfil em rota explícita (preferir `/perfil`), acessível pelo app shell/conta quando esses links já existirem, para representar a área pessoal ainda não autenticada. Mostrar somente estados honestos de conta indisponível: identidade, preferências sincronizadas, leituras, notas, dispositivos e segurança/2FA devem informar que exigem autenticação e permanecer indisponíveis, sem números, avatar, histórico ou dados fictícios. Oferecer caminho claro para `/entrar` e retorno à Bíblia. Não simular sessão, não persistir perfil, não expor formulário de dados pessoais, não instalar Auth/Supabase, não alterar `.env*`, banco, RLS, API, deploy ou commit. Aceite: rota renderiza sem Auth configurado, contém cabeçalho/semântica acessível e estados desabilitados compreensíveis, navegação interna usa `next/link`, layout responde em viewport móvel, e lint/typecheck/test/build passam quando possível.
+
 C18 — Fundação de cobrança neutra
 Criar contratos server-side e testes puros para planos, preços, assinaturas, eventos de webhook e entitlements. Sem provedor escolhido, sem checkout, sem credenciais, sem pagamentos ou webhooks reais. Reusar canAccess e falhar fechada.
 
@@ -116,3 +124,21 @@ BOM do 0000_initial.sql removido (3 bytes, nenhum SQL alterado).
 BLOQUEADAS: C5 e C10 (chaves Supabase vazias), C6 (fontes originais), C11 (aprovar edicao).
 Arvore: typecheck ok, 93 testes em 12 arquivos, 13 E2E, build ok, git diff --check ok.
 Relatorio completo em docs/CLAUDE_MVP_EXECUTION_QUEUE.md e docs/IMPLEMENTATION_LOG.md.
+
+--- ADENDO 3 (C13) ---
+C13 concluida: selecao multipla no texto (toque marca/desmarca, sem abrir painel), barra
+  flutuante so com selecao, destaque em 4 cores, nota ligada a selecao exata, comparar
+  traducoes e original so a partir da selecao e explicando indisponibilidade, "lido" como
+  acao de capitulo no cabecalho, tres pontos apenas com tema/tamanho/fonte/espacamento
+  (com tamanho menor adicional), seletor de livro trocando direto para os capitulos.
+Logica pura em src/domain/reader-marks.ts: chave de nota precisa (3 e 5 gravam "3,5",
+  nunca "3-5") e escopo comparado inteiro (genesis.1 nao casa com genesis.11).
+DOIS BUGS REAIS CORRIGIDOS: (1) no celular o menu de tres pontos desaparecia inteiro,
+  por causa de .readerActions button:first-child{display:none} em reader.css, escrita
+  quando o cabecalho tinha outro primeiro botao; (2) abrir painel deixava o menu suspenso
+  aberto por baixo. Grupos de ajuste ganharam nome acessivel, porque "Padrao" existia em
+  tamanho e em espacamento.
+Verificacao: typecheck ok, 106 testes em 13 arquivos, 18/18 E2E, build ok, diff --check ok.
+  Lint com 2 warnings, ambos fora desta frente (um pre-existente, um do processo concorrente).
+O processo concorrente comitou e estendeu esta frente (2d43be4, bceeea1, d2dd30a);
+  nada do trabalho dele foi revertido.

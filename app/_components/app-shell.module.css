@@ -1,0 +1,49 @@
+/* Casca do aplicativo (C15). Superfície escura igual à de /conta, com as mesmas
+   variáveis --reader-* e fallback, para o app não trocar de identidade entre
+   telas. No celular a navegação é gaveta; a partir de 900px ela fica fixa. */
+
+.shell{min-height:100svh;background:var(--reader-page,#171819);color:var(--reader-text,#f5f2ea);font-family:Arial,Helvetica,sans-serif}
+
+.skip{position:absolute;left:-9999px;top:8px;z-index:30;padding:10px 14px;border-radius:999px;background:#d6aa4f;color:#17231e;font-weight:800}
+.skip:focus{left:12px}
+
+.bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px clamp(16px,4vw,28px);border-bottom:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 14%,transparent);position:sticky;top:0;z-index:12;background:var(--reader-page,#171819)}
+.menuButton{display:inline-flex;align-items:center;gap:8px;border:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 20%,transparent);border-radius:999px;padding:9px 15px;background:color-mix(in srgb,var(--reader-text,#f5f2ea) 8%,transparent);color:inherit;font-weight:700;font-size:.92rem;cursor:pointer}
+.menuButton:hover{background:color-mix(in srgb,var(--reader-text,#f5f2ea) 13%,transparent)}
+.brand{font-size:.72rem;letter-spacing:.14em;font-weight:800;color:var(--reader-muted,#b9b5ac)}
+
+.backdrop{position:fixed;inset:0;z-index:14;background:rgba(0,0,0,.55)}
+
+.side{position:fixed;z-index:15;top:0;bottom:0;left:0;width:min(85vw,330px);display:flex;flex-direction:column;gap:14px;padding:18px 16px 24px;overflow-y:auto;background:#1f2021;border-right:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 14%,transparent);transform:translateX(-102%);visibility:hidden;transition:transform .2s ease}
+.sideOpen{transform:translateX(0);visibility:visible}
+.sideHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.sideBrand{display:flex;flex-direction:column;gap:2px}
+.sideBrand b{font:700 1.08rem/1.2 Georgia,"Times New Roman",serif}
+.sideBrand span{font-size:.76rem;color:var(--reader-muted,#b9b5ac)}
+.closeButton{border:0;border-radius:999px;padding:8px 12px;background:color-mix(in srgb,var(--reader-text,#f5f2ea) 9%,transparent);color:inherit;font-weight:700;font-size:.82rem;cursor:pointer}
+
+.areas{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.area{display:flex;flex-direction:column;gap:3px;padding:11px 12px;border-radius:12px;border:1px solid transparent;color:inherit;text-decoration:none}
+.area b{font-size:.98rem;font-weight:700}
+.area span{font-size:.79rem;line-height:1.45;color:var(--reader-muted,#b9b5ac)}
+.area em{font-style:normal;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:#d6aa4f;font-weight:800}
+a.area:hover{background:color-mix(in srgb,var(--reader-text,#f5f2ea) 8%,transparent)}
+a.area:focus-visible{outline:2px solid #d6aa4f;outline-offset:2px}
+.areaActive{background:color-mix(in srgb,var(--reader-text,#f5f2ea) 11%,transparent);border-color:color-mix(in srgb,#d6aa4f 55%,transparent)}
+.areaOff b{color:var(--reader-muted,#b9b5ac)}
+
+.sideNote{margin:auto 0 0;font-size:.76rem;line-height:1.5;color:var(--reader-muted,#a9a49a)}
+
+.content{padding:0}
+
+@media(min-width:900px){
+  .bar{display:none}
+  .side{transform:none;visibility:visible;width:302px;background:transparent;transition:none}
+  .closeButton{display:none}
+  .backdrop{display:none}
+  .content{margin-left:302px;min-height:100svh;border-left:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 12%,transparent)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .side{transition:none}
+}

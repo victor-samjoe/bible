@@ -15,3 +15,8 @@ npm-debug.log*
 .wrangler/
 .dev.vars
 worker-configuration.d.ts
+
+# Corpora de idiomas originais: bytes oficiais ficam privados, fora do Git
+# e fora do bundle (tarefa C14 e ADR 5 do BKF). Manifestos de proveniencia
+# tambem nao sao versionados: sao derivados reproduziveis da coleta.
+data/sources/originals/

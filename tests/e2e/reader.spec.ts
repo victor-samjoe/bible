@@ -100,7 +100,7 @@ test.describe("leitor: cabeçalho", () => {
 
     // Nenhum versículo oferece marcar leitura.
     await selectVerses(page, [0]);
-    await selectionBar(page).getByRole("button", { name: /^Ações/ }).click();
+    await selectionBar(page).getByRole("button", { name: /^Aplicar/ }).click();
     await expect(selectionBar(page).getByRole("button", { name: /Lido/ })).toHaveCount(0);
   });
 });
@@ -133,16 +133,17 @@ test.describe("leitor: menu de três pontos", () => {
     const padrao = await fontSize();
 
     await settingsTrigger(page).click();
-    const dialog = settingsDialog(page);
+    // "Padrão" existe em tamanho e em espaçamento: o grupo é que desambigua.
+    const sizes = settingsDialog(page).getByRole("group", { name: "Tamanho do texto" });
     for (const name of ["Menor", "Pequeno", "Padrão", "Grande"]) {
-      await expect(dialog.getByRole("button", { name, exact: true })).toBeVisible();
+      await expect(sizes.getByRole("button", { name, exact: true })).toBeVisible();
     }
 
-    await dialog.getByRole("button", { name: "Menor", exact: true }).click();
+    await sizes.getByRole("button", { name: "Menor", exact: true }).click();
     const menor = await fontSize();
     expect(menor).toBeLessThan(padrao);
 
-    await dialog.getByRole("button", { name: "Grande", exact: true }).click();
+    await sizes.getByRole("button", { name: "Grande", exact: true }).click();
     expect(await fontSize()).toBeGreaterThan(padrao);
 
     // A escolha vale no capítulo seguinte, na mesma sessão.
@@ -167,7 +168,8 @@ test.describe("leitor: menu de três pontos", () => {
     await page.goto("/biblia/genesis/1");
     await expect.poll(readTheme).toBe("light");
 
-    await page.getByRole("button", { name: "Ativar tema escuro" }).click();
+    await settingsTrigger(page).click();
+    await settingsDialog(page).getByRole("button", { name: "Escuro", exact: true }).click();
     await expect.poll(readTheme).toBe("dark");
   });
 });
@@ -197,7 +199,7 @@ test.describe("leitor: seleção múltipla", () => {
     await expect(verses.nth(0)).toHaveAttribute("aria-pressed", "false");
     await expect(bar).toContainText("1 versículo selecionado");
 
-    await bar.getByRole("button", { name: "Limpar", exact: true }).click();
+    await bar.getByRole("button", { name: "Cancelar", exact: true }).click();
     await expect(selectionBar(page)).toHaveCount(0);
   });
 
@@ -207,7 +209,7 @@ test.describe("leitor: seleção múltipla", () => {
     await page.goto("/biblia/genesis/1");
     await selectVerses(page, [2, 3]);
     const bar = selectionBar(page);
-    await bar.getByRole("button", { name: /^Ações/ }).click();
+    await bar.getByRole("button", { name: /^Aplicar/ }).click();
     await bar.getByRole("button", { name: "Verde", exact: true }).click();
 
     const verses = page.locator(".verseButton");
@@ -229,7 +231,7 @@ test.describe("leitor: seleção múltipla", () => {
 
     // Remover destaque limpa só a seleção atual.
     await selectVerses(page, [2]);
-    await selectionBar(page).getByRole("button", { name: /^Ações/ }).click();
+    await selectionBar(page).getByRole("button", { name: /^Aplicar/ }).click();
     await selectionBar(page).getByRole("button", { name: "Remover destaque" }).click();
     await expect(page.locator(".verseButton").nth(2)).not.toHaveAttribute("data-highlight", "rosa");
     await expect(page.locator(".verseButton").nth(3)).toHaveAttribute("data-highlight", "rosa");
@@ -239,7 +241,7 @@ test.describe("leitor: seleção múltipla", () => {
     await page.goto("/biblia/genesis/1");
     await selectVerses(page, [0, 1]);
     const bar = selectionBar(page);
-    await bar.getByRole("button", { name: /^Ações/ }).click();
+    await bar.getByRole("button", { name: /^Aplicar/ }).click();
     await bar.getByRole("button", { name: /Adicionar nota/ }).click();
 
     const dialog = page.getByRole("dialog", { name: "Nota da seleção" });
@@ -252,9 +254,9 @@ test.describe("leitor: seleção múltipla", () => {
     // O indicador aparece no primeiro versículo da seleção.
     await expect(page.locator(".verseButton").nth(0)).toContainText("✎");
 
-    // A mesma seleção reabre a nota existente para edição.
-    await selectVerses(page, [0, 1]);
-    await selectionBar(page).getByRole("button", { name: /^Ações/ }).click();
+    // A seleção continua ativa depois de guardar, e reabre a nota para edição.
+    await expect(selectionBar(page)).toContainText("Gênesis 1:1-2");
+    await selectionBar(page).getByRole("button", { name: /^Aplicar/ }).click();
     await selectionBar(page).getByRole("button", { name: /Editar nota/ }).click();
     const again = page.getByRole("dialog", { name: "Nota da seleção" });
     await expect(again.locator("textarea")).toHaveValue("Nota de teste local.");
@@ -271,7 +273,7 @@ test.describe("leitor: seleção múltipla", () => {
 
     await selectVerses(page, [15]);
     const bar = selectionBar(page);
-    await bar.getByRole("button", { name: /^Ações/ }).click();
+    await bar.getByRole("button", { name: /^Aplicar/ }).click();
     await bar.getByRole("button", { name: /Comparar traduções/ }).click();
 
     const versions = page.getByRole("dialog", { name: "Comparar traduções" });
@@ -281,7 +283,7 @@ test.describe("leitor: seleção múltipla", () => {
     await expect(versions).toContainText("não há o que comparar");
     await page.keyboard.press("Escape");
 
-    await bar.getByRole("button", { name: /^Ações/ }).click();
+    await bar.getByRole("button", { name: /^Aplicar/ }).click();
     await bar.getByRole("button", { name: /Consultar original/ }).click();
     const original = page.getByRole("dialog", { name: "Consultar original" });
     await expect(original).toBeVisible();
@@ -301,7 +303,7 @@ test.describe("leitor: navegação por livro e capítulo", () => {
     const bookDialog = page.getByRole("dialog", { name: "Escolher livro" });
     await expect(bookDialog).toBeVisible();
 
-    await bookDialog.getByRole("link", { name: /João/ }).first().click();
+    await bookDialog.getByRole("button", { name: /João/ }).first().click();
 
     // Sem clicar de novo no cabeçalho, o menu já está na lista de capítulos.
     const chapterDialog = page.getByRole("dialog", { name: "Escolher capítulo" });
@@ -363,7 +365,7 @@ test.describe("leitor: viewport móvel", () => {
     await expect(bar).toBeInViewport();
     expect(await horizontalOverflow(page)).toBeLessThanOrEqual(1);
 
-    await bar.getByRole("button", { name: /^Ações/ }).click();
+    await bar.getByRole("button", { name: /^Aplicar/ }).click();
     await expect(bar.getByRole("button", { name: "Amarelo", exact: true })).toBeVisible();
     expect(await horizontalOverflow(page)).toBeLessThanOrEqual(1);
 
@@ -371,6 +373,11 @@ test.describe("leitor: viewport móvel", () => {
     await expect(page.getByRole("dialog", { name: "Comparar traduções" })).toBeVisible();
     expect(await horizontalOverflow(page)).toBeLessThanOrEqual(1);
     await page.keyboard.press("Escape");
+
+    // No celular o cabeçalho precisa manter as duas ações alcançáveis: marcar o
+    // capítulo como lido e abrir as configurações de leitura.
+    await expect(page.getByRole("button", { name: /como lido/ })).toBeVisible();
+    await expect(settingsTrigger(page)).toBeVisible();
 
     await settingsTrigger(page).click();
     await expect(settingsDialog(page)).toBeVisible();
@@ -385,7 +392,7 @@ test.describe("leitor: viewport móvel", () => {
 
     await page
       .getByRole("dialog", { name: "Escolher livro" })
-      .getByRole("link", { name: /Salmos/ })
+      .getByRole("button", { name: /Salmos/ })
       .first()
       .click();
     await expect(page.getByRole("dialog", { name: "Escolher capítulo" })).toBeVisible();

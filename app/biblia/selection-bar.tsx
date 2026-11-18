@@ -42,7 +42,7 @@ export function SelectionBar() {
     saveNote,
     removeNote,
     panel,
-    openPanel,
+    openPanel: openActionPanel,
     closePanel,
     notice,
     setNotice,
@@ -50,6 +50,13 @@ export function SelectionBar() {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [draft, setDraft] = useState("");
+
+  // Abrir um painel encerra o menu: a ação já foi escolhida, e deixar os dois
+  // abertos empilharia duas camadas sobre o texto.
+  function openPanel(next: Parameters<typeof openActionPanel>[0]) {
+    setMenuOpen(false);
+    openActionPanel(next);
+  }
 
   const count = selection.size;
   const hasHighlight = [...selection].some((verse) => highlightOf(verse) !== undefined);
