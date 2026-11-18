@@ -96,8 +96,15 @@ export function createAuth(config: AuthConfig, client?: SupabaseAuthClient, look
           createUser: options?.createUser ?? null,
         });
         return { ok: false, reason: status === 429 ? "rate_limited" : "provider_error" };
-      } catch {
-        console.error("auth.otp_request_failed", { status: "network_or_runtime", createUser: options?.createUser ?? null });
+      } catch (error) {
+        // Classe da exceção é telemetria suficiente para rede/runtime. A
+        // mensagem pode conter detalhes do provedor e deliberadamente não é
+        // enviada aos logs.
+        console.error("auth.otp_request_failed", {
+          status: "network_or_runtime",
+          exception: error instanceof Error ? error.name : typeof error,
+          createUser: options?.createUser ?? null,
+        });
         return { ok: false, reason: "provider_error" };
       }
     },
