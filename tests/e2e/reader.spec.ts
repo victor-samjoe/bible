@@ -190,6 +190,7 @@ test.describe("leitor: seleção múltipla", () => {
 
     const bar = selectionBar(page);
     await expect(bar).toBeVisible();
+    await expect(bar).toBeInViewport();
     await expect(bar).toContainText("2 versículos selecionados");
     // A seleção descontínua é rotulada sem afirmar faixa.
     await expect(bar).toContainText("João 3:1,3");
