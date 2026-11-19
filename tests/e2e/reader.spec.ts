@@ -200,7 +200,7 @@ test.describe("leitor: seleção múltipla", () => {
     await expect(verses.nth(0)).toHaveAttribute("aria-pressed", "false");
     await expect(bar).toContainText("1 versículo selecionado");
 
-    await bar.getByRole("button", { name: "Cancelar", exact: true }).click();
+    await bar.getByRole("button", { name: "Concluído", exact: true }).click();
     await expect(selectionBar(page)).toHaveCount(0);
   });
 
