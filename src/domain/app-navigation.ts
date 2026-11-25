@@ -49,6 +49,13 @@ export const appAreas: readonly AppArea[] = [
     availability: available,
   },
   {
+    id: "progresso",
+    label: "Progresso de leitura",
+    href: "/progresso",
+    description: "Capítulos lidos por livro e testamento.",
+    availability: available,
+  },
+  {
     id: "materiais",
     label: "Materiais",
     href: "/materiais",

@@ -19,6 +19,7 @@ describe("áreas do aplicativo", () => {
     expect(appAreas.map((area) => area.label)).toEqual([
       "Início",
       "Bíblia",
+      "Progresso de leitura",
       "Materiais",
       "Notas",
       "Estudos",
@@ -35,7 +36,7 @@ describe("áreas do aplicativo", () => {
 
   it("só marca como disponível a área que tem página publicada", () => {
     // `perfil` entra aqui porque `app/perfil/page.tsx` existe (frente C17b).
-    for (const id of ["inicio", "biblia", "materiais", "notas", "estudos", "cursos", "planos", "perfil"]) {
+    for (const id of ["inicio", "biblia", "progresso", "materiais", "notas", "estudos", "cursos", "planos", "perfil"]) {
       expect(isAreaAvailable(areaOf(id))).toBe(true);
       expect(unavailableReason(areaOf(id))).toBeNull();
     }
@@ -87,6 +88,7 @@ describe("área ativa", () => {
   });
 
   it("devolve a área da rota atual", () => {
+    expect(activeAreaOf("/progresso/genesis")?.id).toBe("progresso");
     expect(activeAreaOf("/biblia/joao/3")?.id).toBe("biblia");
     expect(activeAreaOf("/materiais")?.id).toBe("materiais");
     expect(activeAreaOf("/cursos")?.id).toBe("cursos");

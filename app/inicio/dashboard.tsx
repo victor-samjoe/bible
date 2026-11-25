@@ -61,6 +61,9 @@ export function PersonalDashboard() {
         <Link className={styles.primary} href={snapshot.resume?.path ?? "/biblia"}>
           {snapshot.resume ? "Voltar à leitura" : "Abrir a Bíblia"}
         </Link>
+        <p className={styles.progressLink}>
+          <Link href="/progresso">Ver progresso de leitura</Link>
+        </p>
       </section>
 
     </main>
