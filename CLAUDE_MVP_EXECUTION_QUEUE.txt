@@ -1,5 +1,10 @@
 FILA DE EXECUÇÃO — CLAUDE CLI
 
+NOVA ATRIBUIÇÃO — AUTORES E CONTEXTO DE GÊNESIS 1
+As duas frentes estão em `tasks/product/CLAUDES_GENESIS_CONTEXTO_E_AUTORES.md`:
+Claude 1 inventaria interpretações e Claude 2 prepara contexto e prova vertical.
+São tarefas locais, sem importação no Supabase, sem commit e sem deploy.
+
 ENCAMINHAMENTO ATUAL — CLAUDE 1
 A lista completa da execução noturna está em
 `E:\SamJoE Bible\tasks\product\TAREFAS_CLAUDES_GENESIS1.md`, seção

@@ -7,11 +7,12 @@ import { createDrizzleLexiconRepository } from "@/src/server/lexicon/repository"
 import type { BdbEntryView } from "@/src/domain/lexicon/word-analysis-view";
 import type { BdbSense } from "@/src/domain/lexicon/records";
 import styles from "./palavra.module.css";
+import { BackLink } from "./back-link";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Estudo de palavra | Bíblia Bereana" };
 
-type Search = Promise<{ idioma?: string | string[]; strong?: string | string[] }>;
+type Search = Promise<{ idioma?: string | string[]; strong?: string | string[]; origem?: string | string[] }>;
 
 function SenseList({ senses }: { readonly senses: readonly BdbSense[] }) {
   if (!senses.length) return null;
@@ -24,6 +25,7 @@ function SenseList({ senses }: { readonly senses: readonly BdbSense[] }) {
 
 export default async function WordStudy({ searchParams }: { readonly searchParams: Search }) {
   const params = await searchParams;
+  const origin = typeof params.origem === "string" ? /^([a-z0-9-]+)\.([1-9]\d*)$/u.exec(params.origem) : null;
   const language = params.idioma;
   const strong = typeof params.strong === "string" ? params.strong.toUpperCase() : "";
   const valid = (language === "hbo" && /^H\d{1,5}[A-Z]?$/u.test(strong)) ||
@@ -77,7 +79,7 @@ export default async function WordStudy({ searchParams }: { readonly searchParam
   const rtl = language === "hbo";
   return (
     <main className={styles.page}>
-      <Link href="/biblia" className={styles.back}>← Voltar à Bíblia</Link>
+      <BackLink href={origin ? `/biblia/${origin[1]}/${origin[2]}` : "/biblia"} scope={origin ? `${origin[1]}.${origin[2]}` : null} className={styles.back} />
       <header className={styles.header}>
         <p className={styles.eyebrow}>ESTUDO DE PALAVRA</p>
         <h1>{shown[0]?.lemma ? <span lang={rtl ? "he" : "grc"} dir={rtl ? "rtl" : "ltr"}>{shown[0].lemma}</span> : "Palavra original"}</h1>

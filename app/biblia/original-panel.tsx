@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { OriginalSelectionResult } from "@/src/server/contracts/originals";
 import {
@@ -151,6 +151,7 @@ export function OriginalPanel({ bookSlug, chapter, selectionVerses, translationN
   const [lexicon, setLexicon] = useState<LexiconSelectionResult | null>(null);
   const [active, setActive] = useState<string | null>(null);
   const [analysisSelection, setAnalysisSelection] = useState<{ verse: number; positions: readonly number[] } | null>(null);
+  const restoreScroll = useRef<number | null>(null);
   const verseNumbers = useMemo(() => selectionVerses.map((verse) => verse.number), [selectionVerses]);
 
   useEffect(() => {
@@ -176,6 +177,33 @@ export function OriginalPanel({ bookSlug, chapter, selectionVerses, translationN
       });
     return () => controller.abort();
   }, [bookSlug, chapter, verseNumbers]);
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("reader-word-study-return");
+      if (!raw) return;
+      const saved = JSON.parse(raw) as { scope?: unknown; verse?: unknown; positions?: unknown; active?: unknown; scrollTop?: unknown };
+      if (saved.scope !== `${bookSlug}.${chapter}` || typeof saved.verse !== "number" ||
+          !verseNumbers.includes(saved.verse) || typeof saved.active !== "string" || !Array.isArray(saved.positions)) return;
+      const positions = saved.positions.filter((position): position is number => Number.isSafeInteger(position) && position > 0);
+      if (positions.length === 0) return;
+      setActive(saved.active);
+      setAnalysisSelection({ verse: saved.verse, positions });
+      if (typeof saved.scrollTop === "number" && Number.isFinite(saved.scrollTop) && saved.scrollTop >= 0) restoreScroll.current = saved.scrollTop;
+      sessionStorage.removeItem("reader-word-study-return");
+    } catch { /* Se não houver armazenamento, a leitura continua normal. */ }
+  }, [bookSlug, chapter, verseNumbers]);
+
+  useEffect(() => {
+    if (!result || !lexicon || !analysisSelection || restoreScroll.current === null) return;
+    const saved = restoreScroll.current;
+    const frame = requestAnimationFrame(() => {
+      const panel = document.querySelector<HTMLElement>('[role="dialog"][aria-label="Consultar original"]');
+      if (panel) panel.scrollTop = saved;
+      restoreScroll.current = null;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [result, lexicon, analysisSelection]);
 
   if (result === null) return <p className={styles.local} role="status">Consultando a edição aprovada…</p>;
   if (!result.ok) return <div className={styles.originalEmpty} role="status"><p>{failureMessage[result.reason]}</p></div>;
@@ -409,7 +437,13 @@ export function OriginalPanel({ bookSlug, chapter, selectionVerses, translationN
                       <p className={styles.analysisPending}>{lexiconFallbackMessage(lexiconQueryState(lexicon))}</p>
                     )}
                     {[...new Set(lexical?.morphemes.flatMap((item) => item.strongId ? [item.strongId] : []) ?? [])].map((strong) => (
-                      <p key={strong}><Link href={`/palavra?idioma=${rtl ? "hbo" : "grc"}&strong=${encodeURIComponent(strong)}`}>
+                      <p key={strong}><Link href={`/palavra?idioma=${rtl ? "hbo" : "grc"}&strong=${encodeURIComponent(strong)}&origem=${encodeURIComponent(`${bookSlug}.${chapter}`)}`}
+                        onClick={(event) => {
+                          try {
+                            const scrollTop = event.currentTarget.closest<HTMLElement>('[role="dialog"]')?.scrollTop ?? 0;
+                            sessionStorage.setItem("reader-word-study-return", JSON.stringify({ scope: `${bookSlug}.${chapter}`, verses: verseNumbers, verse: verse.number, positions: analysisSelection?.positions ?? [], active, scrollTop }));
+                          } catch { /* O link ainda funciona sem armazenamento. */ }
+                        }}>
                         Estudar palavra {strong} →
                       </Link></p>
                     ))}

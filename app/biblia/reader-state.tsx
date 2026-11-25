@@ -291,6 +291,22 @@ export function ReaderProvider({
     lastSynced.current = null;
   }, [scope]);
 
+  // Retorno do estudo de palavra: restaura somente a seleção deste capítulo.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("reader-word-study-return");
+      if (!raw) return;
+      const saved = JSON.parse(raw) as { scope?: unknown; verses?: unknown };
+      if (saved.scope !== scope || !Array.isArray(saved.verses)) return;
+      const valid = saved.verses.filter((verse): verse is number =>
+        typeof verse === "number" && verseNumbers.includes(verse),
+      );
+      if (valid.length === 0) return;
+      setSelection(new Set(valid));
+      setPanel("original");
+    } catch { /* O leitor continua utilizável se a sessão não estiver disponível. */ }
+  }, [scope, verseNumbers]);
+
   useEffect(() => {
     if (!settingsOpen && panel === null) return;
     const onKey = (event: KeyboardEvent) => {
