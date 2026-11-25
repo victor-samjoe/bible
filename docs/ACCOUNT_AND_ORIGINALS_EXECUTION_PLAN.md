@@ -113,15 +113,16 @@ Decisões tomadas nesta frente, para o proprietário confirmar ou reverter:
 - SBLGNT: 27 livros, 7.927 versículos e 137.542 tokens; checksum válido.
 - MorphHB: 39 livros, 23.213 versículos, 306.785 tokens e 471.674 morfemas;
   checksum válido.
-- Ambos continuam `collected_pending_human_approval`; isto não autoriza exibição.
+- Ambos foram aprovados pelo proprietário e importados em 19/11/2026. O banco
+  contém `MORPHHB` e `SBLGNT` com status `approved` e contagens conferidas.
 
-### Decisões obrigatórias do proprietário/editor
+### Decisões do proprietário/editor — concluídas em 19/11/2026
 
-1. Aprovar formalmente SBLGNT (grego, CC BY 4.0) e MorphHB/OSHB (hebraico e
+1. [x] Aprovar formalmente SBLGNT (grego, CC BY 4.0) e MorphHB/OSHB (hebraico e
    morfologia, CC BY 4.0/base WLC), incluindo atribuição publicada.
-2. Designar a identidade editorial que assinará `approved_by` e a data de
+2. [x] Designar a identidade editorial que assinará `approved_by` e a data de
    aprovação.
-3. Confirmar que a reprodução integral no leitor atende as licenças e a política
+3. [x] Confirmar que a reprodução integral no leitor atende as licenças e a política
    editorial. Nenhum léxico, glossa ou transliteração entra sem fonte própria.
 
 ### Implementação
@@ -152,8 +153,8 @@ Decisões tomadas nesta frente, para o proprietário confirmar ou reverter:
 
 | ID | Entrega | Dependência |
 | --- | --- | --- |
-| `ORIGINAL-READER-001` | Repositório/contrato de consulta por seleção, com limite de referência e atribuição da edição | Importador local validado |
-| `ORIGINAL-READER-002` | Painel “Consultar original”: AT mostra hebraico e NT mostra grego apenas para edição aprovada | `ORIGINAL-READER-001` + aprovação editorial |
+| `ORIGINAL-READER-001` | Repositório/contrato de consulta por seleção, com limite de referência e atribuição da edição — concluído | Importador local validado |
+| `ORIGINAL-READER-002` | Painel “Consultar original”: AT mostra hebraico e NT mostra grego apenas para edição aprovada — concluído, aguarda publicação | `ORIGINAL-READER-001` + aprovação editorial |
 | `ORIGINAL-VERSIONS-001` | Ativar HEB (MorphHB) e GRC (SBLGNT) no seletor de versões, preservando indisponibilidade honesta até a aprovação | `ORIGINAL-READER-002` |
 
 ## Sequência e delegação

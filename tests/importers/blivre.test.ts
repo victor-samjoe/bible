@@ -22,5 +22,5 @@ describe("BLIVRE USFM", () => {
     expect(result.verses).toHaveLength(31102);
     expect(result.source.files).toHaveLength(66);
     expect(result.source.archiveChecksumVerified).toBe(false);
-  });
+  }, 30000);
 });

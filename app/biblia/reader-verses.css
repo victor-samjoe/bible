@@ -70,6 +70,22 @@
   margin: 38px 0 0;
   padding: 16px 0 0;
 }
+.chapterReadAction {
+  display: block;
+  width: 100%;
+  margin: 14px 0 0;
+  padding: 12px 16px;
+  border: 1px solid #4a4d52;
+  border-radius: 10px;
+  background: transparent;
+  color: #d9dce3;
+  font: 700 .78rem Arial, Helvetica, sans-serif;
+  letter-spacing: .02em;
+  cursor: pointer;
+}
+.chapterReadAction:hover { background: #292b2e; }
+.chapterReadAction[data-read] { border-color: #6b9d87; color: #a7d1bb; }
+.chapterReadAction:focus-visible { outline: 2px solid #d58a63; outline-offset: 3px; }
 /* Espaço para a barra flutuante não cobrir o fim do capítulo. */
 .scripture {
   padding-bottom: 104px;
@@ -94,6 +110,8 @@
   color: #6a706c;
   border-color: #d7d0c5;
 }
+[data-reader-theme="light"] .chapterReadAction { border-color: #b8c0b9; color: #315a46; }
+[data-reader-theme="light"] .chapterReadAction:hover { background: #e8e2d7; }
 
 /* Navegacao entre capitulos, abaixo do texto. */
 .chapterNav {

@@ -1,5 +1,38 @@
 # Fila de execução — Claude CLI
 
+## Revisão local — 24/11/2026
+
+A1, A2 e A3 têm implementação local, mas ainda não estão encerradas. A1 teve
+a expectativa da fixture de Miqueias corrigida: "governador" é o token 14,
+incluindo as duas palavras acrescentadas. Falta comprovar o fluxo de lote e o
+aceite. A2 passou nos testes focados e aguarda revisão. A3 passou nos testes de
+domínio e serviço, mas precisa de validação da interface para visitante e conta.
+A ação de marcar capítulo ao fim da leitura também aguarda validação da interface.
+
+C29 e as frentes seguintes continuam pendentes. Não se verificou publicação
+nem banco remoto. A fila operacional e as condições completas estão em
+`CLAUDE_MVP_EXECUTION_QUEUE.txt`.
+
+
+## Fila ativa — atualização de 19/11/2026
+
+O arquivo [CLAUDE_MVP_EXECUTION_QUEUE.txt](../CLAUDE_MVP_EXECUTION_QUEUE.txt)
+é a fonte operacional desta fila. As tarefas históricas abaixo servem como
+registro; não devem ser reexecutadas somente por ainda aparecerem aqui.
+
+| Frente | Situação | Escopo atual |
+| --- | --- | --- |
+| A1 / ALIGNMENT-PIPELINE-001 | Em execução | Candidatos e revisão editorial de alinhamento por grupos; sem UI nem banco remoto. |
+| A2 / KNOWLEDGE-GRAPH-001 | Em execução | Contratos de evidência e relações da árvore por passagem; sem UI, IA ou corpus novo. |
+| A3 / READING-PROGRESS-001 | Em execução | Progresso por testamento/livro/capítulo, local ou autenticado de forma honesta. |
+| C29 | Próxima | Vulgata/LXX, direitos e versificação. |
+| C27 / C23 / C22 / C24 / C25 / C28 | Planejadas | Estudos documentados, exegese, temas, áudio, hub e Pro, nesta ordem de dependência. |
+
+Encerradas e não reexecutáveis: **C1–C10, C12–C18 e C20**. C17/C17a/C17b
+foram superadas pelo fluxo real de autenticação. O léxico de C30 já está em
+produção; o trabalho restante dele é exclusivamente A1. C11 e C19 permanecem
+em espera por decisão editorial/direitos.
+
 **Regra geral:** executar uma tarefa por vez, na ordem. Não decidir escopo, licenças, produto, arquitetura ou publicação. Não usar rede, não aplicar migration remota, não fazer deploy, não modificar `.env*`, não expor segredos, não fazer commit sem ordem explícita. Preservar alterações paralelas e parar em conflito.
 
 ## Tarefa C1 — resolver migrations locais

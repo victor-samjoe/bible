@@ -1,0 +1,22 @@
+# Recorte real do MACULA Greek, extraido de SBLGNT/tsv/macula-greek-SBLGNT.tsv
+# no commit 8423afe47b9e8f24b7772e808af45c7159a6fe7e (CC BY 4.0, Clear Bible).
+# Cobre Joao 1:1 inteiro: 17 palavras. O lado grego nao e morfemico e nao
+# publica 'sensenumber'; a classe gramatical chama-se 'class', nao 'pos'.
+xml:id	ref	role	class	type	english	mandarin	gloss	text	after	lemma	normalized	strong	morph	person	number	gender	case	tense	voice	mood	degree	domain	ln	frame	subjref	referent
+n43001001001	JHN 1:1!1		prep		in		In [the]	Ἐν	 	ἐν	Ἐν	1722	PREP									067002	67.33			
+n43001001002	JHN 1:1!2		noun	common	beginning	太初	beginning	ἀρχῇ	 	ἀρχή	ἀρχῇ	746	N-DSF		singular	feminine	dative					067003	67.65			
+n43001001003	JHN 1:1!3	vc	verb		was	有	was	ἦν	 	εἰμί	ἦν	2258	V-IAI-3S	third	singular			imperfect	active	indicative		013003	13.69			
+n43001001004	JHN 1:1!4		det		the		the	ὁ	 	ὁ	ὁ	3588	T-NSM		singular	masculine	nominative					092004	92.24			
+n43001001005	JHN 1:1!5		noun	common	word	道	Word	λόγος	,	λόγος	λόγος	3056	N-NSM		singular	masculine	nominative					033006	33.100			
+n43001001006	JHN 1:1!6		conj		and	而且	and	καὶ	 	καί	καὶ	2532	CONJ									089017	89.93			
+n43001001007	JHN 1:1!7		det		the		the	ὁ	 	ὁ	ὁ	3588	T-NSM		singular	masculine	nominative					092004	92.24			
+n43001001008	JHN 1:1!8		noun	common	word	道	Word	λόγος	 	λόγος	λόγος	3056	N-NSM		singular	masculine	nominative					033006	33.100			
+n43001001009	JHN 1:1!9	vc	verb		was	在	was	ἦν	 	εἰμί	ἦν	2258	V-IAI-3S	third	singular			imperfect	active	indicative		085001	85.1			
+n43001001010	JHN 1:1!10		prep		with	与~同	with	πρὸς	 	πρός	πρὸς	4314	PREP									089020	89.112			
+n43001001011	JHN 1:1!11		det				-	τὸν	 	ὁ	τὸν	3588	T-ASM		singular	masculine	accusative					092004	92.24			
+n43001001012	JHN 1:1!12		noun	common	God	神	God	θεόν	,	θεός	θεόν	2316	N-ASM		singular	masculine	accusative					012001	12.1			
+n43001001013	JHN 1:1!13		conj		and	而且	and	καὶ	 	καί	καὶ	2532	CONJ									089017	89.92			
+n43001001014	JHN 1:1!14	p	noun	common	God	神	God	θεὸς	 	θεός	θεὸς	2316	N-NSM		singular	masculine	nominative					012001	12.1			
+n43001001015	JHN 1:1!15	vc	verb		was	是	was	ἦν	 	εἰμί	ἦν	2258	V-IAI-3S	third	singular			imperfect	active	indicative		058010	58.67			
+n43001001016	JHN 1:1!16		det		the		the	ὁ	 	ὁ	ὁ	3588	T-NSM		singular	masculine	nominative					092004	92.24			
+n43001001017	JHN 1:1!17		noun	common	word	道	Word	λόγος	.	λόγος	λόγος	3056	N-NSM		singular	masculine	nominative					033006	33.100			

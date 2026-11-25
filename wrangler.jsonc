@@ -4,6 +4,10 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "samjoe-estudos",
   "main": ".open-next/worker.js",
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "bibliabereianos.com.br", "custom_domain": true }
+  ],
   "compatibility_date": "2026-11-17",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
 

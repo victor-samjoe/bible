@@ -164,10 +164,9 @@ async function verifyWlcPackage(): Promise<boolean> {
 
 async function main() {
   const results = [await verifySblgnt(), await verifyMorphhb(), await verifyWlcPackage()];
-  console.log(
-    "\nNenhuma edição foi aprovada para exibição: a aprovação é humana e está registrada",
-  );
-  console.log("em docs/ORIGINAL_LANGUAGE_SOURCES.md, não neste script.");
+  console.log("\nO estado editorial vem dos manifestos e de docs/ORIGINAL_LANGUAGE_SOURCES.md.");
+  console.log("SBLGNT e MorphHB foram aprovados para importação em 19/11/2026; este script");
+  console.log("confere os bytes locais, mas não substitui a auditoria do status no banco.");
   if (results.some((ok) => !ok)) {
     console.log("\nVERIFICAÇÃO COM PENDÊNCIAS");
     process.exitCode = 1;

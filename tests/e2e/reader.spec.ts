@@ -6,8 +6,8 @@ import { expect, test, type Page } from "@playwright/test";
  * Cobre a interação de leitura como ela é depois da C13: toque no versículo
  * seleciona, a barra de ações só existe com seleção, "lido" é estado do capítulo,
  * o menu de três pontos tem apenas configurações, e comparar traduções ou
- * consultar original só abrem a partir de uma seleção — sempre explicando a
- * indisponibilidade em vez de inventar dado.
+ * consultar original só abrem a partir de uma seleção. O original vem apenas
+ * das edições aprovadas e conserva atribuição; ausência continua falhando fechada.
  *
  * Estes testes leem o corpus publicado pelo servidor: não criam, não alteram e
  * não inventam dado algum.
@@ -265,7 +265,7 @@ test.describe("leitor: seleção múltipla", () => {
     await expect(page.locator(".readerProgress")).toContainText("notas: 0");
   });
 
-  test("comparar traduções e original só existem com seleção e explicam a indisponibilidade", async ({
+  test("comparar traduções e original só existem com seleção e preservam licença", async ({
     page,
   }) => {
     await page.goto("/biblia/joao/3");
@@ -288,10 +288,36 @@ test.describe("leitor: seleção múltipla", () => {
     await bar.getByRole("button", { name: /Consultar original/ }).click();
     const original = page.getByRole("dialog", { name: "Consultar original" });
     await expect(original).toBeVisible();
-    await expect(original).toContainText("indisponíveis");
-    await expect(original).toContainText("João 3:16");
-    // Nenhuma palavra em grego ou transliteração é exibida.
-    await expect(original).not.toContainText(/[Ͱ-Ͽἀ-῿]/);
+    await expect(original).toContainText("Bíblia Livre", { timeout: 20_000 });
+    await expect(original).toContainText("Grego · SBLGNT");
+    await expect(original).toContainText("Grego koiné");
+    await expect(original).toContainText("Jn 3:16");
+    await expect(original).toContainText("CC BY 4.0");
+    await expect(original).toContainText(/[Ͱ-Ͽἀ-῿]/);
+  });
+
+  test("Gênesis 1:1 compara tradução e hebraico com seleção editorial por palavra", async ({ page }) => {
+    await page.goto("/biblia/genesis/1");
+    await selectVerses(page, [0]);
+    const bar = selectionBar(page);
+    await bar.getByRole("button", { name: /^Aplicar/ }).click();
+    await bar.getByRole("button", { name: /Consultar original/ }).click();
+
+    const original = page.getByRole("dialog", { name: "Consultar original" });
+    await expect(original).toContainText("Bíblia Livre", { timeout: 20_000 });
+    await expect(original).toContainText("Hebraico · MorphHB");
+    const beginning = original.getByRole("button", { name: "princípio", exact: true });
+    await beginning.click();
+    await expect(original.getByRole("button", { name: "No", exact: true })).toHaveAttribute("data-active", "true");
+    await expect(beginning).toHaveAttribute("data-active", "true");
+    await expect(original.locator('p[lang="he"]').getByRole("button").first()).toHaveAttribute("data-active", "true");
+    const analysis = original.getByLabel("Análise da palavra");
+    await expect(analysis).toContainText("bereshit");
+    await expect(analysis).toContainText("no princípio");
+    await expect(analysis).toContainText("Campo semântico");
+
+    const background = await original.evaluate((element) => getComputedStyle(element).backgroundColor);
+    expect(background).not.toBe("rgb(248, 245, 238)");
   });
 });
 

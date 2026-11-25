@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Recorte real do BrownDriverBriggs.xml, commit 21c9add13bc727d3a951361778e97e3ff7afd1ce
+     (Open Scriptures HebrewLexicon, CC BY 4.0; texto de Brown, Driver e Briggs em dominio
+     publico). Verbetes escolhidos de proposito:
+       a.ae.ab = av, nove sentidos de primeiro nivel
+       e.bf.aa = hayah, 32 sentidos em cinco niveis, com tronco verbal e numeracao
+                 romana, arabe, por letra e entre parenteses
+       os demais sao os lemas de Genesis 1:1, para a ponte lema -> Strong -> BDB
+       poder ser testada contra ids reais, e nao inventados. -->
+<lexicon xmlns="http://openscriptures.github.com/morphhb/namespace">
+  <part id="x" title="fixture">
+    <section id="x.aa">
+      <entry id="a.ae.ab"><w>אָב</w> 1101 <pos>n.m</pos>. <def>father</def>
+				<sense n="1"><def>father of individual</def></sense>
+				<sense n="2">of God as <def>father of his people</def></sense>
+				<sense n="3"><def>head of household</def>, family or clan</sense>
+				<sense n="4"><def>ancestor</def></sense>
+				<sense n="5"><def>originator</def> or <def>patron</def> of a class, profession, or art</sense>
+				<sense n="6">fig. of <def>producer</def>, <def>generator</def></sense>
+				<sense n="7">fig. of <def>benevolence</def> &amp; protection</sense>
+				<sense n="8">term of <def>respect</def> &amp; <def>honor</def></sense>
+				<sense n="9">specif., <def>ruler</def>, <def>chief</def> (late)</sense>
+				<status p="3">base</status>
+			</entry>
+      <entry id="e.bf.aa" type="root"><w>הָיָה</w> 3570 <pos>vb</pos>. <def>fall out</def>, <def>come to pass</def>, <def>become</def>, <def>be</def>
+				<sense><stem>Qal</stem>
+					<sense n="I">
+						<sense n="1">
+							<sense n="a"><def>Fall out</def>, <def>happen</def></sense>
+							<sense n="b"><def>occur</def>, <def>take place</def>, <def>come about</def>, <def>come to pass</def></sense>
+						</sense>
+						<sense n="2">esp. &amp; very oft., <def>come about</def>, <def>come to pass</def>
+							<sense n="a">
+								<sense n="(1)"><w>וַיְהִי</w> <def>and it came to pass</def> that, most often (c. 292 t.)</sense>
+								<sense n="(2)">rarely also Pf. c. <w>וְ</w> conj. <w>וְהָיָה</w></sense>
+							</sense>
+							<sense n="b">less oft. <w>וְהָיָה</w> Pf. consec. <def>and it shall come to pass</def>, or frequentat. <def>came to pass</def> (repeatedly, etc.)</sense>
+						</sense>
+					</sense>
+					<sense n="II"><def>Come into being</def>, <def>become</def>
+						<sense n="1">
+							<sense n="a">abs., in lively narrative, <def>arise</def>, <def>appear</def>, <def>come</def></sense>
+							<sense n="b">sq. prep.</sense>
+						</sense>
+						<sense n="2"><def>become</def>
+							<sense n="a">sq. pred. noun (to be viewed as implicit accus.)</sense>
+							<sense n="b">sq. pred. adj.</sense>
+							<sense n="c"><def>become like</def></sense>
+							<sense n="d">sq. pred.   <w>לְ</w> pers.</sense>
+							<sense n="e">sq. <w>לְ</w> pred.</sense>
+							<sense n="f">oft. c. <w>לְ</w> pred.   <w>לְ</w> pers.</sense>
+							<sense n="g">with <w>עַל</w> and <w>לְ</w></sense>
+							<sense n="h">sts. c. <w>לְ</w> pers. only = <def>became the property of</def>, <def>come into the possession of</def></sense>
+						</sense>
+					</sense>
+					<sense n="III"><def>Be</def> (often with subbordinate idea of becoming)
+						<sense n="1"><def>exist</def>, <def>be in existence</def></sense>
+						<sense n="2"><def>abide</def>, <def>remain</def>, <def>continue</def></sense>
+						<sense n="3">with word of locality, <def>be in</def> or <def>at a place</def>, <def>be situated</def>, <def>stand</def>, <def>lie</def></sense>
+						<sense n="4">as copula, joining subj. &amp; pred.</sense>
+						<sense n="5">periphrastic conjug.</sense>
+					</sense>
+				</sense>
+				<sense><stem>Niph</stem>.
+					<sense n="1">either <def>be done</def>, <def>be brought about</def>, or <def>occur</def>, <def>come to pass</def></sense>
+					<sense n="2"><def>be done</def>, <def>finished</def>, <def>gone</def></sense>
+				</sense>
+				<status p="224">base</status>
+			</entry>
+      <entry id="t.ad.ag" cite="full"><w>רֵאשִׁית</w> <pos>n.f</pos>. <def>beginning</def>, <def>chief</def>
+				<sense n="1">
+					<sense n="a"><def>beginning</def></sense>
+					<sense n="b"><def>first</def></sense>
+				</sense>
+				<sense n="2"><def>first</def>, <def>chief</def></sense>
+				<status p="912">base</status>
+			</entry>
+      <entry id="b.cx.aa" type="root" cite="full" form="false" mod="II">[<w>בָּרָא</w>] <pos>vb</pos>. <def>be fat</def>—<stem>Hiph</stem>. <ref r="1Sam.2.29">1 S 2:29</ref> <def>to make yourself fat</def>.
+				<status p="135">ref</status>
+			</entry>
+      <entry id="a.dl.ad"><w>אֱלֹהִים</w> 2570 <pos>n.m.pl</pos>.
+				<sense n="1"><em>pl</em>. in number.
+					<sense n="a"><def>rulers</def>, <def>judges</def>, either as divine representatives at sacred places or as reflecting divine majesty and power</sense>
+					<sense n="b"><def>divine ones</def>, superhuman beings including God and angels</sense>
+					<sense n="c"><def>angels</def></sense>
+					<sense n="d"><def>gods</def></sense>
+				</sense>
+				<sense n="2"><em>pl. intensive</em>
+					<sense n="a"><def>god</def> or <def>goddess</def></sense>
+					<sense n="b"><def>godlike one</def></sense>
+					<sense n="c">works of God, or things belongng to him</sense>
+					<sense n="d"><def>God</def></sense>
+				</sense>
+				<sense n="3"><w>הָאֱלֹהִים</w> <def>the (true) God</def></sense>
+				<sense n="4"><w>אֱלֹהִים</w> = <def>God</def></sense>
+				<status p="43">base</status>
+			</entry>
+      <entry id="a.fx.aa" type="root"><w>אֶ֫רֶץ</w> <pos>n. f</pos>. &amp; (seld.) <pos>m</pos>. <def>earth</def>, <def>land</def>
+				<sense n="1">
+					<sense n="a"><def>earth</def>, whole earth (opp. to a part)</sense>
+					<sense n="b"><def>earth</def>, opp. to heaven, sky</sense>
+					<sense n="c"><def>earth</def> = inhabitants of earth</sense>
+				</sense>
+				<sense n="2"><def>land</def> =
+					<sense n="a">country, territory</sense>
+					<sense n="b">district, region</sense>
+					<sense n="c">trial territory</sense>
+					<sense n="d">piece of ground</sense>
+					<sense n="e">specif. <def>land</def> of Canaan, or Israel</sense>
+					<sense n="f">= inhabitants of land</sense>
+					<sense n="g">used even of <em>Shᵉʼôl</em></sense>
+				</sense>
+				<sense n="3">
+					<sense n="a"><def>ground</def>, surface of ground</sense>
+					<sense n="b"><def>soil</def>, as productive</sense>
+				</sense>
+				<sense n="4"><w>אֶרֶץ</w> in phrases
+					<sense n="a"><def>people of the land</def></sense>
+					<sense n="b">in measurements of distance</sense>
+					<sense n="c"><def>the country of the plain</def>, <def>level</def> or <def>plain country</def></sense>
+					<sense n="d"><def>land of the living</def></sense>
+					<sense n="e"><def>end(s) of the earth</def></sense>
+				</sense>
+				<sense n="5">pl. <w>אֲרָצוֹת</w> is almost wholly late; it denotes <def>lands</def>, <def>countries</def>, often in contrast to Canaan, <def>lands of the nations</def>, etc.</sense>
+				<status p="75">base</status>
+			</entry>
+      <entry id="v.dy.ab" form="false">[<w>שָׁמַי</w>] <pos>n.m</pos>. only pl. <w>שָׁמַיִם</w> 421 <def>heavens</def>, <def>sky</def>
+				<sense n="1">
+					<sense n="a"><def>visible heavens</def>, <def>sky</def>, where stars, etc., are</sense>
+					<sense n="b">phrases</sense>
+				</sense>
+				<sense n="2">
+					<sense n="a">as abode of God</sense>
+					<sense n="b">Elijah taken up <w>הַשּׁ׳</w> in whirlwind</sense>
+				</sense>
+				<sense n="3"><w>הַשּׁ׳</w> personified in various relations</sense>
+				<status p="1029">base</status>
+			</entry>
+    </section>
+  </part>
+</lexicon>

@@ -159,8 +159,13 @@ type ReaderContextValue = {
   toggleVerse: (verse: number, extendRange?: boolean) => void;
   clearSelection: () => void;
   selectionLabel: string;
+  /** Referência estrutural usada por consultas verificáveis, sem analisar o rótulo traduzido. */
+  bookSlug: string;
+  chapterNumber: number;
   /** Texto dos versículos selecionados, pronto para copiar/compartilhar. */
   selectionText: string;
+  selectionVerses: readonly { readonly number: number; readonly content: string }[];
+  translationName: string;
 
   highlightOf: (verse: number) => HighlightColor | undefined;
   applyHighlight: (color: HighlightColor) => void;
@@ -241,6 +246,7 @@ export function ReaderProvider({
   reference,
   verseNumbers,
   verseTexts,
+  translationName,
   account = null,
 }: {
   children: ReactNode;
@@ -250,9 +256,13 @@ export function ReaderProvider({
   reference: string;
   verseNumbers: readonly number[];
   verseTexts: readonly { number: number; content: string }[];
+  translationName: string;
   /** `null` quando não há sessão: o leitor fica só no `sessionStorage`. */
   account?: AccountReading | null;
 }) {
+  const scopeSeparator = scope.lastIndexOf(".");
+  const bookSlug = scope.slice(0, scopeSeparator);
+  const chapterNumber = Number(scope.slice(scopeSeparator + 1));
   const [theme, setThemeState] = useState<ReaderTheme>("dark");
   const [preferences, setPreferences] = useState<ReaderPreferences>(readerDefaults);
   const [marks, setMarks] = useState<Marks>(() => ({
@@ -503,6 +513,10 @@ export function ReaderProvider({
       .join(" "),
     [selection, verseTexts],
   );
+  const selectionVerses = useMemo(
+    () => verseTexts.filter((verse) => selection.has(verse.number)),
+    [selection, verseTexts],
+  );
 
   const selectionNote = selectionKey ? (marks.notes[selectionKey] ?? "") : "";
 
@@ -596,7 +610,11 @@ export function ReaderProvider({
       toggleVerse,
       clearSelection,
       selectionLabel: buildSelectionLabel(reference, selection),
+      bookSlug,
+      chapterNumber,
       selectionText,
+      selectionVerses,
+      translationName,
       highlightOf,
       applyHighlight,
       removeHighlight,
@@ -630,6 +648,10 @@ export function ReaderProvider({
       toggleVerse,
       clearSelection,
       selectionText,
+      selectionVerses,
+      translationName,
+      bookSlug,
+      chapterNumber,
       reference,
       highlightOf,
       applyHighlight,
@@ -643,7 +665,6 @@ export function ReaderProvider({
       isReadScope,
       toggleChapterRead,
       verseNumbers,
-      verseTexts,
       notice,
       signedIn,
     ],

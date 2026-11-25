@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   // Falhar o build em erro real em vez de publicar codigo quebrado.
   eslint: { ignoreDuringBuilds: false },
   typescript: { ignoreBuildErrors: false },
+  // Permite prévias locais paralelas sem dois processos disputarem o mesmo
+  // cache `.next`. Sem a variável, produção e o fluxo normal não mudam.
+  distDir: process.env.SAMJOE_NEXT_DIST_DIR ?? ".next",
 };
 
 export default nextConfig;

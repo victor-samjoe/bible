@@ -1,4 +1,4 @@
-import { confirmEmailLink } from "@/src/server/auth/runtime";
+import { confirmEmailLink, confirmOAuthCode } from "../../../src/server/auth/runtime";
 
 /**
  * Retorno do link enviado por e-mail (frente A do plano de contas).
@@ -34,12 +34,29 @@ function seeOther(location: string): Response {
   });
 }
 
+function clearVerifier(response: Response, request: Request): Response {
+  const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
+  response.headers.append("Set-Cookie", `samjoe_oauth_verifier=; Path=/auth/callback; HttpOnly${secure}; SameSite=Lax; Max-Age=0`);
+  return response;
+}
+
 export async function GET(request: Request): Promise<Response> {
   const params = new URL(request.url).searchParams;
+  const verifier = request.headers.get("cookie")?.split(";").map((item) => item.trim()).find((item) => item.startsWith("samjoe_oauth_verifier="))?.slice("samjoe_oauth_verifier=".length) ?? "";
 
-  // O provedor pode devolver erro no próprio link; a descrição não é repassada.
-  if (params.get("error") || params.get("error_code")) return seeOther("/entrar?erro=link");
+  // OAuth e links de e-mail usam a mesma rota, mas a interface não deve atribuir
+  // um cancelamento do Google a um link de e-mail. Nunca repassamos detalhes.
+  if (params.get("error") || params.get("error_code")) {
+    const response = seeOther(verifier ? "/entrar?erro=google" : "/entrar?erro=link");
+    return verifier ? clearVerifier(response, request) : response;
+  }
 
+  const authCode = params.get("code") ?? "";
+  if (authCode) {
+    const result = await confirmOAuthCode(authCode, verifier);
+    const response = seeOther(result.ok ? "/conta" : "/entrar?erro=google");
+    return clearVerifier(response, request);
+  }
   const tokenHash = params.get("token_hash") ?? "";
   const type = params.get("type") ?? "";
   if (!tokenHash) return seeOther("/entrar?erro=link");

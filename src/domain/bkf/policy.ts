@@ -8,6 +8,10 @@ function usable(rights: Rights, now: Date): boolean {
 }
 export function canStore(rights: Rights, now = new Date()): boolean { return usable(rights, now) && rights.permissions.store; }
 export function canAutomatedProcess(rights: Rights, now = new Date()): boolean { return usable(rights, now) && rights.permissions.automated_processing; }
+/** Exibir um ativo visual (mapa, foto, arte) no material da plataforma. */
+export function canDisplay(rights: Rights, now = new Date()): boolean { return usable(rights, now) && rights.visual_permissions?.reproduce === true; }
+/** Produzir obra derivada de um ativo visual: recorte, redesenho, tradução de rótulos, nova camada. */
+export function canDeriveWork(rights: Rights, now = new Date()): boolean { return usable(rights, now) && rights.visual_permissions?.adapt === true; }
 export function canQuote(rights: Rights, words: number, usedInWork: number, usedInDocument: number, now = new Date()): boolean {
   const l = rights.word_limits;
   return usable(rights, now) && rights.permissions.quote && !!l && Number.isSafeInteger(words) && words > 0 && words <= l.per_quote && usedInWork + words <= l.per_work && usedInDocument + words <= l.per_document;

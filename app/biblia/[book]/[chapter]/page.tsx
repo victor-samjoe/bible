@@ -142,6 +142,7 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
       reference={reference}
       verseNumbers={verses.map((verse) => verse.number)}
       verseTexts={verses.map((verse) => ({ number: verse.number, content: verse.content }))}
+      translationName={translation.name.includes("Livre") ? "Bíblia Livre" : translation.name}
       account={account}
     >
       <main className="readerShell">
@@ -171,7 +172,7 @@ export default async function ChapterPage({ params }: { params: Promise<RoutePar
         <footer className="readerFooter">
           <Link href="/estudos">Contexto e estudos</Link>
           <span>
-            {reference} · {translation.attribution}
+            {reference} · Bíblia Livre
           </span>
           <Link href="/direitos-autorais">Direitos</Link>
         </footer>

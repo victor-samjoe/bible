@@ -1,0 +1,93 @@
+/* Página de progresso (READING-PROGRESS-001). Usa as mesmas variáveis do leitor
+   (--reader-text, --reader-muted) com valor de reserva, para funcionar também
+   quando a pessoa chega aqui sem passar pelo leitor. Nenhuma regra deste arquivo
+   pertence a app/biblia/**. */
+
+.page{max-width:860px;margin:0 auto;padding:30px clamp(18px,4vw,42px) 64px}
+
+.intro{margin:0 0 22px;text-align:center}
+.eyebrow{margin:0 0 9px;color:#d6aa4f;font:800 .68rem/1 Arial,Helvetica,sans-serif;letter-spacing:.13em}
+.intro h1{margin:0;font:700 clamp(2rem,5vw,3.2rem)/1.05 Georgia,"Times New Roman",serif;letter-spacing:-.045em}
+.intro>p:not(.eyebrow){margin:12px 0 0;color:var(--reader-muted,#c9c4ba);font-size:.96rem}
+
+.origin{margin:0 0 16px;border:1px solid color-mix(in srgb,#d6aa4f 34%,transparent);border-radius:12px;background:color-mix(in srgb,#d6aa4f 8%,transparent);padding:14px 16px}
+.origin p{margin:0;color:var(--reader-text,#f5f2ea);font:.88rem/1.55 Arial,Helvetica,sans-serif}
+.origin p+p{margin-top:9px}
+.origin a{color:#d6aa4f;font-weight:800}
+.origin[data-storage="none"]{border-color:color-mix(in srgb,#e08a6a 46%,transparent);background:color-mix(in srgb,#e08a6a 10%,transparent)}
+.warn{color:#f0c08a}
+
+.notice{min-height:0}
+.notice p{display:flex;align-items:flex-start;gap:10px;margin:0 0 16px;border:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 18%,transparent);border-radius:10px;background:color-mix(in srgb,var(--reader-text,#f5f2ea) 5%,transparent);padding:11px 13px;color:var(--reader-text,#f5f2ea);font:.86rem/1.5 Arial,Helvetica,sans-serif}
+.notice button{flex:0 0 auto;border:0;border-radius:6px;background:transparent;color:var(--reader-muted,#c9c4ba);cursor:pointer;font-size:1.1rem;line-height:1;padding:2px 6px}
+.notice button:hover{color:var(--reader-text,#f5f2ea)}
+
+.summary{margin:0 0 26px;border:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 14%,transparent);border-radius:14px;background:color-mix(in srgb,var(--reader-text,#f5f2ea) 3%,transparent);padding:18px 20px;text-align:center}
+.summary h2{margin:0 0 10px;color:var(--reader-muted,#c9c4ba);font:800 .7rem/1 Arial,Helvetica,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.bigNumber{margin:0;color:var(--reader-text,#f5f2ea);font:700 2.1rem/1.1 Georgia,"Times New Roman",serif}
+.ofTotal{color:var(--reader-muted,#c9c4ba);font-size:1.35rem}
+.unit{color:var(--reader-muted,#c9c4ba);font:400 1rem/1 Arial,Helvetica,sans-serif}
+.percent{color:#d6aa4f;font:800 1.1rem/1 Arial,Helvetica,sans-serif}
+.muted{margin:10px 0 0;color:var(--reader-muted,#c9c4ba);font:.84rem/1.5 Arial,Helvetica,sans-serif}
+
+.bar,.barCompact{overflow:hidden;border-radius:999px;background:color-mix(in srgb,var(--reader-text,#f5f2ea) 12%,transparent)}
+.bar{height:9px;margin:14px auto 0;max-width:420px}
+.barCompact{height:5px;margin:8px 0 0;grid-column:1/-1}
+.bar span,.barCompact span{display:block;height:100%;border-radius:999px;background:#d6aa4f}
+
+.testament{margin:0 0 28px}
+.testamentHead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px;margin:0 0 12px;border-bottom:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 14%,transparent);padding-bottom:8px}
+.testamentHead h2{margin:0;font:700 1.2rem/1.2 Georgia,"Times New Roman",serif}
+.testamentHead .muted{margin:0}
+
+.books{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.book{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:4px 12px;border:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 12%,transparent);border-radius:10px;background:color-mix(in srgb,var(--reader-text,#f5f2ea) 2%,transparent);padding:12px 14px}
+.book[data-complete="true"]{border-color:color-mix(in srgb,#d6aa4f 40%,transparent)}
+.bookName{color:var(--reader-text,#f5f2ea);font:600 1rem/1.3 Georgia,"Times New Roman",serif;text-decoration:none}
+.bookName:hover{color:#d6aa4f;text-decoration:underline}
+.bookCounts{color:var(--reader-muted,#c9c4ba);font:.82rem/1.4 Arial,Helvetica,sans-serif;white-space:nowrap}
+.bookPercent{color:#d6aa4f;font-weight:800}
+
+.orphans{margin:0 0 26px;border:1px solid color-mix(in srgb,#e08a6a 40%,transparent);border-radius:12px;background:color-mix(in srgb,#e08a6a 8%,transparent);padding:16px 18px}
+.orphans h2{margin:0 0 8px;font:700 1.05rem/1.25 Georgia,"Times New Roman",serif}
+.orphans p{margin:0 0 10px;color:var(--reader-text,#f5f2ea);font:.86rem/1.5 Arial,Helvetica,sans-serif}
+.orphans ul{display:grid;gap:7px;margin:0;padding:0;list-style:none}
+.orphans li{display:flex;align-items:center;justify-content:space-between;gap:10px;font:.86rem/1.4 Arial,Helvetica,sans-serif}
+.orphans code{color:var(--reader-muted,#c9c4ba)}
+.orphanButton{border:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 24%,transparent);border-radius:8px;background:transparent;color:var(--reader-text,#f5f2ea);cursor:pointer;font:700 .76rem/1 Arial,Helvetica,sans-serif;padding:7px 10px}
+.orphanButton:hover:not(:disabled){border-color:#d6aa4f;color:#d6aa4f}
+.orphanButton:disabled{cursor:not-allowed;opacity:.55}
+
+.chapters{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin:0 0 26px;padding:0;list-style:none}
+.chapter{display:flex;align-items:stretch;overflow:hidden;border:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 14%,transparent);border-radius:10px;background:color-mix(in srgb,var(--reader-text,#f5f2ea) 2%,transparent)}
+.chapter[data-read="true"]{border-color:color-mix(in srgb,#d6aa4f 50%,transparent);background:color-mix(in srgb,#d6aa4f 10%,transparent)}
+.chapterLink{flex:1 1 auto;display:flex;align-items:center;justify-content:center;min-height:46px;color:var(--reader-text,#f5f2ea);font:600 1.05rem/1 Georgia,"Times New Roman",serif;text-decoration:none}
+.chapterLink:hover{color:#d6aa4f}
+.chapterToggle{flex:0 0 38px;border:0;border-left:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 14%,transparent);background:transparent;color:var(--reader-muted,#c9c4ba);cursor:pointer;font-size:1rem;line-height:1}
+.chapter[data-read="true"] .chapterToggle{color:#d6aa4f}
+.chapterToggle:hover:not(:disabled){background:color-mix(in srgb,var(--reader-text,#f5f2ea) 8%,transparent);color:var(--reader-text,#f5f2ea)}
+.chapterToggle:disabled{cursor:not-allowed;opacity:.5}
+
+.reset{margin:0 0 22px;border:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 14%,transparent);border-radius:12px;background:color-mix(in srgb,var(--reader-text,#f5f2ea) 2%,transparent);padding:12px 16px}
+.reset summary{cursor:pointer;color:var(--reader-muted,#c9c4ba);font:700 .84rem/1.4 Arial,Helvetica,sans-serif}
+.reset summary:hover{color:var(--reader-text,#f5f2ea)}
+.resetBody{display:grid;gap:9px;justify-items:start;margin-top:12px}
+.resetBody p{margin:0;color:var(--reader-text,#f5f2ea);font:.86rem/1.55 Arial,Helvetica,sans-serif}
+.resetBody label{color:var(--reader-muted,#c9c4ba);font:.84rem/1.4 Arial,Helvetica,sans-serif}
+.resetBody code{color:#d6aa4f;font-weight:700}
+.resetInput{width:min(220px,100%);border:1px solid color-mix(in srgb,var(--reader-text,#f5f2ea) 26%,transparent);border-radius:8px;background:color-mix(in srgb,var(--reader-text,#f5f2ea) 5%,transparent);color:var(--reader-text,#f5f2ea);font:600 1rem/1.3 Arial,Helvetica,sans-serif;padding:9px 11px;letter-spacing:.06em}
+.resetButton{border:1px solid color-mix(in srgb,#e08a6a 56%,transparent);border-radius:9px;background:color-mix(in srgb,#e08a6a 14%,transparent);color:#f6d7c6;cursor:pointer;font:800 .84rem/1 Arial,Helvetica,sans-serif;padding:11px 14px}
+.resetButton:hover:not(:disabled){background:color-mix(in srgb,#e08a6a 24%,transparent)}
+.resetButton:disabled{cursor:not-allowed;opacity:.5}
+
+.footerLinks{margin:22px 0 0;text-align:center;color:var(--reader-muted,#c9c4ba);font:.86rem/1.5 Arial,Helvetica,sans-serif}
+.footerLinks a{color:#d6aa4f;font-weight:800}
+
+.bookName:focus-visible,.origin a:focus-visible,.footerLinks a:focus-visible,.chapterLink:focus-visible,.chapterToggle:focus-visible,.orphanButton:focus-visible,.resetButton:focus-visible,.resetInput:focus-visible,.reset summary:focus-visible,.notice button:focus-visible{outline:2px solid #d6aa4f;outline-offset:2px}
+
+@media(max-width:650px){
+  .page{padding:24px 16px 48px}
+  .book{padding:11px 12px}
+  .chapters{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}
+  .summary{padding:16px 14px}
+}

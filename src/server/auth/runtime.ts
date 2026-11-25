@@ -197,6 +197,26 @@ export async function confirmEmailLink(tokenHash: string, type: VerificationType
   return { ok: true };
 }
 
+/** Troca o c\u00f3digo PKCE de OAuth pela mesma sess\u00e3o httpOnly usada no acesso por e-mail. */
+export async function confirmOAuthCode(authCode: string, codeVerifier: string): Promise<ConfirmOutcome> {
+  const config = await getAuthConfig();
+  if (!config.available) return { ok: false, reason: "unavailable" };
+  if (!authCode || !codeVerifier) return { ok: false, reason: "invalid_token" };
+  const exchange = createGoTrueClient(config)?.auth.exchangeCodeForSession;
+  if (!exchange) return { ok: false, reason: "unavailable" };
+  const result = await exchange({ authCode, codeVerifier });
+  if (result.error || result.data.session === null) {
+    const status = typeof result.error === "object" && result.error !== null && "status" in result.error
+      ? (result.error as { status?: unknown }).status
+      : "invalid_session";
+    // Somente a classe do erro: nunca registrar authorization code, verifier ou token.
+    console.error("auth.oauth_exchange_failed", { status });
+    return { ok: false, reason: "invalid_token" };
+  }
+  await persistSession(result.data.session, usesSecureCookies(config));
+  return { ok: true };
+}
+
 /**
  * Encerra a sessão. O cookie é apagado mesmo quando o provedor não responde:
   * pedir para sair sempre resulta em sair deste navegador.

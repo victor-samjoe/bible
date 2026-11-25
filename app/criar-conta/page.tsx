@@ -1,7 +1,5 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AccessForm } from "../_components/access-form";
-import { submitAccess } from "../_actions/account-access";
 import { getAccountSession } from "@/src/server/auth/runtime";
 
 export const metadata = {
@@ -28,11 +26,7 @@ export default async function CreateAccountPage() {
     {configured ? <>
       <h1 id="create-account-title">Crie sua conta.</h1>
       <p className="muted">Sem senha: confirme um código enviado ao seu e-mail.</p>
-      <AccessForm
-        action={submitAccess.bind(null, "sign_up")}
-        requestLabel="Enviar código de criação"
-        requestHint="A conta começa como leitora. Você pode solicitar exclusão a qualquer momento."
-      />
+      <p className="catalog"><a className="button" href="/auth/google">Criar conta com Google</a></p>
     </> : <>
       <h1 id="create-account-title">Crie sua conta quando o acesso seguro estiver ativo.</h1>
       <p className="muted">O cadastro será por e-mail e código de uso único. Nesta etapa, nenhum dado é coletado, enviado ou guardado.</p>

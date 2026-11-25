@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import styles from "./selection-bar.module.css";
 import { highlightColors, type HighlightColor } from "@/src/domain/reader-marks";
 import { useReader } from "./reader-state";
+import { OriginalPanel } from "./original-panel";
 
 // Barra de ações da seleção (tarefa C13). Discreta e flutuante: só existe quando
 // há versículo selecionado, e o texto continua sendo o protagonista.
@@ -35,6 +36,10 @@ export function SelectionBar() {
     selection,
     selectionLabel,
     selectionText,
+    selectionVerses,
+    translationName,
+    bookSlug,
+    chapterNumber,
     clearSelection,
     applyHighlight,
     removeHighlight,
@@ -275,14 +280,12 @@ export function SelectionBar() {
 
             {panel === "original" && (
               <div className={styles.content}>
-                <p className={styles.local}>
-                  Grego e hebraico indisponíveis para {selectionLabel}: nenhuma edição crítica foi
-                  importada com licença, checksum e proveniência verificados.
-                </p>
-                <p className={styles.local}>
-                  Enquanto isso, nada de original é exibido — nem palavra, nem transliteração, nem
-                  glossa, nem morfologia. Inventar esses dados seria pior do que não mostrá-los.
-                </p>
+                <OriginalPanel
+                  bookSlug={bookSlug}
+                  chapter={chapterNumber}
+                  selectionVerses={selectionVerses}
+                  translationName={translationName}
+                />
               </div>
             )}
           </section>

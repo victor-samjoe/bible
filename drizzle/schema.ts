@@ -646,3 +646,150 @@ export const accountDeletionRequests = pgTable("account_deletion_requests", {
   resolvedBy: uuid("resolved_by"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
 });
+
+// ---------------------------------------------------------------------------
+// Índice lexical e tradução editorial (drizzle/0008_lexical_index.sql).
+// O SQL segue sendo a autoridade: as constraints que recusam fonte aprovada sem
+// aprovador nomeado, campo sem proveniência, tradução revisada sem revisor e o
+// gatilho que proíbe `machine_draft -> approved` vivem na migration, não aqui.
+// ---------------------------------------------------------------------------
+
+export const lexiconCollectionStatus = pgEnum("lexicon_collection_status", [
+  "awaiting_owner_approval",
+  "approved_for_collection",
+  "blocked",
+]);
+
+export const translationStatus = pgEnum("translation_status", [
+  "machine_draft",
+  "human_reviewed",
+  "approved",
+]);
+
+export const lexiconSources = pgTable("lexicon_sources", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  repository: text("repository").notNull(),
+  pinCommit: text("pin_commit").notNull(),
+  licenseDeclared: text("license_declared").notNull(),
+  licenseUrl: text("license_url").notNull(),
+  attribution: text("attribution").notNull(),
+  collectionStatus: lexiconCollectionStatus("collection_status").notNull(),
+  approvedBy: text("approved_by"),
+  approvedAt: text("approved_at"),
+  approvalScope: text("approval_scope"),
+  registryVersion: text("registry_version").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+});
+
+export const lexiconProvenance = pgTable("lexicon_provenance", {
+  id: bigint("id", { mode: "number" }).primaryKey(),
+  sourceId: text("source_id").notNull(),
+  assetPath: text("asset_path").notNull(),
+  assetSha256: text("asset_sha256").notNull(),
+  sourceField: text("source_field").notNull(),
+  pin: text("pin").notNull(),
+});
+
+export const lexemeEntries = pgTable("lexeme_entries", {
+  lexemeKey: text("lexeme_key").primaryKey(),
+  language: originalLanguage("language").notNull(),
+  strongId: text("strong_id"),
+  lemma: text("lemma").notNull(),
+  lemmaProvenanceId: bigint("lemma_provenance_id", { mode: "number" }).notNull(),
+  transliteration: text("transliteration"),
+  transliterationProvenanceId: bigint("transliteration_provenance_id", { mode: "number" }),
+  partOfSpeech: text("part_of_speech"),
+  gloss: text("gloss"),
+  glossProvenanceId: bigint("gloss_provenance_id", { mode: "number" }),
+  definition: text("definition"),
+  definitionProvenanceId: bigint("definition_provenance_id", { mode: "number" }),
+  etymology: text("etymology"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+});
+
+export const lexemeOccurrences = pgTable("lexeme_occurrences", {
+  sourceWordId: text("source_word_id").primaryKey(),
+  language: originalLanguage("language").notNull(),
+  canonicalRef: text("canonical_ref").notNull(),
+  wordPosition: integer("word_position"),
+  surface: text("surface").notNull(),
+  lexemeKey: text("lexeme_key").notNull(),
+  lemma: text("lemma").notNull(),
+  morphology: text("morphology"),
+  partOfSpeech: text("part_of_speech"),
+  semanticDomain: text("semantic_domain"),
+  senseNumber: text("sense_number"),
+  semanticFrame: text("semantic_frame"),
+  gloss: text("gloss"),
+  provenanceId: bigint("provenance_id", { mode: "number" }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+});
+
+export const editorialTranslations = pgTable(
+  "editorial_translations",
+  {
+    subject: text("subject").notNull(),
+    target: text("target").notNull(),
+    sourceText: text("source_text").notNull(),
+    sourceLanguage: text("source_language").notNull(),
+    targetLanguage: text("target_language").notNull(),
+    text: text("text").notNull(),
+    status: translationStatus("status").notNull(),
+    reviewedBy: text("reviewed_by"),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+    draftMethod: text("draft_method").notNull(),
+    provenanceId: bigint("provenance_id", { mode: "number" }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.subject, table.target] })],
+);
+
+// Payload público e imutável, compactado pelo Postgres por capítulo. O índice
+// relacional completo é mantido para processamento offline, não para consumo
+// do plano gratuito em produção.
+export const lexiconChapterShards = pgTable(
+  "lexicon_chapter_shards",
+  {
+    language: originalLanguage("language").notNull(),
+    bookCode: text("book_code").notNull(),
+    chapter: integer("chapter").notNull(),
+    payload: jsonb("payload").notNull(),
+    sourceSha256: text("source_sha256").notNull(),
+    generatedAt: timestamp("generated_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.language, table.bookCode, table.chapter] })],
+);
+
+// ---------------------------------------------------------------------------
+// Acepções do Brown-Driver-Briggs (drizzle/0010_bdb_senses.sql).
+// O SQL segue sendo a autoridade: os CHECK que exigem id no formato da obra,
+// `senses` como lista e concordância entre a árvore e os contadores vivem na
+// migration, não aqui.
+// ---------------------------------------------------------------------------
+
+export const lexemeBdbEntries = pgTable("lexeme_bdb_entries", {
+  bdbId: text("bdb_id").primaryKey(),
+  lemma: text("lemma").notNull(),
+  partOfSpeech: text("part_of_speech"),
+  isRoot: boolean("is_root").notNull(),
+  definitions: jsonb("definitions").notNull(),
+  // Árvore recursiva: [{ number, stem, definitions[], note, children[] }].
+  senses: jsonb("senses").notNull(),
+  senseCount: integer("sense_count").notNull(),
+  maxDepth: integer("max_depth").notNull(),
+  provenanceId: bigint("provenance_id", { mode: "number" }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+});
+
+export const lexemeBdbLinks = pgTable(
+  "lexeme_bdb_links",
+  {
+    lexemeKey: text("lexeme_key").notNull(),
+    bdbId: text("bdb_id").notNull(),
+    augmentedLemma: text("augmented_lemma").notNull(),
+    provenanceId: bigint("provenance_id", { mode: "number" }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.lexemeKey, table.bdbId] })],
+);

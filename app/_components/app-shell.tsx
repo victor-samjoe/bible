@@ -68,6 +68,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           <span aria-hidden="true">☰</span>
         </button>
         <span className={styles.brand}>BÍBLIA BEREANA</span>
+        <Link className={styles.accountButton} href="/conta" aria-label="Entrar ou acessar perfil" title="Conta">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5" /><path d="M4.5 20c.7-4 3.3-6 7.5-6s6.8 2 7.5 6" /></svg>
+          <span className={styles.srOnly}>Entrar ou acessar perfil</span>
+        </Link>
       </header>
 
       {open ? (

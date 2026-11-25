@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Fixture reduzida no formato de HebrewStrong.xml do Open Scriptures
+     HebrewLexicon. Lema, transliteracao e codigo Strong sao dados factuais;
+     <source>, <meaning> e <usage> sao textos de fixture e nao reproduzem o
+     verbete real da fonte. Cobre as palavras de Genesis 1:1. -->
+<lexicon>
+  <entry id="H7225">
+    <w pos="n-f" pron="ray-sheeth'" xlit="rêʼshîyth" xml:lang="heb">רֵאשִׁית</w>
+    <source>derivacao-fixture-H7225</source>
+    <meaning>definicao-fixture-H7225</meaning>
+    <usage>glossa-fixture-H7225</usage>
+  </entry>
+  <entry id="H1254">
+    <w pos="v" pron="baw-raw'" xlit="bârâʼ" xml:lang="heb">בָּרָא</w>
+    <source>derivacao-fixture-H1254</source>
+    <meaning>definicao-fixture-H1254</meaning>
+    <usage>glossa-fixture-H1254</usage>
+  </entry>
+  <entry id="H0430">
+    <w pos="n-m" pron="el-o-heem'" xlit="ʼĕlôhîym" xml:lang="heb">אֱלֹהִים</w>
+    <source>derivacao-fixture-H430</source>
+    <meaning>definicao-fixture-H430</meaning>
+    <usage>glossa-fixture-H430</usage>
+  </entry>
+  <entry id="H0853">
+    <w pos="prt" pron="ayth" xlit="ʼêth" xml:lang="heb">אֵת</w>
+    <source>derivacao-fixture-H853</source>
+    <meaning>definicao-fixture-H853</meaning>
+    <usage>glossa-fixture-H853</usage>
+  </entry>
+  <entry id="H8064">
+    <w pos="n-m" pron="shaw-mah'-yim" xlit="shâmayim" xml:lang="heb">שָׁמַיִם</w>
+    <source>derivacao-fixture-H8064</source>
+    <meaning>definicao-fixture-H8064</meaning>
+    <usage>glossa-fixture-H8064</usage>
+  </entry>
+  <entry id="H0776">
+    <w pos="n-f" pron="eh'-rets" xlit="ʼerets" xml:lang="heb">אֶרֶץ</w>
+    <source>derivacao-fixture-H776</source>
+    <meaning>definicao-fixture-H776 com <def>marcacao interna</def> preservada como texto</meaning>
+    <usage>glossa-fixture-H776</usage>
+  </entry>
+</lexicon>

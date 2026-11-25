@@ -9,12 +9,19 @@ export const EditorialState = z.enum(["DRAFT", "RESEARCHED", "EVIDENCE_VERIFIED"
 
 const WordLimits = z.object({ per_quote: z.number().int().nonnegative(), per_work: z.number().int().nonnegative(), per_document: z.number().int().nonnegative() }).strict();
 const Permissions = z.object({ store: z.boolean(), automated_processing: z.boolean(), quote: z.boolean(), public_distribution: z.boolean() }).strict();
+/**
+ * Imagem não se cita por palavras: é usada inteira ou não é usada. Um ativo
+ * visual (mapa, foto, arte) precisa destas permissões próprias; quando elas
+ * faltam, `canDisplay`/`canDeriveWork` recusam por padrão.
+ */
+const VisualPermissions = z.object({ reproduce: z.boolean(), adapt: z.boolean(), commercial: z.boolean(), share_alike: z.boolean(), modification_notice: z.boolean() }).strict();
 
 export const RightsSchema = z.object({
   id: BkfId, edition_id: BkfId, status: RightsStatus, permissions: Permissions,
   proof: z.string().min(1), verified_by: z.string().min(1), verified_at: IsoDateTime,
   valid_from: IsoDateTime, valid_until: IsoDateTime.optional(), territory: z.string().min(1),
   attribution: z.string().min(1), word_limits: WordLimits.optional(),
+  visual_permissions: VisualPermissions.optional(),
 }).strict();
 
 export const EditionSchema = z.object({ id: BkfId, work_id: BkfId, title: z.string().min(1), language: z.string().min(2), edition_label: z.string().min(1), source_url: z.url(), rights_id: BkfId }).strict();
@@ -28,4 +35,5 @@ export const ReviewSchema = z.object({ id: BkfId, document_id: BkfId, reviewer_i
 export const JobSchema = z.object({ id: BkfId, stage: z.enum(["INGEST", "INDEX", "RESEARCH", "ANALYSIS", "REVIEW", "PUBLISH"]), state: z.enum(["QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "BLOCKED"]), input_version: z.string().min(1), created_at: IsoDateTime, updated_at: IsoDateTime }).strict();
 
 export type Rights = z.infer<typeof RightsSchema>;
+export type VisualPermissions = z.infer<typeof VisualPermissions>;
 export type EditorialState = z.infer<typeof EditorialState>;

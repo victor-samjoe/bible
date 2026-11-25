@@ -867,3 +867,471 @@ Fica por fazer, e não foi entregue: `/inicio` ainda lê apenas o
 `sessionStorage` e continua dizendo que nada é sincronizado. É consumidor dos
 mesmos dados e precisa do mesmo tratamento.
 
+## 2026-11-19 — Preparação do pipeline lexical (C30 / LEXICON-INDEX-001)
+
+O leitor mostra análise de palavra para sete palavras, de um versículo, porque
+elas estão escritas à mão em `src/domain/word-analysis.ts`. Isso sempre foi
+rotulado como prova temporária. Esta frente **não a substituiu**: construiu a
+tubulação que vai substituí-la e parou exatamente onde começa a decisão humana.
+
+**O que existe agora.** Um registro versionado das fontes
+(`src/domain/lexicon/source-registry.ts`) que declara, por fonte, a URL, o
+pino, a licença, a atribuição, o tipo de ativo, os campos que podem ser lidos e
+os campos proibidos. Coletor, verificador e montador de índice em `scripts/`.
+Parsers determinísticos para MACULA (ocorrência), STEPBible TBESG (verbete
+grego) e Open Scriptures HebrewLexicon (verbete hebraico e índice de
+correspondência). Fixtures offline de Gênesis 1:1 e João 1:1 e três arquivos de
+teste.
+
+**O que não existe, e é o ponto mais importante deste registro.** Nenhuma fonte
+lexical foi baixada. Nenhum commit foi conferido. Nenhum SHA-256 real existe.
+Por isso todos os pinos estão `unresolved` e todos os `expectedSha256` estão
+`null` — não por esquecimento, mas porque escrever um número plausível faria o
+verificador comparar bytes reais contra ficção. A consequência é deliberada:
+`assetUrl()` recusa montar URL sem commit resolvido e o coletor recusa coletar.
+
+**A unidade é o lema.** O verbete é importado uma vez e reutilizado em todas as
+ocorrências; a ocorrência guarda forma, morfologia, referência e sentido
+anotado, e aponta para o verbete pela chave `idioma:Strong`. Nas fixtures, 24
+ocorrências de dois versículos se resolvem em 14 lemas, e as três ocorrências
+de `λόγος` em João 1:1 compartilham um único verbete. É a diferença entre
+indexar e repetir.
+
+**Proveniência por campo, não por registro.** Um verbete pode ter a
+transliteração de uma fonte e a definição de outra; uma linha única de crédito
+seria imprecisa justamente onde a licença exige precisão. Cada valor carrega
+fonte, arquivo, pino, SHA-256 do arquivo, licença, atribuição e o nome exato da
+coluna lida.
+
+**O `Meaning` do TBESH está proibido por nome.** O cabeçalho da própria fonte
+diz que aquela coluna deriva do Abridged BDB do Online Bible e pede permissão
+antes do reuso. O CC BY do pacote não resolve: quem licencia o pacote não é o
+titular daquele texto. Então a fonte está no registro com `importable: false` e
+`license.family: "permission-required"`, a coluna está em `prohibitedFields`
+com o motivo completo, e o leitor de tabelas **interrompe a leitura** se ela
+aparecer, em vez de ignorá-la. Campo proibido tratado como omissão é como ele
+entraria sem ninguém notar. A definição hebraica vem do Open Scriptures
+HebrewLexicon, que não arrasta essa pendência. CC BY e CC BY-SA também não
+convivem: `assertNoLicenseMixing()` recusa o conjunto misto.
+
+**Os parsers são guiados pelo cabeçalho real do arquivo.** MACULA e STEPBible
+mudam nome e ordem de coluna entre revisões; índice fixo importaria a coluna
+errada no dia em que a fonte inserisse outra no meio. Coluna não declarada é
+ignorada e relatada; coluna exigida ausente para a leitura. Isso importa porque
+os nomes de coluna no registro vieram da documentação pública e **não foram
+conferidos contra bytes reais** — se algum estiver errado, a primeira execução
+falha fechada dizendo qual, em vez de gravar dado trocado.
+
+**Tradução para português: contrato, nenhuma tradução.** Três estados —
+`machine_draft`, `human_reviewed`, `approved` — e a transição
+`machine_draft → approved` simplesmente não existe. Sem tradução aprovada, o
+leitor mostra a glossa original, nunca o rascunho. O campo `translations` dos
+verbetes é tipado como `readonly never[]`, e o montador de índice falha se
+alguma aparecer.
+
+**Nenhuma migration foi escrita.** A `lexicon_entries` da `0005` tem definição,
+glossa, licença e atribuição, mas não tem estado de tradução nem proveniência
+por campo. O desenho certo depende dos campos que a coleta real confirmar;
+escrever agora seria adivinhar duas vezes.
+
+Verificação: **não houve execução**. `npm run lint`, `npm run typecheck` e
+`vitest` foram negados pelo ambiente desta sessão, assim como qualquer acesso
+de rede. O código foi revisado por leitura e os testes foram escritos, mas não
+há prova de execução — quem retomar deve rodar os três arquivos de teste antes
+de confiar neles. Nada foi commitado, nenhuma migration aplicada, `.env*`
+intocado, leitor intocado.
+
+Desenho completo e portões abertos em `docs/LEXICON_PIPELINE.md`; estado item a
+item em `tasks/product/LEXICON-INDEX-001-preparacao.md`.
+
+
+## 2026-11-19 — Coleta real, tradução editorial e importação (C30 / LEXICON-INDEX-001)
+
+Continuação da entrada anterior, por sessão Claude Code distinta. A entrada de 09:22 registrava
+que nada havia sido executado; esta registra a execução e, principalmente, **cinco coisas que só
+apareceram quando os bytes reais chegaram** e que invalidavam parte do que estava documentado.
+
+### O que a coleta real desmentiu
+
+**O TSV do MACULA Hebrew é Git LFS.** O `raw.githubusercontent.com` devolve um ponteiro de 133
+bytes (`version https://git-lfs.github.com/spec/v1`); o arquivo tem 84 MB. Congelar o SHA-256 do
+ponteiro produziria um pino que confere para sempre e nunca aponta para o conteúdo — pior que não
+ter pino, porque dá confiança falsa. O ativo passou a ter `lfs: true`, a URL vem de
+`media.githubusercontent.com`, e o coletor recusa corpo com cara de ponteiro
+(`looksLikeLfsPointer`). O hash coletado é igual ao `oid` declarado no ponteiro, o que confirma de
+forma independente que vieram os 84 MB e não os 133 bytes.
+
+**Quatro dos nove caminhos declarados não existiam.** `TSV/macula-hebrew.tsv` é
+`WLC/tsv/macula-hebrew.tsv`; o `LICENSE` do Open Scriptures HebrewLexicon não existe — a
+declaração CC BY 4.0 está no `readme.md`, linhas 53-55, e é ele que guardamos como prova. Era
+exatamente o que `pathConfirmed: false` existia para sinalizar.
+
+**Cinco nomes de coluna estavam errados**, porque tinham sido escritos a partir da documentação
+pública e não dos bytes. O MACULA Hebrew não tem coluna `strong` (é `strongnumberx`) nem `domain`
+(são `lexdomain`, `contextualdomain` e `coredomain`; importamos o `coredomain`). O lado grego não
+tem `pos` (é `class`) e não publica `sensenumber`. O TBESG não tem `Lemma` nem `Morphology` (são
+`Greek` e `Morph`), e a coluna de definição não tem rótulo curto: chama-se literalmente
+`Abbott-Smith lexicon (AS), with gaps occationally filled from edited versions of  Middle LSJ`,
+com o erro de grafia da fonte. Como `strong` e `Lemma` eram obrigatórias, a leitura teria falhado
+fechada — comportamento correto, mas pelo motivo errado.
+
+**O MACULA Hebrew é morfêmico, e o leitor é indexado por palavra.** `GEN 1:1!1` aparece duas
+vezes, uma para a preposição בְּ e outra para o substantivo רֵאשִׁית. São **11 morfemas para as 7
+palavras** que o leitor mostra. A referência canônica descartava o sufixo `!N`, então a posição da
+palavra estava sendo perdida; `NormalizedOccurrence.wordPosition` foi acrescentado, porque sem ele
+não há como devolver "os morfemas da palavra 3".
+
+**28% das ocorrências ficam sem verbete, e está certo.** São 169.984 linhas cujo `strongnumberx`
+tem sufixo de letra (`0871a`, `1886a`, `2050b`): prefixos, artigos, conjunções e sufixos
+pronominais que o dicionário de Strong **não define**. `HebrewStrong.xml` tem 8.674 entradas e
+nenhuma com sufixo. E `H871`, sem sufixo, é אֲתָרִים, um topônimo sem relação nenhuma com a
+preposição que o MACULA marca como `0871a` — ligar os dois seria um erro silencioso e grave.
+
+A integridade da ligação foi medida no conjunto inteiro, e não por amostra: **287.682** ocorrências
+sem sufixo batem com o lema do verbete de Strong, **zero** apontam para Strong inexistente, e as
+**11.818** divergências são variantes de citação da mesma palavra (פָּנֶה/פנים, חַיִּים/חי,
+בְּכֹר/בכור). O mecanismo preferiu deixar órfão a ligar errado, que era o desenho pretendido.
+
+Também: os 6.435 "problemas" de leitura do hebraico são **todos** o artigo definido absorvido pela
+preposição (בַּ = בְּ + הַ), que a fonte publica com `text` vazio e transliteração "–". Não são
+linhas quebradas. Passaram a ter categoria própria para o verificador não contá-los como defeito.
+
+### Três defeitos no próprio código da frente anterior
+
+1. `entries.push(...result.entries)` estourava a pilha: `push` com spread passa cada item como
+   argumento, e são centenas de milhares.
+2. `JSON.stringify` do índice inteiro terminava em `Invalid string length` — 19.521 verbetes e
+   607.217 ocorrências com proveniência por campo passam do comprimento máximo de string do V8.
+   A saída passou a ser NDJSON emitida por gerador, com digest alimentado linha a linha.
+3. O `LexicalIndex.xml` recebia o parser do `HebrewStrong.xml`, porque o despacho olhava só
+   `asset.format === "xml"`: 10.221 problemas relatados contra o arquivo real. Com o parser certo,
+   são 10.212 pontes lema→Strong/BDB e zero problemas.
+
+E uma regressão introduzida e corrigida na mesma sessão: a busca de cabeçalho por colunas exigidas
+— necessária porque o TBESG abre com 87 linhas de prosa **sem** prefixo de comentário — fazia uma
+coluna **proibida** passar despercebida quando as exigidas não batiam. A proibição por licença
+passou a ter precedência sobre a procura (`prohibitedColumns`), com teste que falha se isso voltar.
+
+### Tradução editorial
+
+`scripts/translate-lexicon.ts` percorre o cânone **por livro**, começando por Gênesis e João, é
+retomável, idempotente e **não regressivo**: rascunho novo nunca sobrescreve texto revisado. Um
+lema traduzido em Gênesis não volta à fila de Êxodo. O lote é TSV para que o preenchedor possa
+mudar — esta sessão, uma pessoa, ou um serviço automático — sem tocar no programa nem no armazém.
+
+A decisão de produto que importa: a glossa traduzida é a **do MACULA, por ocorrência** ("in",
+"beginning", "he.created"), e não a do verbete de Strong, que é a lista de usos da KJV
+("court, daughter, door, + dungeon, family..."). A primeira é o que o leitor precisa ao clicar numa
+palavra; a segunda, traduzida, daria uma lista arcaica. O campo `gloss` do MACULA estava na lista
+de ignorados e passou a ser importado, sob a mesma licença CC BY 4.0 já coletada.
+
+A tradução é por **texto distinto**, não por ocorrência: 60.674 registros em vez de 607.217, e a
+mesma palavra sai igual em todo o corpus em vez de depender de qual lote a pegou.
+
+Foram traduzidas **537 glossas** (184 de Gênesis 1 e 353 de João 1), todas `machine_draft` com
+método declarado. Cobrem **99,1% de Gênesis 1 e 99,6% de João 1** — o resto não tem glossa na fonte
+— e, por concentrarem as palavras mais frequentes, **39,5% de todas as palavras da Bíblia**
+(237.443 de 601.031). Os 100 lemas mais frequentes cobrem 58%; os 1.000, 85%.
+
+Nenhuma tradução é publicável. `publishableText` ganhou `allowMachineDraft`, desligado por padrão,
+e devolve o rascunho num `kind` **próprio** — nunca como `translation` — justamente para que a
+interface seja obrigada a tratá-lo à parte e rotulá-lo.
+
+### Migration e importação
+
+`drizzle/0008_lexical_index.sql`, aditiva. Tabelas novas em vez de preencher a `lexicon_entries`
+da 0005, porque aquela amarra cada definição a uma `original_edition`, e o verbete desta frente é
+independente da edição e indexado por Strong; forçá-lo no formato antigo exigiria inventar uma
+edição artificial por fonte lexical.
+
+Aplicada **duas vezes** em Postgres descartável (`postgres:16-alpine`), sobre 0000–0007:
+idempotente. As constraints foram provadas com **dez sondagens adversariais**, e o banco recusou:
+fonte aprovada para coleta sem aprovador nomeado; pino que não é commit de 40 hex; campo com valor
+e sem proveniência; tradução aprovada sem revisor; `machine_draft → approved`; e
+`approved → machine_draft`. Aceitou as transições legítimas.
+
+Importação: **19.521 verbetes, 607.217 ocorrências, 537 traduções**, com **10** linhas de
+proveniência internadas em vez do bloco de crédito repetido 600 mil vezes. Reexecutada sobre os
+mesmos bytes, não duplicou nada. E uma prova que saiu de graça: a sondagem havia deixado
+`gloss:hbo:in` em `human_reviewed`, e a reimportação **se recusou a sobrescrevê-la** — a garantia
+de não regressão funcionando em dados reais, não em teste.
+
+### Precedência no leitor
+
+`src/domain/lexicon/word-analysis-view.ts` resolve o que mostrar, nesta ordem: nota editorial
+revisada → tradução aprovada → rascunho (só em pré-visualização, rotulado) → glossa original em
+inglês, marcada como tal → nada. As sete notas revisadas de Gênesis 1:1 **vencem** a tradução de
+máquina, com teste: trocá-las por um rascunho rebaixaria o produto. O índice entra para cobrir os
+outros 31.101 versículos, não para apagar o que já estava pronto.
+
+Quando parte do significado de uma palavra é rascunho, a palavra inteira é rotulada como rascunho:
+o leitor vê um texto só, não duas procedências.
+
+### Verificação
+
+`npm run typecheck` limpo. `npx vitest run`: **297 testes em 34 arquivos**, todos passando.
+`npx eslint` limpo em todos os arquivos desta frente. Nada commitado, nenhuma migration remota,
+`.env*` intocado.
+
+O `npm run lint` do projeto inteiro continua vermelho (3.400 erros), mas **nenhum** vem de `src/`:
+a origem são `.deploy-live/`, `.deploy-auth/`, `.next-review/`, `.claude/worktrees/` e
+`data/sources/`, que o `eslint.config.mjs` não ignora. É config, não código, e torna o portão de
+lint inutilizável localmente.
+
+### Pendência que precisa de atenção antes de ligar a pré-visualização
+
+`app/biblia/original-panel.tsx` rotula `source_gloss` como "sentido na fonte (inglês)", mas **não
+rotula `machine_draft`**: um rascunho seria renderizado como texto simples, indistinguível de uma
+tradução aprovada. Hoje é latente, porque `LEXICON_PREVIEW_DRAFTS` é decidido no servidor e está
+desligado — mas todo o desenho de `publishableText` existe para forçar esse rótulo, e sem ele a
+garantia não se cumpre. **Corrigir antes de ligar a pré-visualização.**
+
+### Frente concorrente
+
+Durante esta sessão, outro agente trabalhou na mesma frente e tomou um rumo complementar:
+`drizzle/0009_lexicon_chapter_shards.sql` guarda um payload compacto por livro/capítulo em `jsonb`,
+porque as 607 mil ocorrências relacionais ocupam ~290 MB com índices e não cabem no plano do
+Supabase. Ele consome o `lexicon-index.ndjson` produzido aqui e reescreveu
+`src/server/lexicon/repository.ts` para ler dos shards, mantendo o contrato de visão. **Em
+produção, a migration a aplicar é a 0009; a 0008 fica para curadoria e uso offline.**
+
+## 2026-11-24 — Acepções do BDB e domínios semânticos do MACULA (C30 / LEXICON-INDEX-001)
+
+Continuação da entrada de 19/11, mesma sessão retomada. A pergunta que motivou esta frente foi
+"podemos criar um laço de consultas na internet para trazer traduções mais contextualizadas e
+formas diversas de interpretação?". A resposta registrada é **não** para a internet, e **sim** para
+o material que já estava em disco sem ser lido.
+
+### Por que não buscar tradução na internet
+
+Importar texto de licença desconhecida esvaziaria todo o aparato que esta frente construiu —
+proveniência por campo, pino por commit, atribuição por ativo — e o precedente já está no
+repositório: a coluna `Meaning` do TBESH está **bloqueada** por pendência de permissão, mesmo
+vindo num pacote CC BY. Agrava o fato de que quase todo recurso lexical hebraico/grego **em
+português** é protegido (dicionários Strong em português, concordâncias baseadas em Almeida,
+léxicos comerciais), enquanto o material livre em inglês é abundante. É por isso que o pipeline
+coleta em inglês e traduz: traduzir obra CC BY é derivada permitida; copiar obra alheia não é.
+
+A internet tem um uso legítimo e pontual nesta frente: conferir uma escolha difícil durante a
+revisão editorial. Não coleta em massa.
+
+### O que estava em disco e não era lido
+
+**`BrownDriverBriggs.xml`**, coletado em 19/11 e marcado `pending_parser`: 11.845 verbetes e
+**8.989 acepções** aninhadas em até **cinco níveis**. `אָב` traz nove acepções de primeiro nível
+("pai de um indivíduo", "de Deus como pai do seu povo", "chefe de casa", "ancestral", "originador
+ou patrono de uma classe"…). `הָיָה` traz **32 acepções em cinco níveis**, organizadas por tronco
+verbal: Qal → I/II/III → 1/2 → a/b → (1)/(2).
+
+**`sdbh` e `lexdomain` do MACULA**: 244.727 e 244.714 ocorrências preenchidas, contra 160.923 do
+`coredomain` que já era importado. O `sdbh` **nomeia** a acepção que a palavra assume naquele
+versículo; o `coredomain` dá apenas a categoria estável do lema. Estavam os dois na lista de
+campos ignorados.
+
+### Decisão de modelagem: o BDB é fonte própria
+
+O BDB saiu de `oshb-hebrewlexicon` e virou a fonte `oshb-bdb` no registro. Não é arrumação: o BDB
+e o dicionário de Strong são obras distintas que só dividem repositório, com autoria, atribuição e
+granularidade diferentes, e o princípio deste registro é separar ativos com licença e crédito
+próprios. A atribuição agora credita separadamente a obra (domínio público) e a edição digital
+(CC BY 4.0). Em fonte separada, os nomes dos elementos também ficam exatamente como estão no
+arquivo — `def`, `sense@n`, `stem` — em vez de disputarem espaço com `meaning` e `usage` do
+HebrewStrong.
+
+A coleta foi refeita pelo pipeline, não por cópia manual: o coletor baixou os 2.911.253 bytes e
+conferiu o SHA-256 contra o que já estava congelado no registro, que é a prova de falha fechada
+funcionando num redownload real.
+
+### A hierarquia é o dado, não a decoração
+
+A sessão anterior deixou o BDB sem parser para não achatá-lo, e estava certa. Um sentido de
+terceiro nível sob Hiphil não significa o mesmo que um de primeiro nível; lido como lista plana, o
+verbete viraria um amontoado de sinônimos sem regência, que é pior que não ter o BDB.
+
+Expressão regular não resolve `<sense>` dentro de `<sense>`: casaria no primeiro `</sense>` e
+devolveria meio sentido, com o resto do ramo caindo no nível errado. O corte é por contagem de
+abertura e fechamento (`sliceSenses`), e ramo que não fecha é relatado, não remendado. Os dois
+`<sense/>` auto-fechados do arquivo têm tratamento explícito.
+
+Três coisas que uma lista plana perderia e que o parser preserva: a numeração **como a obra a
+publica** (que mistura "1", "a", "I" e "(1)" de propósito, para marcar o nível), o tronco verbal
+que agrupa um ramo, e o caminho até cada folha. Há teste que falha se a definição de um nível
+vazar para o de cima: `Qal` só agrupa, e se a leitura varresse o ramo em busca de `<def>`, o tronco
+herdaria as 32 acepções de `הָיָה`.
+
+**Correção de fato:** a entrada de 19/11 e os comentários diziam "até seis níveis". A profundidade
+real é **cinco**. A medição original usava um contador global que não zerava entre verbetes e era
+inflado pelos dois `<sense/>` auto-fechados. Corrigido no registro, no parser e no modelo.
+
+### A ponte, que é o que torna o BDB alcançável
+
+A ocorrência traz o Strong, não o id do BDB. Sem ligação, as 8.989 acepções seriam um dicionário
+que ninguém atinge. `LexicalIndex.xml` já era lido e dá exatamente essa tradução: das 10.212
+ligações, **10.167** alcançam verbete e **9.288** pares distintos chegaram ao banco. Ficaram de
+fora, contadas e não descartadas em silêncio, 876 ligações sem Strong — sem Strong não há
+ocorrência que as alcance — e 3 pares repetidos, que são duas grafias do mesmo lema apontando para
+o mesmo verbete pelo mesmo Strong (הֵן/הֵנָּה, רִישׁ/רֵישׁ, כְּלַל/שַׁכְלֵל).
+
+As fixtures do BDB e do `LexicalIndex` foram refeitas a partir de recortes reais. A anterior tinha
+um id de BDB **inventado** (`a.cjq.ab` para רֵאשִׁית, cujo id real é `t.ad.ag`), o que impedia
+testar a ponte de verdade. Agora o teste fecha lema → Strong → verbete com identificadores reais.
+
+### Um defeito próprio, encontrado pela verificação
+
+O montador de índice tinha **duas** chamadas a `lexiconIndexLines` — uma para o digest e outra
+para a gravação — e elas divergiram: o digest já contava as pontes do BDB e o arquivo gravado
+ainda não. O resultado era um arquivo cujo SHA-256 impresso não era o dele. As duas chamadas foram
+unificadas num único ponto, e o digest do arquivo em disco foi conferido por fora, em Python:
+`c4b1101a3939e281329144f6ab33c08b2ef82cd323a9461e1eb23a15d1a4e220`.
+
+### Banco
+
+`drizzle/0010_bdb_senses.sql`, aditiva, sobre 0000–0009. Acrescenta `sdbh_sense` e
+`lexical_domain` a `lexeme_occurrences`, cria `lexeme_bdb_entries` e `lexeme_bdb_links`.
+
+A árvore vai como `jsonb`, uma linha por verbete, e não como tabela de adjacência: ela é sempre
+lida inteira (o painel mostra as acepções da palavra clicada, não uma folha isolada), a ordem dos
+irmãos é parte do dado e uma tabela exigiria coluna de ordenação redundante, e são 11.845 linhas —
+o argumento de volume que levou os capítulos para `jsonb` na 0009 não se aplica aqui, onde a
+escolha é de forma.
+
+Aplicada duas vezes em Postgres descartável: idempotente. Constraints provadas por sondagem, e o
+banco recusou id de BDB fora do formato, árvore preenchida com contagem zero, `senses` recebendo
+objeto em vez de lista, e ponte para verbete inexistente. Um ajuste saiu da própria sondagem: o
+guarda de tipo passou para dentro de cada CHECK, porque o Postgres não garante ordem de avaliação
+e sem ele o erro era "cannot get array length of a non-array" em vez da constraint nomeada.
+
+Importação: **11.845 verbetes com árvore, 8.989 acepções, 9.288 pontes, 244.727 ocorrências com
+`sdbh_sense`**. Reexecutada sobre os mesmos bytes, não duplicou nada.
+
+### O que o leitor passa a poder mostrar
+
+Consulta de Gênesis 1:1 contra o banco, por palavra: forma, glossa em inglês, tradução em
+português, código SDBH, domínio lexical e o verbete do BDB com a contagem de acepções —
+`אֱלֹהִים` com 12, `אֶרֶץ` com 22, `בָּרָא` com 8, `שָׁמַיִם` com 7, `רֵאשִׁית` com 4.
+
+Um detalhe que o desenho preservou de propósito: `בָּרָא` alcança **dois** verbetes do BDB
+(`b.cw.aa` e `b.cx.aa`), porque o Strong 1254 cobre dois homógrafos. A ponte mantém a ambiguidade
+em vez de escolher um — escolher seria a interface mentindo sobre o que a obra diz.
+
+### Verificação
+
+`npm run typecheck` limpo. `npx vitest run`: **401 testes em 41 arquivos**, incluindo 12 novos do
+BDB. `npx eslint` limpo nos arquivos desta frente.
+
+`tests/importers/blivre.test.ts` falhou **uma vez** no conjunto cheio, com 5034 ms contra o limite
+padrão de 5000 do vitest, e passa sozinho e em duas rodadas completas seguidas. É flake de tempo
+sob carga paralela, não regressão, e o arquivo é de 17/11 — mas vai incomodar em CI e merece
+`testTimeout` próprio.
+
+### O que ainda não foi feito
+
+A árvore de acepções está no índice e no banco, mas **não chega à tela**: `src/server/lexicon/` e o
+painel são território da frente concorrente, e a divisão combinada foi eu não tocar neles. Expor as
+acepções no painel é o passo seguinte, de quem estiver com o painel na mão.
+
+## 2026-11-24 — BDB no painel de originais, com fontes e estados de revisão (C30)
+
+Tarefa "Claude 1": conectar as acepções do BDB ao painel de originais de Gênesis 1, exibindo as
+fontes usadas e o estado de revisão de cada texto. O painel havia sido ligado ao
+`/api/biblia/lexico` pela frente concorrente; esta entrada cobre o que faltava.
+
+### Dois defeitos encontrados no caminho de dados
+
+**As traduções nunca chegavam à tela.** O `repository.ts` passou a ler shards por capítulo, e
+nessa troca gravava `translation: null` fixo e `lexemeKey: ""`. Consequência: `meaningSource` só
+podia valer `source_gloss`, então o rótulo "tradução automática, aguardando revisão" que havia
+sido acrescentado ao painel era **código morto** — nenhuma das 537 glossas em português era
+alcançável, e a chave que liga ao BDB estava perdida.
+
+O comentário de cabeçalho do mesmo arquivo descrevia a consulta relacional com dois `LEFT JOIN`
+que o código não fazia mais. Corrigido junto.
+
+**Shard imutável não pode guardar estado mutável.** A correção óbvia seria embutir tradução e
+acepções no payload do capítulo, e seria errada: o shard é instantâneo com `source_sha256`
+próprio, e o estado de revisão muda por decisão humana. Assar revisão dentro dele o deixaria
+obsoleto no instante em que alguém aprovasse um verbete, sem nada no hash indicando isso. Por isso
+são três consultas, e a separação está documentada no repositório: estrutura vem do shard;
+tradução e acepções vêm das tabelas, ao vivo.
+
+### O que foi acrescentado
+
+`lexemeKey` entrou como 11º campo da linha compacta do shard, e os 1.189 shards foram
+reconstruídos. Ligar ocorrência a verbete por semelhança de grafia do lema seria adivinhar — é
+exactamente o que o `LexicalIndex.xml` existe para evitar.
+
+`OccurrenceRow` ganhou `language` **explícito**. Dava para deduzir do prefixo de `lexemeKey`
+("hbo:H7225"), mas cortar a chave por string funcionaria hoje e quebraria no dia em que o formato
+dela mudasse, sem nenhum teste reclamando.
+
+O repositório ganhou três consultas por chave: `listTranslations` (por sujeito
+`gloss:<idioma>:<texto>`), `listBdbEntries` (pela ponte `lexeme_bdb_links`) e `listSources`.
+
+### Estado de revisão é coisa distinta de procedência
+
+`ReviewState` existe separado de `MeaningSource` porque as duas respondem perguntas diferentes:
+"de onde veio" e "alguém conferiu". A definição do BDB vem de obra publicada e revisada por
+lexicógrafos, mas **não** tem tradução para português conferida — é `source_text`, não `approved`.
+
+Quatro estados, cada um com rótulo próprio na interface: `editorial_reviewed`, `approved`,
+`unreviewed_draft` e `source_text`. O rascunho **sempre** aparece rotulado, com o método de
+geração ao lado; é o que impede tradução automática de passar por verbete conferido.
+
+### Fontes: creditar o que foi usado, e só
+
+O crédito lista apenas as fontes de que aquela palavra realmente saiu, dizendo quais campos vieram
+de cada uma. Listar as oito fontes do registro em toda palavra creditaria obra que não entrou na
+análise, o que é impreciso na direção oposta à que a licença pede.
+
+O mapeamento campo → fonte é fixo porque é propriedade do desenho do pipeline: forma, lema,
+morfologia, domínio e glossa contextual vêm do MACULA; transliteração e Strong vêm do léxico de
+verbete do idioma; acepções vêm do BDB. Já o texto de licença e atribuição exibido é **buscado da
+tabela de fontes**, e fonte sem linha registrada não é creditada com texto escrito no código.
+
+### Interface
+
+O painel ganhou a árvore de acepções num `<details>`, com recuo por nível — o recuo é o dado, não
+decoração: um sentido de terceiro nível sob Hiphil não significa o mesmo que um de primeiro.
+Quando um morfema alcança mais de um verbete, os dois aparecem: `בָּרָא` chega a dois homógrafos, e
+escolher um seria a interface mentindo sobre o que a obra diz.
+
+Há aviso explícito de que o texto das acepções está em inglês e sem tradução revisada. Estilos com
+variante para tema escuro.
+
+### Prova de ponta a ponta
+
+Banco descartável com 0000–0010, índice relacional e os 1.189 shards importados, `next dev`
+apontado para ele.
+
+`GET /api/biblia/lexico?book=genesis&chapter=1&verses=1` devolve, por palavra de Gênesis 1:1: o
+português da nota editorial revisada (que vence a tradução de máquina, por projeto), as acepções
+do BDB — 4, 8, 12, 0, 7, 0 e 22 — e o crédito de `macula-hebrew`, `oshb-bdb` e
+`oshb-hebrewlexicon`.
+
+Em Gênesis 1:2, que não tem nota revisada, o estado é `unreviewed_draft` com o método declarado, e
+`הָיָה` traz suas 32 acepções em cinco níveis.
+
+**Com `LEXICON_PREVIEW_DRAFTS` desligado**, a mesma consulta devolve só `source_text`, nenhum
+`draftMethod`, e o texto do rascunho não aparece em lugar nenhum da resposta. A garantia é a razão
+de `publishableText` devolver o rascunho num `kind` próprio.
+
+### Verificação
+
+`npm run typecheck` limpo. `npx vitest run`: **416 testes em 43 arquivos**. `npx eslint` limpo nos
+arquivos tocados. A página `/biblia/genesis/1` compila e responde 200, sem aviso originado de
+`original-panel.tsx` ou `selection-bar.module.css`.
+
+Onze testes novos em `tests/server/lexicon-reader-bdb.test.ts`, incluindo: a preposição com Strong
+aumentado não recebe o verbete do vizinho; falha na consulta de acepções não derruba forma, lema e
+morfologia; e uma palavra cuja metade vem da fonte em inglês é rotulada inteira como texto da
+fonte, porque o leitor vê um texto só, não duas procedências.
+
+Dois dos meus testes nasceram errados e o código estava certo: eu os escrevi contra Gênesis 1:1,
+que **tem** nota editorial revisada, e ela vence qualquer tradução. Passaram a usar 1:2.
+
+### Limitação honesta do rascunho
+
+A tradução é por morfema, então não há concordância de gênero entre eles: "and the earth" sai como
+"e o terra" em Gênesis 1:2. É defeito real do rascunho, visível na pré-visualização, e é
+exatamente o tipo de coisa que a revisão humana existe para pegar. Não corrigi caso a caso porque
+seria maquiar o sintoma: a correção certa é a revisão, ou alinhamento com a BLIVRE.

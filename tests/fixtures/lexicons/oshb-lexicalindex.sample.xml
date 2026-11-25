@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Recorte real do LexicalIndex.xml, mesmo commit. E a ponte entre o lema aumentado,
+     o Strong e o id do BDB. A ultima entrada (aaa) nao tem strong de proposito: a
+     ausencia e informacao, e inventar um Strong plausivel e exatamente o erro que
+     este arquivo existe para evitar. -->
+<index xmlns="http://openscriptures.github.com/morphhb/namespace">
+  <entry id="lqb">
+			<w xlit="rēʾšît">רֵאשִׁית</w> <pos>N</pos> <def>beginning</def>
+			<xref bdb="t.ad.ag" strong="7225" twot="2097e"/>
+			<etym type="sub">lpx</etym>
+		</entry>
+  <entry id="bxx">
+			<w xlit="bārāʾ">בָּרָא</w> <pos>V</pos> <def>be fat</def>
+			<xref bdb="b.cx.aa" strong="1254" aug="b" twot="279"/>
+			<etym root="ברא" type="main">byu, byw</etym>
+		</entry>
+  <entry id="arn">
+			<w xlit="ʾĕlōhîm">אֱלֹהִים</w> <pos>N</pos> <def>gods</def>
+			<xref bdb="a.dl.ad" strong="430" twot="93c"/>
+			<etym type="sub">arm</etym>
+		</entry>
+  <entry id="mzj">
+			<w xlit="šāmayim">שָׁמַיִם</w> <pos>N</pos> <def>heavens</def>
+			<xref bdb="v.dy.ab" strong="8064" twot="2407a"/>
+			<etym type="sub">myu</etym>
+		</entry>
+  <entry id="bep">
+			<w xlit="ʾereṣ">אֶ֫רֶץ</w> <pos>N</pos> <def>earth</def>
+			<xref bdb="a.fx.aa" strong="776" twot="167"/>
+			<etym root="ארץ" type="main"/>
+		</entry>
+  <entry id="aaa">
+			<w xlit="ʾ">א</w>
+			<xref bdb="a.aa.aa"/>
+			<etym type="main"/>
+		</entry>
+</index>

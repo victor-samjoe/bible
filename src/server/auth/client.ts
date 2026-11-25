@@ -41,6 +41,10 @@ export interface SupabaseAuthClient {
     refreshSession?(input: {
       refreshToken: string;
     }): Promise<{ data: { session: ProviderSession | null }; error: unknown }>;
+    exchangeCodeForSession?(input: {
+      authCode: string;
+      codeVerifier: string;
+    }): Promise<{ data: { session: ProviderSession | null }; error: unknown }>;
     signOut?(): Promise<{ error: unknown }>;
   };
 }

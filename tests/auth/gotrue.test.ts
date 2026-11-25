@@ -27,6 +27,16 @@ const session = {
 };
 
 describe("cliente Supabase Auth por requisição", () => {
+  it("troca o código OAuth via PKCE sem usar token de outro usuário", async () => {
+    const call = vi.fn().mockResolvedValue(jsonResponse(session));
+    const client = createGoTrueClient(config, { fetchImpl: call as unknown as typeof fetch });
+    const result = await client?.auth.exchangeCodeForSession?.({ authCode: "codigo", codeVerifier: "verificador" });
+    expect(result?.data.session?.userId).toBe(userId);
+    const [url, init] = call.mock.calls[0] as [string, RequestInit & { headers: Record<string, string> }];
+    expect(url).toBe("https://projeto.supabase.co/auth/v1/token?grant_type=pkce");
+    expect(JSON.parse(String(init.body))).toEqual({ auth_code: "codigo", code_verifier: "verificador" });
+    expect(init.headers.Authorization).toBe("Bearer sb_publishable_exemplo");
+  });
   it("não existe sem configuração válida", () => {
     expect(createGoTrueClient(parseAuthConfig({}))).toBeNull();
   });

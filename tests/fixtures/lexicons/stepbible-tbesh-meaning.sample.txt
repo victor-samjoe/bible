@@ -1,0 +1,7 @@
+# Fixture que imita o TBESH APENAS para provar a recusa: a coluna "Meaning"
+# tem pendencia de permissao declarada pelo cabecalho da propria fonte e o
+# parser deve interromper a leitura ao encontra-la, sem produzir registro.
+# Os valores abaixo sao de fixture e nao reproduzem o conteudo do TBESH.
+eStrong	Lemma	Transliteration	Gloss	Meaning
+H7225	רֵאשִׁית	reshith	glossa-fixture-H7225	texto-que-nao-pode-ser-lido
+H1254	ברא	bara	glossa-fixture-H1254	texto-que-nao-pode-ser-lido

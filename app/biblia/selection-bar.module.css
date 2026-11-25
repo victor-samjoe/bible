@@ -177,7 +177,7 @@
   z-index: 30;
   background: rgba(0, 0, 0, 0.52);
   display: flex;
-  align-items: end;
+  align-items: flex-end;
   justify-content: center;
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -194,7 +194,7 @@
 .sheet header {
   display: flex;
   justify-content: space-between;
-  align-items: start;
+  align-items: flex-start;
   gap: 12px;
 }
 .sheet header p {
@@ -259,6 +259,115 @@
   line-height: 1.55;
   margin: 0;
 }
+.originalEmpty {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #ded6c9;
+  border-radius: 12px;
+  padding: 14px;
+  color: #596458;
+  font-size: .82rem;
+  line-height: 1.5;
+}
+.originalEmpty p { margin: 0; }
+.originalResult { display: grid; gap: 14px; }
+.originalLanguage { margin: 0; color: #596458; font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; display: flex; justify-content: space-between; gap: 12px; }
+.originalLanguage a { color: inherit; font-weight: 700; text-decoration: none; }
+.originalLanguage span { opacity: .75; text-transform: none; letter-spacing: 0; }
+.comparisonBlock { display: grid; gap: 8px; border-top: 1px solid #ded6c9; padding-top: 12px; }
+.versionRow { border: 1px solid #ded6c9; border-radius: 12px; padding: 11px 12px; background: #fffdf8; }
+.versionRow > b { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; }
+.versionRow > span { float: right; font-size: .68rem; color: #6a766d; }
+.versionRow > p { clear: both; margin: 9px 0 0; font: 1.08rem/1.75 Georgia, serif; overflow-wrap: anywhere; }
+.originalWords { font-size: 1.38rem !important; }
+.transliterationLine { font: italic .76rem/1.65 Arial, Helvetica, sans-serif !important; color: #6a766d; letter-spacing: .015em; text-align: start; }
+.transliterationLine .wordToken { direction: ltr; unicode-bidi: isolate; }
+.wordToken { display: inline; border: 0; border-radius: 5px; background: transparent; color: inherit; font: inherit; line-height: inherit; padding: 2px 3px; margin: 0 1px; cursor: pointer; }
+.wordToken[data-active="true"] { background: #9cc3e4; color: #14242f; box-shadow: 0 0 0 1px rgba(55, 103, 137, .22); }
+.wordToken:focus-visible { outline: 2px solid #4e86ac; outline-offset: 1px; }
+.morphology { margin-top: 9px; font-size: .73rem; color: #596458; }
+.morphology summary { list-style: none; cursor: pointer; width: fit-content; border: 1px solid #cfc6b8; border-radius: 999px; padding: 6px 10px; font-weight: 700; }
+.morphology summary::-webkit-details-marker { display: none; }
+.morphology ul { margin: 9px 0 0; padding-left: 20px; }
+.alignmentHint { margin: 0; font-size: .68rem; color: #6a766d; }
+.wordAnalysis { display: grid; gap: 8px; border-left: 3px solid #78a9ce; border-radius: 0 10px 10px 0; background: #eef4f7; padding: 11px 12px; }
+.wordAnalysis article + article { border-top: 1px solid #cbdbe5; padding-top: 10px; }
+.wordAnalysis article > header { display: flex; align-items: baseline; justify-content: flex-start; gap: 9px; }
+.wordAnalysis article > header strong { font: 1.35rem Georgia, serif; }
+.wordAnalysis article > header span { color: #5a6972; font-size: .75rem; font-style: italic; }
+.contextualMeaning { margin: 4px 0 9px; font: 700 .9rem/1.3 Arial, Helvetica, sans-serif; color: #23465e; }
+.wordAnalysis dl { display: grid; gap: 6px; margin: 0; }
+.wordAnalysis dl div { display: grid; grid-template-columns: 92px 1fr; gap: 8px; }
+.wordAnalysis dt { color: #63727b; font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.wordAnalysis dd { margin: 0; font-size: .76rem; line-height: 1.42; }
+.analysisPending { margin: 7px 0 0; color: #63727b; font-size: .74rem; line-height: 1.45; }
+
+/* Estado de revisao do texto exibido. O rotulo e obrigatorio para rascunho:
+   sem ele, traducao automatica fica indistinguivel de verbete conferido. */
+.reviewBadge { display: inline-block; margin-left: 7px; border-radius: 999px; padding: 2px 7px; font: 700 .62rem/1.5 Arial, Helvetica, sans-serif; text-transform: uppercase; letter-spacing: .05em; vertical-align: middle; }
+.reviewBadge[data-state="editorial_reviewed"] { background: #d8ead8; color: #2c5530; }
+.reviewBadge[data-state="approved"] { background: #d8e4f2; color: #24476b; }
+.reviewBadge[data-state="unreviewed_draft"] { background: #f6e3c8; color: #7a4e12; }
+.reviewBadge[data-state="source_text"] { background: #e6e3dc; color: #5a564e; }
+
+/* Arvore de acepcoes do BDB. O recuo por nivel e o dado: um sentido de
+   terceiro nivel nao significa o mesmo que um de primeiro. */
+.senseTree { margin-top: 9px; font-size: .74rem; color: #41514e; }
+.senseTree summary { list-style: none; cursor: pointer; width: fit-content; border: 1px solid #cfc6b8; border-radius: 999px; padding: 6px 10px; font-weight: 700; }
+.senseTree summary::-webkit-details-marker { display: none; }
+.senseTree ol { margin: 8px 0 0; padding-left: 18px; list-style: none; }
+/* Definicao do BDB e texto ingles corrido; sem quebra, um termo longo estoura
+   a largura num nivel fundo da arvore em tela de telefone. */
+.senseTree li { margin: 3px 0; line-height: 1.45; overflow-wrap: break-word; }
+.senseTree li > ol { border-left: 1px solid #d7cfc1; margin-left: 2px; padding-left: 12px; }
+.senseNumber { color: #7a6f5d; font-weight: 700; margin-right: 5px; }
+.senseStem { font-style: italic; color: #4a5f72; margin-right: 5px; }
+.senseNote { color: #6b6559; }
+.bdbEntryHead { margin: 6px 0 2px; font-size: .7rem; color: #63727b; }
+/* Os dois `summary` do painel sao abertos por teclado, e `.senseTree summary`
+   ainda esconde o marcador nativo: sem anel de foco proprio nao ha como ver
+   onde o foco esta. */
+.senseTree summary:focus-visible,
+.morphology summary:focus-visible { outline: 2px solid #4e86ac; outline-offset: 2px; }
+
+/* Credito das fontes efetivamente usadas naquela palavra. */
+.sourceCredits { margin: 10px 0 0; font-size: .67rem; line-height: 1.5; color: #63727b; }
+.sourceCredits li { margin: 2px 0; list-style: none; }
+.sourceCredits ul { margin: 4px 0 0; padding: 0; }
+
+:global([data-reader-theme="dark"]) .sheet { background: #181a1b; color: #f1eee9; box-shadow: 0 -15px 45px rgba(0,0,0,.56); }
+:global([data-reader-theme="dark"]) .sheet header p,
+:global([data-reader-theme="dark"]) .local,
+:global([data-reader-theme="dark"]) .originalLanguage,
+:global([data-reader-theme="dark"]) .alignmentHint { color: #b8b5ae; }
+:global([data-reader-theme="dark"]) .sheet header > button { background: #292b2d; color: #f1eee9; }
+:global([data-reader-theme="dark"]) .note { background: #232527; border-color: #46484b; color: #f1eee9; }
+:global([data-reader-theme="dark"]) .translation { border-color: #414346; color: #f1eee9; }
+:global([data-reader-theme="dark"]) .originalEmpty,
+:global([data-reader-theme="dark"]) .comparisonBlock { border-color: #414346; color: #c8c4bb; }
+:global([data-reader-theme="dark"]) .versionRow { background: #222426; border-color: #414346; color: #f1eee9; }
+:global([data-reader-theme="dark"]) .versionRow > span,
+:global([data-reader-theme="dark"]) .morphology { color: #b8b5ae; }
+:global([data-reader-theme="dark"]) .transliterationLine { color: #b8b5ae; }
+:global([data-reader-theme="dark"]) .morphology summary { border-color: #515458; color: #e7e2d9; }
+:global([data-reader-theme="dark"]) .wordAnalysis { background: #1c2a32; border-color: #78a9ce; color: #edf4f7; }
+:global([data-reader-theme="dark"]) .senseTree { color: #c3d2cf; }
+:global([data-reader-theme="dark"]) .senseTree summary { border-color: #515458; color: #e7e2d9; }
+:global([data-reader-theme="dark"]) .senseTree li > ol { border-color: #4a4d50; }
+:global([data-reader-theme="dark"]) .senseNumber { color: #b6a98f; }
+:global([data-reader-theme="dark"]) .senseStem { color: #9dbcd4; }
+:global([data-reader-theme="dark"]) .senseNote,
+:global([data-reader-theme="dark"]) .bdbEntryHead,
+:global([data-reader-theme="dark"]) .sourceCredits { color: #a8b3b8; }
+:global([data-reader-theme="dark"]) .reviewBadge[data-state="editorial_reviewed"] { background: #26402a; color: #cfe6d2; }
+:global([data-reader-theme="dark"]) .reviewBadge[data-state="approved"] { background: #1f3550; color: #cfe0f2; }
+:global([data-reader-theme="dark"]) .reviewBadge[data-state="unreviewed_draft"] { background: #4a3413; color: #f3dcb8; }
+:global([data-reader-theme="dark"]) .reviewBadge[data-state="source_text"] { background: #33312d; color: #ddd8ce; }
+:global([data-reader-theme="dark"]) .wordAnalysis article + article { border-color: #344b58; }
+:global([data-reader-theme="dark"]) .wordAnalysis article > header span,
+:global([data-reader-theme="dark"]) .wordAnalysis dt,
+:global([data-reader-theme="dark"]) .analysisPending { color: #aebfc8; }
+:global([data-reader-theme="dark"]) .contextualMeaning { color: #9cc9e7; }
 .color:focus-visible,
 .actions button:focus-visible,
 .buttons button:focus-visible,
@@ -293,4 +402,5 @@
   .translation em {
     grid-column: 2;
   }
+  .wordAnalysis dl div { grid-template-columns: 1fr; gap: 2px; }
 }

@@ -1,6 +1,10 @@
 node_modules/
 .next/
 .next-bkr/
+.next-*/
+.deploy-*/
+.claude/
+.build-debug.log
 out/
 coverage/
 playwright-report/
@@ -21,3 +25,10 @@ worker-configuration.d.ts
 # e fora do bundle (tarefa C14 e ADR 5 do BKF). Manifestos de proveniencia
 # tambem nao sao versionados: sao derivados reproduziveis da coleta.
 data/sources/originals/
+
+# Fontes lexicais (LEXICON-INDEX-001 / C30). Mesma regra: os bytes oficiais e
+# os manifestos de coleta ficam privados, fora do Git e fora do bundle. O que e
+# versionado e o registro em src/domain/lexicon/source-registry.ts e a
+# proveniencia em docs/LEXICON_PIPELINE.md.
+data/sources/lexicons/
+data/generated/lexicons/

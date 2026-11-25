@@ -40,6 +40,7 @@ export function ReaderChapter({
     highlightCount,
     totalVerses,
     storage,
+    toggleChapterRead,
   } = useReader();
 
   const noteAnchors = new Map(chapterNotes.map((note) => [note.anchor, note]));
@@ -96,6 +97,15 @@ export function ReaderChapter({
           ? "Guardado na sua conta."
           : "Tudo local nesta sessão, sem conta e sem sincronização."}
       </p>
+      <button
+        type="button"
+        className="chapterReadAction"
+        onClick={toggleChapterRead}
+        aria-pressed={isChapterRead}
+        data-read={isChapterRead ? "true" : undefined}
+      >
+        {isChapterRead ? "✓ Capítulo lido" : "Marcar capítulo como lido"}
+      </button>
     </article>
   );
 }

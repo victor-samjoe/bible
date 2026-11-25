@@ -180,6 +180,20 @@ export function createGoTrueClient(
           : { data: { session }, error: null };
       },
 
+      async exchangeCodeForSession(input) {
+        const nowSeconds = Math.floor(Date.now() / 1000);
+        const result = await request("/token?grant_type=pkce", {
+          method: "POST",
+          body: { auth_code: input.authCode, code_verifier: input.codeVerifier },
+          bearer: null,
+        });
+        if (!result.ok) return { data: { session: null }, error: { status: result.status } };
+        const session = normalizeSession(result.payload, nowSeconds);
+        return session === null
+          ? { data: { session: null }, error: { status: 502 } }
+          : { data: { session }, error: null };
+      },
+
       async signOut() {
         if (accessToken === null) return { error: null };
         // `scope=global` revoga todos os refresh tokens da pessoa: sair aqui não

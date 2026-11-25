@@ -1,6 +1,8 @@
 # Fontes de idiomas originais — Bíblia Bereana
 
-**Estado:** as três fontes foram **coletadas e conferidas por checksum** (ver "Proveniência da coleta"), e **nenhuma está aprovada para exibição no app**. A aprovação é humana e não existe ainda: nada de hebraico, grego, lema ou morfologia aparece em qualquer tela. Antes de baixar/importar, registrar URL exata, release/tag, data, licença copiada, checksum SHA-256 dos bytes e revisor humano.
+**Estado:** as três fontes foram **coletadas e conferidas por checksum** (ver "Proveniência da coleta"). Em **19/11/2026**, Victor Filipe Conceição, proprietário do produto, aprovou formalmente: (1) SBLGNT para exibição do texto grego; (2) OSHB/MorphHB para exibição do texto hebraico, segmentação, lemas e códigos morfológicos publicados pela fonte; e (3) WLC/eBible apenas como evidência independente do texto-base em domínio público. A aprovação não inclui aparato crítico, glossa, tradução, Strong, transliteração, morfologia grega nem definição lexical. A importação íntegra e o status `approved` no banco foram confirmados na mesma data.
+
+**Importação concluída em 19/11/2026:** as edições `SBLGNT` e `MORPHHB` foram gravadas no banco de produção e marcadas `approved` após conferência de 7.927/137.542 (versículos/tokens) e 23.213/306.785/471.674 (versículos/tokens/morfemas), respectivamente. A consulta pública continua limitada por seleção e sempre exibe atribuição.
 
 ## Princípio de separação
 
@@ -10,9 +12,9 @@ Texto-base, segmentação, lema/morfologia, glossário/definições, Strong's, t
 
 | Fonte | Escopo proposto | Licença/evidência | Situação (atualizada em 2026-11-17) |
 | --- | --- | --- | --- |
-| [Westminster Leningrad Codex (WLC)](https://open.bible/bibles/westminster-leningrad-codex) | Texto hebraico do AT, vocalização massorética | A página do provedor o classifica como **Public Domain**, identifica Westminster Hebrew Institute/United Bible Societies e oferece USX/USFM/Word. | Coletado com checksum conferido; guardado como evidência do texto-base. Não aprovado para exibição. |
-| [Open Scriptures Hebrew Bible / MorphHB](https://github.com/openscriptures/morphhb) | Hebraico, segmentação, lema e morfologia | O `LICENSE.md` declara base WLC e **CC BY 4.0**. A atribuição pedida é: `Original work of the Open Scriptures Hebrew Bible available at https://github.com/openscriptures/morphhb`. | Coletado na tag `v.2.2` com checksum conferido; é a origem do texto e da morfologia hebraicos. Não aprovado para exibição. |
-| [SBL Greek New Testament (SBLGNT)](https://sblgnt.com/) | Texto grego koiné do NT | O site do SBLGNT declara **CC BY 4.0** e disponibiliza download; o contrato exige atribuição, link da licença, indicação de modificações e preservação de avisos aplicáveis. | Coletado (27 arquivos) com checksum conferido; somente texto, sem aparato nem morfologia. Não aprovado para exibição. |
+| [Westminster Leningrad Codex (WLC)](https://open.bible/bibles/westminster-leningrad-codex) | Texto hebraico do AT, vocalização massorética | A página do provedor o classifica como **Public Domain**, identifica Westminster Hebrew Institute/United Bible Societies e oferece USX/USFM/Word. | Coletado e conferido; aprovado somente como evidência independente. O texto exibido virá do MorphHB para não misturar digitalizações. |
+| [Open Scriptures Hebrew Bible / MorphHB](https://github.com/openscriptures/morphhb) | Hebraico, segmentação, lema e morfologia | O `LICENSE.md` declara base WLC e **CC BY 4.0**. A atribuição pedida é: `Original work of the Open Scriptures Hebrew Bible available at https://github.com/openscriptures/morphhb`. | **Aprovado e importado em 19/11/2026** para texto, segmentação, lema e código morfológico. |
+| [SBL Greek New Testament (SBLGNT)](https://sblgnt.com/) | Texto grego koiné do NT | O site do SBLGNT declara **CC BY 4.0** e disponibiliza download; o contrato exige atribuição, link da licença, indicação de modificações e preservação de avisos aplicáveis. | **Aprovado e importado em 19/11/2026** somente para texto grego; aparato e morfologia continuam fora. |
 
 ### Atribuições de produto
 

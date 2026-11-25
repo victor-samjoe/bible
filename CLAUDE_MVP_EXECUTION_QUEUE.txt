@@ -1,5 +1,135 @@
 FILA DE EXECUÇÃO — CLAUDE CLI
 
+ENCAMINHAMENTO ATUAL — CLAUDE 1
+A lista completa da execução noturna está em
+`E:\SamJoE Bible\tasks\product\TAREFAS_CLAUDES_GENESIS1.md`, seção
+“Claude 1 — apresentação do BDB”, incluindo “Próxima tarefa” e “Sequência
+para o Claude 1 — execução noturna”. Leia essas seções e execute na ordem.
+O Claude 2 trabalha no grafo conforme `tasks/product/CLAUDE2_FILA_GRAFO_NOITE.md`.
+Estas atribuições complementam as regras de preservação e publicação abaixo.
+
+REVISÃO LOCAL DA FILA — 24/11/2026
+Esta revisão complementa a atualização de 19/11; não implica publicação.
+- A1: em execução. Corrigida a expectativa da fixture de Miqueias 5:2: a
+  palavra "governador" é o token 14, contando os dois termos de \add. A saída
+  local de lote agora inclui versão, identidade das fontes e fila de revisão;
+  sete testes de alinhamento passaram. Falta entrada operacional de lote com
+  dados aprovados e validação completa dos critérios de aceite.
+- A2: concluída em 24/11, sem UI. Revisados os contratos e fechadas duas
+  lacunas reais: a obrigação `requiresWitness`, declarada em dois ramos e
+  conferida por nenhum código, e o módulo de testemunhos, que era órfão. Criada
+  a camada `src/server/knowledge-graph/**`, que é onde os estados de revisão
+  passam a ter efeito: só `publicado` é servido, ramo sem material é declarado
+  vazio e todo registro retido é relatado com motivo, nunca com o conteúdo.
+  60 testes da frente (40 de domínio, 20 de servidor), suíte completa com 401
+  testes, typecheck sem erro e ESLint sem aviso nos arquivos da frente. Três
+  regras novas foram desligadas uma por vez para confirmar que a suíte as
+  recusa, e revertidas. Registro em `tasks/product/knowledge-graph-001.md` e na
+  seção 10 de `docs/VERSE_KNOWLEDGE_GRAPH.md`. Ficam pendentes, por decisão: a
+  migration/tabelas e o repositório Drizzle contra a porta já definida, e a
+  prova vertical de Gênesis 1:1, que depende de C29.
+- A3: página /progresso e estados local/conta existem; testes de domínio e
+  serviço passaram. Em 24/11 foram esclarecidas as origens das marcas e avisos
+  de falha do armazenamento local; 28 testes de progresso passaram. Lint dos
+  arquivos alterados e typecheck passaram. O fluxo de visitante foi validado no
+  navegador: marcar, recarregar e desmarcar. Falta validar conta autenticada.
+- READING-COMPLETE-001: ação no fim do capítulo existe; falta validar a interface.
+- C29 e C27/C23/C22/C24/C25/C28 continuam pendentes, na ordem abaixo. C11 e
+  C19 aguardam decisões editoriais e direitos. Antes da divulgação, falta
+  proteção compartilhada contra abuso ou CAPTCHA.
+Nenhuma verificação de produção, deploy ou banco remoto foi feita nesta revisão.
+
+
+ATRIBUIÇÃO — CLAUDE 2 (24/11/2026)
+
+Validar o progresso de leitura com **conta autenticada e visitante, por testes
+isolados**. Assume o item que resta da A3; a validação de visitante no navegador
+já foi feita por A3 e não deve ser refeita à mão — o que falta é cobertura
+automatizada dos dois estados.
+
+Cada teste monta o próprio estado e não depende de ordem, de execução anterior,
+de rede nem de banco remoto. Visitante e conta autenticada são casos separados,
+não variações do mesmo teste: o que se prova é que os estados são honestos e que
+nenhuma consulta devolve dado de outro usuário.
+
+Escopo de escrita: `tests/domain/reading-progress*` e
+`tests/server/reading-progress*`. Ler, sem alterar, `app/progresso/**`,
+`src/domain/reading-progress*` e `src/server/reading/progress*`. Não editar
+`app/biblia/**`, não alterar `.env*`, não aplicar migration remota, não fazer
+deploy, commit ou push.
+
+**Conflito a resolver antes de começar:** esses dois caminhos de teste são
+exatamente os que a A3 reserva como exclusivos, e a A3 ainda está em execução.
+Confirmar com o operador que a A3 liberou o item de validação antes de escrever
+nesses arquivos, ou combinar arquivos de teste distintos. Não editar em paralelo.
+
+
+ATUALIZAÇÃO OPERACIONAL — 19/11/2026
+
+Esta seção substitui a ordem antiga abaixo como fila ativa. O restante do
+arquivo é histórico de decisões e entregas: não reabrir uma tarefa marcada
+como concluída só porque ela ainda aparece no texto original.
+
+REGRAS PARA AS INSTÂNCIAS PARALELAS
+- Cada instância fica exclusivamente nos caminhos indicados na sua tarefa.
+- Não usar rede, não alterar `.env*`, não aplicar migration remota, não fazer
+  deploy, commit ou push. Não editar o painel de leitura existente.
+- Antes de editar, ler `AGENTS.md`, esta seção e a tarefa indicada.
+- Preservar alterações de outros processos. Ao terminar, registrar somente
+  arquivos alterados, verificações executadas e bloqueios reais.
+
+FILA ATIVA — três frentes independentes
+
+A1 — ALIGNMENT-PIPELINE-001 (prioridade P0)
+Responsável: Claude CLI A. Escopo exclusivo: `src/domain/passage-alignment*`,
+`src/domain/alignment/**`, `scripts/*alignment*`, `tests/domain/*alignment*`,
+`tests/scripts/*alignment*` e documentação diretamente ligada ao pipeline.
+Objetivo: desenhar e implementar, sem UI nem banco remoto, o pipeline
+idempotente que tokeniza uma tradução aprovada e produz candidatos de
+alinhamento por grupo com método, confiança, versão e fila editorial.
+Aceite: não usa posição como equivalência; preserva grupo 1:N/N:1; separa
+candidato de alinhamento publicado; tem fixtures e testes para Gênesis 1:1 e
+Miqueias 5:2; não altera o mapa editorial manual já exibido pelo leitor.
+
+A2 — KNOWLEDGE-GRAPH-001 (prioridade P0)
+Responsável: Claude CLI B. Escopo exclusivo: `src/domain/knowledge-graph/**`,
+`src/server/knowledge-graph/**`, `tests/domain/knowledge-graph*`,
+`tests/server/knowledge-graph*`, `docs/VERSE_KNOWLEDGE_GRAPH.md` e tarefa nova
+em `tasks/product/knowledge-graph*`.
+Objetivo: contratos e validações puros para a árvore de conhecimento por
+passagem: âncora canônica, evidência, fonte, testemunho, filologia, crítica
+textual, literatura, histórico-social, arqueologia, recepção, teologia e
+cosmovisão. Sem UI, IA, corpus novo ou banco remoto.
+Aceite: relações tipadas, proveniência/localização obrigatória, estados de
+revisão explícitos e testes que recusam evidência sem fonte/localização.
+
+A3 — READING-PROGRESS-001 (prioridade P1)
+Responsável: Claude CLI C. Escopo exclusivo: `app/progresso/**`,
+`app/progresso*`, `src/domain/reading-progress*`, `src/server/reading/progress*`,
+`tests/domain/reading-progress*`, `tests/server/reading-progress*` e CSS
+diretamente pertencente à nova página. Não editar `app/biblia/**`.
+Objetivo: página de progresso por testamento, livro e capítulo, usando apenas
+estado local ou da conta já existente. Deve abrir o capítulo, permitir corrigir
+uma marcação e declarar claramente quando os dados são locais; sem percentuais
+inventados e sem botão de reinício destrutivo sem confirmação.
+Aceite: visitante e conta autenticada têm estados honestos, totais derivam dos
+livros/capítulos reais, e nenhuma consulta retorna dado de outro usuário.
+
+PRÓXIMAS, APÓS AS TRÊS FRENTES
+1. C29 — Vulgata/LXX e prova de direitos/versificação.
+2. C27 — estudo documentado, cartões de evidência e agente de pesquisa.
+3. C23 — descoberta de provedor, custo, retenção e política para exegese.
+4. C22 — temas, apenas com fontes editoriais reais.
+5. C24 — descoberta de áudio/licenças.
+6. C25 — hub compacto, somente depois de progresso/temas/notas funcionais.
+7. C28 — entitlements Pro, depois da prova de valor do acervo.
+
+ENCERRADAS / NÃO REEXECUTAR: C1–C10, C12–C18 e C20. C17/C17a/C17b eram
+esqueletos e foram substituídas por autenticação, conta e perfil reais. C30
+teve o léxico integral importado em produção; só A1 (alinhamentos) permanece.
+C11 e C19 ficam em espera, pois dependem de edição/direitos aprovados e não
+bloqueiam o produto público agora.
+
 Regra geral: execute uma tarefa por vez, na ordem. Não decida escopo, licenças, produto, arquitetura ou publicação. Não use rede, não aplique migration remota, não faça deploy, não modifique .env, não exponha segredos e não faça commit sem ordem explícita. Preserve alterações paralelas e pare em conflito.
 
 C1 — Migrations locais
@@ -73,6 +203,39 @@ Criar contratos server-side e testes puros para planos, preços, assinaturas, ev
 
 C19 — BKF localhost
 Criar uma plataforma local em HTML para gestão interna do acervo BKF. Deve rodar apenas em localhost, sem login externo, deploy, banco remoto ou MCP. Exibir: estrutura de pastas privada, materiais cadastrados, autor/obra/edição, status de direitos, hashes, fila de ingestão, análises, revisões e bloqueios. Permitir cadastrar/editar somente fixtures ou arquivos locais autorizados; não baixar conteúdo, não publicar e não fingir que dados locais são aprovados. Criar instruções claras de execução localhost e testes básicos. Não fazer commit.
+
+C20 — Consulta de idiomas originais
+Executar `ORIGINAL-READER-001`, `ORIGINAL-IMPORT-001` e `ORIGINAL-READER-002` de `tasks/product/READER_PRODUCT_EXPANSION.md`. A consulta deve ser limitada à seleção, servir somente edição `approved`, preservar atribuição/licença e nunca inventar tradução, glossa, lema ou morfologia. Importação e aprovação remotas exigem autorização operacional separada.
+
+C21 — Leituras realizadas
+Adicionar ação discreta de marcar/desmarcar ao fim do capítulo e página pessoal de progresso por testamento, livro e capítulo. Exibir apenas dados reais da conta ou estado local explicitamente identificado. Ver `READING-COMPLETE-001` e `READING-PROGRESS-001`.
+
+C22 — Estudos por tema
+Criar índice pesquisável e páginas de tema com referências, fontes e separação entre texto bíblico, comentário editorial e IA. Não gerar catálogo fictício. Ver `THEMES-001`.
+
+C23 — Agente de interpretação e exegese
+Fazer primeiro a descoberta de provedor, custo, retenção e política editorial. Depois, permitir chamada somente a partir de texto selecionado, com fontes, limites e distinção entre observação, interpretação e aplicação. Nunca substituir dado filológico por geração. Ver `AI-EXEGESIS-001`.
+
+C24 — Áudio bíblico
+Descobrir e aprovar fonte/licença antes de player, streaming ou download. Preservar edição, atribuição, capítulo e acessibilidade. Ver `AUDIO-001`.
+
+C25 — Hub de ferramentas e perfil pessoal
+Consolidar somente funções reais em uma navegação compacta: retomar leitura, progresso, notas, destaques, temas, histórico e originais. Evitar cartões vazios e números inventados. Ver `READER-TOOLS-001` e `PROFILE-REFINE-001`.
+
+C26 — Árvore de conhecimento por passagem
+Modelar a passagem como âncora para texto/testemunhos, filologia, crítica textual, análise literária, contexto histórico-social, arqueologia, história da interpretação, teologia, cosmovisão e recepção. Implementar contratos de evidência e relações tipadas antes da UI. Ver `docs/VERSE_KNOWLEDGE_GRAPH.md` e `KNOWLEDGE-GRAPH-001`.
+
+C27 — Estudos documentados e agente de pesquisa
+Criar estudos privados, estruturados e versionados que recebam cartões de evidência e citações. O agente deve pesquisar acervo autorizado, mostrar evidências antes da síntese, registrar fontes e nunca salvar silenciosamente. Prova vertical: Gênesis 1:1. Ver `STUDY-DOCUMENT-001`, `RESEARCH-AGENT-001`, `VULGATE-001` e `RECEPTION-HISTORY-001`.
+
+C28 — Plano Pro do acervo
+Definir entitlements depois da prova de valor. Leitura básica e dados próprios permanecem acessíveis; Pro cobre curadoria, conexões, pesquisa cruzada, agente, dossiês e limites maiores. Não reivindicar exclusividade sobre corpus aberto. Ver `PRO-ENTITLEMENTS-001`.
+
+C29 — Testemunhos históricos e alinhamentos
+Importar Vulgata e Septuaginta somente após edição/licença/versificação aprovadas. Criar alinhamentos editoriais por grupos de palavras entre a tradução exibida e cada testemunho; nunca associar automaticamente pela posição. Prova vertical inicial: Gênesis 1:1. Ver `VULGATE-001`, `LXX-001` e `ALIGNMENT-001`.
+
+C30 — Índice lexical e pipeline de alinhamento por versão — execução lexical concluída localmente em 19/11/2026; falta somente autorização operacional para migration/importação de produção e a frente separada de alinhamento editorial por versão.
+Substituir a prova manual de Gênesis 1:1 por uma pipeline offline idempotente. Importar fonte lexical aprovada em `lemmas`/`lexicon_entries`, indexar definições e semântica uma única vez por lema e ligar automaticamente todas as ocorrências do MorphHB/SBLGNT. Para cada tradução aprovada, tokenizar seus versículos e gerar candidatos de alinhamento por grupo com método, confiança e versão do algoritmo; ambiguidades vão para revisão editorial. O léxico deve ser independente da tradução, mas os alinhamentos permanecem vinculados a `translation_id`, pois ordem, explicitação e escolhas tradutórias variam. Não aplicar migration remota nem importar léxico sem licença aprovada. Ver `LEXICON-INDEX-001` e `ALIGNMENT-PIPELINE-001`.
 
 RESPOSTA DO CLAUDE CLI — 17/11/2026
 
