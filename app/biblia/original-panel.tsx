@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import type { OriginalSelectionResult } from "@/src/server/contracts/originals";
 import {
   alignmentFor,
@@ -308,6 +309,12 @@ export function OriginalPanel({ bookSlug, chapter, selectionVerses, translationN
                       <strong lang={rtl ? "he" : "grc"} dir={rtl ? "rtl" : "ltr"}>{token?.normalized}</strong>
                       {analysis ? <span>{analysis.transliteration}</span> : lexical?.morphemes.map((item) => item.transliteration).filter(Boolean).join(" · ") || null}
                     </header>
+                    {(() => {
+                      const matched = words.filter((_, index) =>
+                        translationGroupAt(words, index, groups)?.originalPositions.includes(position),
+                      ).map((word) => word.display).join(" ");
+                      return matched ? <p>Na {translationName}: <strong>{matched}</strong></p> : null;
+                    })()}
                     {analysis ? (
                       <>
                         <p className={styles.contextualMeaning}>{analysis.contextualTranslation}</p>
@@ -401,6 +408,11 @@ export function OriginalPanel({ bookSlug, chapter, selectionVerses, translationN
                     ) : (
                       <p className={styles.analysisPending}>{lexiconFallbackMessage(lexiconQueryState(lexicon))}</p>
                     )}
+                    {[...new Set(lexical?.morphemes.flatMap((item) => item.strongId ? [item.strongId] : []) ?? [])].map((strong) => (
+                      <p key={strong}><Link href={`/palavra?idioma=${rtl ? "hbo" : "grc"}&strong=${encodeURIComponent(strong)}`}>
+                        Estudar palavra {strong} →
+                      </Link></p>
+                    ))}
                   </article>
                 ))}
               </aside>

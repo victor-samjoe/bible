@@ -55,14 +55,8 @@ export function BookChapters({
         </p>
       </header>
 
+      {marks.storage !== "account" || accountStatus === "unavailable" ? (
       <section className={styles.origin} aria-label="De onde vêm estas marcações" data-storage={marks.storage}>
-        {marks.storage === "account" ? (
-          <p>
-            <strong>Conta e sessão deste navegador.</strong> A lista reúne as duas fontes; algumas
-            marcações podem existir apenas nesta sessão. Alterações são enviadas à conta e ao
-            registro local.
-          </p>
-        ) : null}
         {marks.storage === "local" ? (
           <p>
             <strong>Estado local.</strong> Marcar aqui vale somente nesta sessão deste navegador e
@@ -83,6 +77,7 @@ export function BookChapters({
           </p>
         ) : null}
       </section>
+      ) : null}
 
       <ProgressNotice notice={marks.notice} onDismiss={marks.dismissNotice} />
 
