@@ -1,0 +1,323 @@
+{
+ "batch": "gen1-lote-001",
+ "method": "manual_trabalho",
+ "state": "nao_revisada",
+ "note": "Rascunho de trabalho feito por assistente de IA; não é revisão humana independente. Cada original é conferido contra o BDB local antes de gerar o lote.",
+ "entries": {
+  "hbo:H1254": {
+   "bdbId": "b.cw.aa",
+   "senses": [
+    {
+     "path": "1",
+     "original": "shape; fashion; create",
+     "pt": "formar; moldar; criar"
+    },
+    {
+     "path": "2.1",
+     "original": "be created",
+     "pt": "ser criado"
+    },
+    {
+     "path": "2.2",
+     "original": "with reference to birth",
+     "pt": "com referência ao nascimento"
+    },
+    {
+     "path": "2.3",
+     "original": "of something new, astonishing",
+     "pt": "de algo novo, surpreendente"
+    },
+    {
+     "path": "3.1",
+     "original": "cut down",
+     "pt": "derrubar (cortando)"
+    },
+    {
+     "path": "3.2",
+     "original": "cut out",
+     "pt": "cortar fora"
+    }
+   ]
+  },
+  "hbo:H430": {
+   "bdbId": "a.dl.ad",
+   "senses": [
+    {
+     "path": "1.1",
+     "original": "rulers; judges",
+     "pt": "governantes; juízes"
+    },
+    {
+     "path": "1.2",
+     "original": "divine ones",
+     "pt": "seres divinos"
+    },
+    {
+     "path": "1.3",
+     "original": "angels",
+     "pt": "anjos"
+    },
+    {
+     "path": "1.4",
+     "original": "gods",
+     "pt": "deuses"
+    },
+    {
+     "path": "2.1",
+     "original": "god; goddess",
+     "pt": "deus; deusa"
+    },
+    {
+     "path": "2.2",
+     "original": "godlike one",
+     "pt": "alguém semelhante a deus"
+    },
+    {
+     "path": "2.3",
+     "original": "works of God, or things belongng to him",
+     "pt": "obras de Deus, ou coisas que lhe pertencem"
+    },
+    {
+     "path": "2.4",
+     "original": "God",
+     "pt": "Deus"
+    },
+    {
+     "path": "3",
+     "original": "the (true) God",
+     "pt": "o (verdadeiro) Deus"
+    },
+    {
+     "path": "4",
+     "original": "God",
+     "pt": "Deus"
+    }
+   ]
+  },
+  "hbo:H776": {
+   "bdbId": "a.fx.aa",
+   "senses": [
+    {
+     "path": "1.1",
+     "original": "earth",
+     "pt": "terra"
+    },
+    {
+     "path": "1.2",
+     "original": "earth",
+     "pt": "terra"
+    },
+    {
+     "path": "1.3",
+     "original": "earth",
+     "pt": "terra"
+    },
+    {
+     "path": "2",
+     "original": "land",
+     "pt": "terra"
+    },
+    {
+     "path": "2.1",
+     "original": "country, territory",
+     "pt": "país, território"
+    },
+    {
+     "path": "2.2",
+     "original": "district, region",
+     "pt": "distrito, região"
+    },
+    {
+     "path": "2.4",
+     "original": "piece of ground",
+     "pt": "pedaço de chão"
+    },
+    {
+     "path": "2.5",
+     "original": "land",
+     "pt": "terra"
+    },
+    {
+     "path": "2.6",
+     "original": "= inhabitants of land",
+     "pt": "= habitantes da terra"
+    },
+    {
+     "path": "2.7",
+     "original": "used even of Shᵉʼôl",
+     "pt": "usado até para o Shᵉʼôl"
+    },
+    {
+     "path": "3.1",
+     "original": "ground",
+     "pt": "chão"
+    },
+    {
+     "path": "3.2",
+     "original": "soil",
+     "pt": "solo"
+    },
+    {
+     "path": "4.1",
+     "original": "people of the land",
+     "pt": "povo da terra"
+    },
+    {
+     "path": "4.2",
+     "original": "in measurements of distance",
+     "pt": "em medidas de distância"
+    },
+    {
+     "path": "4.3",
+     "original": "the country of the plain; level; plain country",
+     "pt": "a região da planície; plano; terra de planície"
+    },
+    {
+     "path": "4.4",
+     "original": "land of the living",
+     "pt": "terra dos viventes"
+    },
+    {
+     "path": "4.5",
+     "original": "end(s) of the earth",
+     "pt": "extremo(s) da terra"
+    },
+    {
+     "path": "5",
+     "original": "lands; countries; lands of the nations",
+     "pt": "terras; países; terras das nações"
+    }
+   ]
+  },
+  "hbo:H8064": {
+   "bdbId": "v.dy.ab",
+   "senses": [
+    {
+     "path": "1.1",
+     "original": "visible heavens; sky",
+     "pt": "céus visíveis; céu"
+    },
+    {
+     "path": "1.2",
+     "original": "phrases",
+     "pt": "expressões"
+    },
+    {
+     "path": "2.1",
+     "original": "as abode of God",
+     "pt": "como morada de Deus"
+    },
+    {
+     "path": "2.2",
+     "original": "Elijah taken up הַשּׁ׳ in whirlwind",
+     "pt": "Elias levado para cima הַשּׁ׳ num redemoinho"
+    },
+    {
+     "path": "3",
+     "original": "הַשּׁ׳ personified in various relations",
+     "pt": "הַשּׁ׳ personificado em várias relações"
+    }
+   ]
+  },
+  "hbo:H216": {
+   "bdbId": "a.cd.ab",
+   "senses": [
+    {
+     "path": "1",
+     "original": "light",
+     "pt": "luz"
+    },
+    {
+     "path": "2",
+     "original": "morning light; dawn",
+     "pt": "luz da manhã; alvorada"
+    },
+    {
+     "path": "3",
+     "original": "light",
+     "pt": "luz"
+    },
+    {
+     "path": "4",
+     "original": "daylight",
+     "pt": "luz do dia"
+    },
+    {
+     "path": "5",
+     "original": "lightning",
+     "pt": "relâmpago"
+    },
+    {
+     "path": "6",
+     "original": "light",
+     "pt": "luz"
+    },
+    {
+     "path": "7",
+     "original": "light of life",
+     "pt": "luz da vida"
+    },
+    {
+     "path": "8",
+     "original": "light of prosperity",
+     "pt": "luz da prosperidade"
+    },
+    {
+     "path": "9",
+     "original": "light of instruction",
+     "pt": "luz da instrução"
+    },
+    {
+     "path": "10",
+     "original": "light",
+     "pt": "luz"
+    },
+    {
+     "path": "11",
+     "original": "Yahweh",
+     "pt": "Yahweh"
+    }
+   ]
+  },
+  "hbo:H3117": {
+   "bdbId": "j.ay.aa",
+   "senses": [
+    {
+     "path": "1",
+     "original": "day",
+     "pt": "dia"
+    },
+    {
+     "path": "2",
+     "original": "Day",
+     "pt": "Dia"
+    },
+    {
+     "path": "3",
+     "original": "day of Yahweh",
+     "pt": "dia de Yahweh"
+    },
+    {
+     "path": "4",
+     "original": "days",
+     "pt": "dias"
+    },
+    {
+     "path": "5",
+     "original": "Days",
+     "pt": "Dias"
+    },
+    {
+     "path": "6",
+     "original": "time",
+     "pt": "tempo"
+    },
+    {
+     "path": "7",
+     "original": "Phrases",
+     "pt": "Expressões"
+    }
+   ]
+  }
+ }
+}

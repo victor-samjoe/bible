@@ -10,11 +10,14 @@ import {
   translationGroupAt,
 } from "@/src/domain/passage-alignment";
 import { wordAnalysisFor } from "@/src/domain/word-analysis";
+import { pilotContextualTranslation, pilotDefinition, pilotSenseNote } from "../palavra/piloto";
+import { transliterateHebrewSurface } from "@/src/domain/transliteration/hebrew";
+import { hebrewVariantWarning } from "@/src/domain/transliteration/hebrew-variants";
+import { transliterateGreekSurface } from "@/src/domain/transliteration/greek";
 import styles from "./selection-bar.module.css";
 import {
   acceptionCount,
   lexiconFallbackMessage,
-  readableSenseNote,
   readableSourceGloss,
   reviewLabel,
   type LexiconQueryState,
@@ -98,21 +101,29 @@ function ReviewBadge({ state }: { state: ReviewState | null }) {
 }
 
 /** Uma acepcao e seus filhos. A recursao espelha a da obra. */
-function SenseList({ senses }: { senses: readonly BdbSense[] }) {
+function hasPilotSense(sense: BdbSense, strong: string, bdbId: string): boolean {
+  return pilotSenseNote(strong, bdbId, sense.note) !== null || sense.definitions.some((definition) => pilotDefinition(strong, bdbId, definition) !== null) ||
+    sense.children.some((child) => hasPilotSense(child, strong, bdbId));
+}
+
+function SenseList({ senses, strong, bdbId }: { senses: readonly BdbSense[]; strong: string; bdbId: string }) {
   if (senses.length === 0) return null;
   return (
     <ol>
-      {senses.map((sense, index) => {
-        const note = readableSenseNote(sense.note);
+      {senses.filter((sense) => hasPilotSense(sense, strong, bdbId)).map((sense, index) => {
+        const translations = sense.definitions.flatMap((definition) => {
+          const translated = pilotDefinition(strong, bdbId, definition);
+          return translated ? [translated] : [];
+        });
         return (
           <li key={`${sense.number ?? sense.stem ?? "-"}-${index}`}>
             {/* O espaço depois do número e do radical é literal, não margem:
                 sem ele a acepção é copiada e lida como "aFall out". */}
             {sense.number ? <span className={styles.senseNumber}>{sense.number}{" "}</span> : null}
             {sense.stem ? <span className={styles.senseStem}>{sense.stem}{" "}</span> : null}
-            {sense.definitions.length > 0 ? <span lang="en">{sense.definitions.join(", ")}</span> : null}
-            {note ? <span className={styles.senseNote} lang="en"> {note}</span> : null}
-            <SenseList senses={sense.children} />
+            {translations.length > 0 ? <span lang="pt-BR">{translations.join(", ")}</span> : null}
+            {pilotSenseNote(strong, bdbId, sense.note) ? <span lang="pt-BR"> {pilotSenseNote(strong, bdbId, sense.note)}</span> : null}
+            <SenseList senses={sense.children} strong={strong} bdbId={bdbId} />
           </li>
         );
       })}
@@ -153,6 +164,28 @@ export function OriginalPanel({ bookSlug, chapter, selectionVerses, translationN
   const [analysisSelection, setAnalysisSelection] = useState<{ verse: number; positions: readonly number[] } | null>(null);
   const restoreScroll = useRef<number | null>(null);
   const verseNumbers = useMemo(() => selectionVerses.map((verse) => verse.number), [selectionVerses]);
+  // Um único resultado por ocorrência alimenta a linha e o painel. Nunca usa
+  // o Strong ou a transliteração lexical para representar a forma textual.
+  const transliterationAudit = useMemo(() => {
+    const words = new Map<string, { academic: string; simplified: string; notes?: readonly string[] }>();
+    const warnings = new Map<string, string>();
+    if (!result?.ok) return { words, warnings };
+    for (const verse of result.verses) for (const token of verse.tokens) {
+      if (result.edition.language === "hbo") {
+        const variant = hebrewVariantWarning(result.edition.code, result.edition.version, verse.canonicalRef, token.position);
+        if (variant) {
+          warnings.set(token.id, variant);
+          continue;
+        }
+      }
+      const form = result.edition.language === "hbo"
+        ? transliterateHebrewSurface(token.normalized)
+        : transliterateGreekSurface(token.normalized);
+      if (form) words.set(token.id, form);
+    }
+    return { words, warnings };
+  }, [result]);
+  const textualTransliterations = transliterationAudit.words;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -274,47 +307,34 @@ export function OriginalPanel({ bookSlug, chapter, selectionVerses, translationN
               <b>{rtl ? "Hebraico · MorphHB" : "Grego · SBLGNT"}</b>
               <span>{verse.canonicalRef}</span>
               <p lang={rtl ? "he" : "grc"} dir={rtl ? "rtl" : "ltr"} className={styles.originalWords}>
-                {verse.tokens.map((token, index) => {
+                {verse.tokens.map((token) => {
                   const group = originalGroupAt(token.position, groups);
                   const key = group ? activeKey(group.id) : `${verse.number}:original:${token.position}`;
+                  const transliteration = textualTransliterations.get(token.id);
                   return (
-                    <Fragment key={token.id}>
-                      {index > 0 ? " " : null}
+                    <span className={styles.originalPair} key={token.id}>
                       <button type="button" className={styles.wordToken}
                         data-active={active === key ? "true" : undefined}
                         aria-pressed={active === key}
-                        onClick={() => selectWord(key, [token.position])}>
+                        onClick={() => selectWord(key, group?.originalPositions ?? [token.position])}>
                         {token.normalized}
                       </button>
-                    </Fragment>
+                      {transliteration ? <button type="button" className={`${styles.wordToken} ${styles.textualTransliteration}`}
+                        dir="ltr" lang="pt-BR"
+                        data-active={active === key ? "true" : undefined}
+                        aria-pressed={active === key}
+                        aria-label={`${transliteration.simplified}, transliteração textual de ${token.normalized}`}
+                        onClick={() => selectWord(key, group?.originalPositions ?? [token.position])}>
+                        {transliteration.simplified}
+                      </button> : <span className={styles.transliterationMissing} aria-label={transliterationAudit.warnings.get(token.id) ?? "Transliteração indisponível"}>
+                        {transliterationAudit.warnings.get(token.id)?.startsWith("Esta forma") ? "ketiv" :
+                          transliterationAudit.warnings.get(token.id)?.startsWith("Esta é") ? "qere" : "—"}
+                      </span>}
+                    </span>
                   );
                 })}
               </p>
-              {lexicalVerse ? (
-                <p className={styles.transliterationLine} dir={rtl ? "rtl" : "ltr"} aria-label="Transliteração em alfabeto latino">
-                  {verse.tokens.map((token, index) => {
-                    const group = originalGroupAt(token.position, groups);
-                    const key = group ? activeKey(group.id) : `${verse.number}:original:${token.position}`;
-                    const form = transliterationFor(lexicalVerse.words.find((word) => word.position === token.position) ?? null);
-                    // O nome acessível distingue este botão do botão da mesma
-                    // palavra na linha de cima, que seleciona a mesma coisa:
-                    // sem ele, o leitor de tela anuncia dois controles
-                    // aparentemente idênticos.
-                    return form ? (
-                      <Fragment key={`${token.id}-transliteration`}>
-                      {index > 0 ? " " : null}
-                      <button type="button" className={styles.wordToken}
-                        data-active={active === key ? "true" : undefined}
-                        aria-pressed={active === key}
-                        aria-label={`${form}, transliteração de ${token.normalized}`}
-                        onClick={() => selectWord(key, group?.originalPositions ?? [token.position])}>
-                        {form}
-                      </button>
-                      </Fragment>
-                    ) : null;
-                  })}
-                </p>
-              ) : null}
+              <p className={styles.transliterationNotice}>Transliteração automática da forma textual · sujeita a revisão</p>
               {verse.tokens.some((token) => token.morphemes.length > 0) ? (
                 <details className={styles.morphology}>
                   <summary>Morfologia</summary>
@@ -335,13 +355,23 @@ export function OriginalPanel({ bookSlug, chapter, selectionVerses, translationN
                   <article key={position}>
                     <header>
                       <strong lang={rtl ? "he" : "grc"} dir={rtl ? "rtl" : "ltr"}>{token?.normalized}</strong>
-                      {analysis ? <span>{analysis.transliteration}</span> : lexical?.morphemes.map((item) => item.transliteration).filter(Boolean).join(" · ") || null}
                     </header>
+                    {token && textualTransliterations.get(token.id) ? <div className={styles.transliterationDetails}>
+                      <p>Transliteração textual: <strong dir="ltr">{textualTransliterations.get(token.id)!.simplified}</strong></p>
+                      <p>Acadêmica ({rtl ? "SBL" : "ALA-LC"}): <span dir="ltr">{textualTransliterations.get(token.id)!.academic}</span></p>
+                      {textualTransliterations.get(token.id)?.notes?.map((note) => <p key={note}>{note}</p>)}
+                    </div> : <p className={styles.analysisPending}>{token ? transliterationAudit.warnings.get(token.id) ?? "Transliteração textual indisponível para esta forma." : "Transliteração textual indisponível para esta forma."}</p>}
+                    {transliterationFor(lexical) ? <p className={styles.analysisPending}>Transliteração do lema: <span dir="ltr">{transliterationFor(lexical)}</span></p> : null}
                     {(() => {
                       const matched = words.filter((_, index) =>
                         translationGroupAt(words, index, groups)?.originalPositions.includes(position),
                       ).map((word) => word.display).join(" ");
                       return matched ? <p>Na {translationName}: <strong>{matched}</strong></p> : null;
+                    })()}
+                    {(() => {
+                      const portuguese = pilotContextualTranslation(bookSlug, chapter, verse.number, position, translationName,
+                        lexical?.morphemes.flatMap((item) => item.strongId ? [item.strongId] : []) ?? []);
+                      return portuguese ? <p>Na Bíblia Livre: <strong>{portuguese}</strong></p> : null;
                     })()}
                     {analysis ? (
                       <>
@@ -369,9 +399,11 @@ export function OriginalPanel({ bookSlug, chapter, selectionVerses, translationN
                           </p>
                         ) : null}
                         <dl>
-                          {lexical.morphemes.map((morpheme, index) => (
+                          {(lexical.morphemes.some((morpheme) => morpheme.strongId)
+                            ? lexical.morphemes.filter((morpheme) => morpheme.strongId)
+                            : lexical.morphemes.slice(-1)).map((morpheme, index) => (
                             <div key={`${morpheme.lemma}-${index}`}>
-                              <dt>{morpheme.surface}</dt>
+                              <dt className={styles.visuallyHidden}>Lema</dt>
                               <dd>
                                 <span lang={rtl ? "he" : "grc"} dir={rtl ? "rtl" : "ltr"}>{morpheme.lemma}</span>
                                 {morpheme.strongId ? ` · ${morpheme.strongId}` : ""}
@@ -406,32 +438,26 @@ export function OriginalPanel({ bookSlug, chapter, selectionVerses, translationN
                                     {` · ${acceptionCount(entry.senseCount)}`}
                                     <ReviewBadge state="source_text" />
                                   </p>
-                                  {entry.definitions.length > 0 ? (
-                                    <p lang="en">{entry.definitions.join(", ")}</p>
+                                  {entry.definitions.some((definition) => pilotDefinition(morpheme.strongId ?? "", entry.bdbId, definition)) ? (
+                                    <p lang="pt-BR">{entry.definitions.flatMap((definition) => {
+                                      const translated = pilotDefinition(morpheme.strongId ?? "", entry.bdbId, definition);
+                                      return translated ? [translated] : [];
+                                    }).join(", ")}</p>
                                   ) : null}
-                                  <SenseList senses={entry.senses} />
+                                  <SenseList senses={entry.senses} strong={morpheme.strongId ?? ""} bdbId={entry.bdbId} />
                                 </section>
                               )),
                             )}
                             <p className={styles.analysisPending}>
-                              Texto em inglês, como a obra o publica. A tradução para português
-                              destas acepções ainda não foi feita nem revisada.
+                              {lexical.morphemes.some((morpheme) => morpheme.bdb.some((entry) =>
+                                entry.definitions.some((definition) => pilotDefinition(morpheme.strongId ?? "", entry.bdbId, definition)) ||
+                                entry.senses.some((sense) => hasPilotSense(sense, morpheme.strongId ?? "", entry.bdbId))))
+                                ? "Tradução experimental, ainda não revisada. Acepções sem tradução e o texto original estão no estudo da palavra."
+                                : "Tradução para português ainda não disponível. Consulte os sentidos originais no estudo da palavra."}
                             </p>
                           </details>
                         ) : null}
 
-                        {lexical.sources.length > 0 ? (
-                          <div className={styles.sourceCredits}>
-                            <ul>
-                              {lexical.sources.map((source) => (
-                                <li key={source.sourceId}>
-                                  <b>{source.name}</b>
-                                  {` — ${source.fields.join(", ")} · ${source.licenseDeclared}`}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        ) : null}
                       </>
                     ) : (
                       <p className={styles.analysisPending}>{lexiconFallbackMessage(lexiconQueryState(lexicon))}</p>

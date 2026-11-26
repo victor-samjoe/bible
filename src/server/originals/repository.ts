@@ -1,5 +1,5 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
-import { lemmas, originalEditions, originalMorphemes, originalTokens, originalVerses } from "@/drizzle/schema";
+import { lemmas, originalEditions, originalMorphemes, originalTokens, originalVerses } from "../../../drizzle/schema";
 import type { OriginalLanguage, OriginalRepository } from "../contracts/originals";
 import type { Database } from "../db/client";
 

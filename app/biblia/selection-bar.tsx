@@ -117,10 +117,9 @@ export function SelectionBar() {
 
         {menuOpen && (
           <div className={styles.menu} aria-label="Ações disponíveis">
-            <p className={styles.group} id="grupo-destaque">
-              Destacar
-            </p>
-            <div className={styles.colors} role="group" aria-labelledby="grupo-destaque">
+            <details className={styles.highlightMenu}>
+              <summary id="grupo-destaque">Destacar <span aria-hidden="true">▾</span></summary>
+              <div className={styles.colors} role="group" aria-labelledby="grupo-destaque">
               {highlightColors.map((color) => (
                 <button
                   key={color}
@@ -145,7 +144,8 @@ export function SelectionBar() {
               >
                 Remover destaque
               </button>
-            </div>
+              </div>
+            </details>
 
             <p className={styles.group}>Texto</p>
             <div className={styles.actions}>

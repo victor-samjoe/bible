@@ -1,0 +1,466 @@
+{
+  "occurrences": 137542,
+  "distinctForms": 23779,
+  "converted": 137467,
+  "unsupportedOccurrences": 75,
+  "unsupportedDistinctForms": 72,
+  "exceptions": [
+    {
+      "reference": "Mt 10:33",
+      "position": 2,
+      "form": "⸂δ᾽"
+    },
+    {
+      "reference": "Mt 12:3",
+      "position": 15,
+      "form": "αὐτοῦ;"
+    },
+    {
+      "reference": "Mt 12:47",
+      "position": 17,
+      "form": "λαλῆσαι.⸃"
+    },
+    {
+      "reference": "Mt 13:55",
+      "position": 7,
+      "form": "υἱός;"
+    },
+    {
+      "reference": "Mt 16:3",
+      "position": 23,
+      "form": "δύνασθε.⸃"
+    },
+    {
+      "reference": "Mt 21:44",
+      "position": 15,
+      "form": "αὐτόν.⸃"
+    },
+    {
+      "reference": "Mk 7:19",
+      "position": 16,
+      "form": "ἐκπορεύεται;"
+    },
+    {
+      "reference": "Mk 11:31",
+      "position": 7,
+      "form": "εἴπωμεν;⸃"
+    },
+    {
+      "reference": "Mk 14:60",
+      "position": 13,
+      "form": "οὐδέν;"
+    },
+    {
+      "reference": "Lk 6:3",
+      "position": 21,
+      "form": "⸀ὄντες;"
+    },
+    {
+      "reference": "Lk 12:49",
+      "position": 12,
+      "form": "ἀνήφθη;"
+    },
+    {
+      "reference": "Lk 13:9",
+      "position": 10,
+      "form": "μήγε,⸃"
+    },
+    {
+      "reference": "Lk 22:19",
+      "position": 15,
+      "form": "⸂[τὸ"
+    },
+    {
+      "reference": "Lk 22:20",
+      "position": 22,
+      "form": "ἐκχυννόμενον]⸃"
+    },
+    {
+      "reference": "Lk 22:44",
+      "position": 18,
+      "form": "γῆν.⸃"
+    },
+    {
+      "reference": "Lk 23:34",
+      "position": 12,
+      "form": "ποιοῦσιν.⸃"
+    },
+    {
+      "reference": "Lk 24:6",
+      "position": 5,
+      "form": "ἠγέρθη.⸃"
+    },
+    {
+      "reference": "Lk 24:12",
+      "position": 21,
+      "form": "γεγονός.⸃"
+    },
+    {
+      "reference": "Lk 24:40",
+      "position": 1,
+      "form": "⸂[καὶ"
+    },
+    {
+      "reference": "Lk 24:40",
+      "position": 10,
+      "form": "πόδας.]⸃"
+    },
+    {
+      "reference": "Lk 24:51",
+      "position": 11,
+      "form": "⸂[καὶ"
+    },
+    {
+      "reference": "Lk 24:51",
+      "position": 15,
+      "form": "οὐρανόν]⸃"
+    },
+    {
+      "reference": "Lk 24:52",
+      "position": 3,
+      "form": "⸂[προσκυνήσαντες"
+    },
+    {
+      "reference": "Lk 24:52",
+      "position": 4,
+      "form": "αὐτὸν]⸃"
+    },
+    {
+      "reference": "Jn 4:27",
+      "position": 18,
+      "form": "ζητεῖς;"
+    },
+    {
+      "reference": "Jn 13:32",
+      "position": 6,
+      "form": "αὐτῷ,⸃"
+    },
+    {
+      "reference": "Jn 14:5",
+      "position": 13,
+      "form": "εἰδέναι⸃;"
+    },
+    {
+      "reference": "Ac 1:15",
+      "position": 22,
+      "form": "εἴκοσι)·"
+    },
+    {
+      "reference": "Ac 19:40",
+      "position": 22,
+      "form": "41"
+    },
+    {
+      "reference": "Ro 2:23",
+      "position": 12,
+      "form": "ἀτιμάζεις;"
+    },
+    {
+      "reference": "Ro 6:21",
+      "position": 9,
+      "form": "ἐπαισχύνεσθε;"
+    },
+    {
+      "reference": "Ro 13:3",
+      "position": 18,
+      "form": "ἐξουσίαν;"
+    },
+    {
+      "reference": "Ro 16:24",
+      "position": 10,
+      "form": "ὑμῶν.⸃"
+    },
+    {
+      "reference": "1Co 1:2",
+      "position": 12,
+      "form": "Κορίνθῳ,⸃"
+    },
+    {
+      "reference": "1Co 5:13",
+      "position": 6,
+      "form": "⸀κρίνει;"
+    },
+    {
+      "reference": "1Co 6:19",
+      "position": 18,
+      "form": "θεοῦ;"
+    },
+    {
+      "reference": "1Co 7:18",
+      "position": 3,
+      "form": "ἐκλήθη;"
+    },
+    {
+      "reference": "1Co 7:18",
+      "position": 9,
+      "form": "τις⸃;"
+    },
+    {
+      "reference": "1Co 7:21",
+      "position": 2,
+      "form": "ἐκλήθης;"
+    },
+    {
+      "reference": "1Co 7:27",
+      "position": 2,
+      "form": "γυναικί;"
+    },
+    {
+      "reference": "1Co 7:27",
+      "position": 8,
+      "form": "γυναικός;"
+    },
+    {
+      "reference": "1Co 9:15",
+      "position": 21,
+      "form": "ἤ—τὸ"
+    },
+    {
+      "reference": "1Co 12:10",
+      "position": 6,
+      "form": "⸀1ἄλλῳ"
+    },
+    {
+      "reference": "1Co 12:10",
+      "position": 12,
+      "form": "⸀2ἄλλῳ"
+    },
+    {
+      "reference": "2Co 7:5",
+      "position": 16,
+      "form": "θλιβόμενοι—ἔξωθεν"
+    },
+    {
+      "reference": "2Co 7:12",
+      "position": 15,
+      "form": "⸀1ἕνεκεν"
+    },
+    {
+      "reference": "2Co 10:4",
+      "position": 15,
+      "form": "ὀχυρωμάτων—λογισμοὺς"
+    },
+    {
+      "reference": "2Co 11:16",
+      "position": 8,
+      "form": "εἶναι—εἰ"
+    },
+    {
+      "reference": "2Co 12:2",
+      "position": 7,
+      "form": "δεκατεσσάρων—εἴτε"
+    },
+    {
+      "reference": "2Co 12:2",
+      "position": 20,
+      "form": "οἶδεν—ἁρπαγέντα"
+    },
+    {
+      "reference": "2Co 12:3",
+      "position": 5,
+      "form": "ἄνθρωπον—εἴτε"
+    },
+    {
+      "reference": "2Co 12:19",
+      "position": 5,
+      "form": "ἀπολογούμεθα;"
+    },
+    {
+      "reference": "Ga 2:6",
+      "position": 6,
+      "form": "τι—ὁποῖοί"
+    },
+    {
+      "reference": "Ga 2:6",
+      "position": 16,
+      "form": "λαμβάνει—ἐμοὶ"
+    },
+    {
+      "reference": "Ga 3:3",
+      "position": 3,
+      "form": "ἐστε;"
+    },
+    {
+      "reference": "Eph 1:1",
+      "position": 12,
+      "form": "⸂[ἐν"
+    },
+    {
+      "reference": "Eph 1:1",
+      "position": 13,
+      "form": "Ἐφέσῳ]⸃"
+    },
+    {
+      "reference": "Col 1:20",
+      "position": 16,
+      "form": "⸂[δι"
+    },
+    {
+      "reference": "Col 1:20",
+      "position": 17,
+      "form": "αὐτοῦ]⸃"
+    },
+    {
+      "reference": "1Ti 2:7",
+      "position": 7,
+      "form": "ἀπόστολος—ἀλήθειαν"
+    },
+    {
+      "reference": "2Ti 1:18",
+      "position": 12,
+      "form": "ἡμέρᾳ—καὶ"
+    },
+    {
+      "reference": "2Ti 4:14",
+      "position": 7,
+      "form": "ἐνεδείξατο—⸀ἀποδώσει"
+    },
+    {
+      "reference": "2Ti 4:16",
+      "position": 12,
+      "form": "⸀ἐγκατέλιπον—μὴ"
+    },
+    {
+      "reference": "Heb 1:3",
+      "position": 19,
+      "form": "⸂δι᾽"
+    },
+    {
+      "reference": "Heb 7:27",
+      "position": 26,
+      "form": "ἀνενέγκας)·"
+    },
+    {
+      "reference": "Heb 8:5",
+      "position": 28,
+      "form": "ὄρει)·"
+    },
+    {
+      "reference": "Jas 2:1",
+      "position": 15,
+      "form": "δόξης;"
+    },
+    {
+      "reference": "Jas 2:19",
+      "position": 7,
+      "form": "θεός⸃;"
+    },
+    {
+      "reference": "Jas 4:5",
+      "position": 16,
+      "form": "ἡμῖν;"
+    },
+    {
+      "reference": "Jas 5:6",
+      "position": 7,
+      "form": "ὑμῖν;"
+    },
+    {
+      "reference": "Jas 5:13",
+      "position": 4,
+      "form": "ὑμῖν;"
+    },
+    {
+      "reference": "Jas 5:13",
+      "position": 7,
+      "form": "τις;"
+    },
+    {
+      "reference": "Jas 5:14",
+      "position": 4,
+      "form": "ὑμῖν;"
+    },
+    {
+      "reference": "1Pe 2:15",
+      "position": 14,
+      "form": "ἀγνωσίαν)·"
+    },
+    {
+      "reference": "Re 15:4",
+      "position": 13,
+      "form": "⸀ὅσιος;"
+    }
+  ],
+  "examples": [
+    [
+      "⸂δ᾽",
+      1
+    ],
+    [
+      "αὐτοῦ;",
+      1
+    ],
+    [
+      "λαλῆσαι.⸃",
+      1
+    ],
+    [
+      "υἱός;",
+      1
+    ],
+    [
+      "δύνασθε.⸃",
+      1
+    ],
+    [
+      "αὐτόν.⸃",
+      1
+    ],
+    [
+      "ἐκπορεύεται;",
+      1
+    ],
+    [
+      "εἴπωμεν;⸃",
+      1
+    ],
+    [
+      "οὐδέν;",
+      1
+    ],
+    [
+      "⸀ὄντες;",
+      1
+    ],
+    [
+      "ἀνήφθη;",
+      1
+    ],
+    [
+      "μήγε,⸃",
+      1
+    ],
+    [
+      "⸂[τὸ",
+      1
+    ],
+    [
+      "ἐκχυννόμενον]⸃",
+      1
+    ],
+    [
+      "γῆν.⸃",
+      1
+    ],
+    [
+      "ποιοῦσιν.⸃",
+      1
+    ],
+    [
+      "ἠγέρθη.⸃",
+      1
+    ],
+    [
+      "γεγονός.⸃",
+      1
+    ],
+    [
+      "⸂[καὶ",
+      2
+    ],
+    [
+      "πόδας.]⸃",
+      1
+    ]
+  ]
+}

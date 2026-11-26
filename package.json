@@ -23,6 +23,7 @@
     "@next/swc-win32-x64-msvc": "^15.5.29",
     "@opennextjs/cloudflare": "^1.20.17",
     "drizzle-orm": "^0.45.4",
+    "hebrew-transliteration": "2.11.0",
     "next": "^15.5.29",
     "pg": "^8.23.1",
     "react": "^19.3.1",
