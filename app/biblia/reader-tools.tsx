@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect } from "react";
 import styles from "./reader-tools.module.css";
+import offline from "./offline-controls.module.css";
 import {
   useReader,
   type FontFamily,
@@ -180,6 +182,15 @@ export function ReaderTools() {
                     {item.label}
                   </button>
                 ))}
+              </div>
+
+              <h3 id="ajuste-offline">Leitura sem conexão</h3>
+              <div className={styles.choices} role="group" aria-labelledby="ajuste-offline">
+                {/* Link, e não botão: os controles de download têm página
+                    própria, com tamanho, progresso, versão e remoção. */}
+                <Link className={offline.sheetLink} href="/biblia/offline" onClick={closeSettings}>
+                  Bíblia offline
+                </Link>
               </div>
 
               <p className={styles.local}>

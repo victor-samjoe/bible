@@ -51,7 +51,7 @@ export async function submitAccess(
   if (intent === "verify") {
     const code = (formData.get("code") ?? "").toString().trim().slice(0, 10);
     const confirmed = await confirmAccessCode(email, code);
-    if (confirmed.ok) redirect("/conta");
+    if (confirmed.ok) redirect("/conta?login=concluido");
     return {
       step: "verify",
       email,

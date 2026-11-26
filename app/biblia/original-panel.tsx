@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { SpeakText } from "./speech";
 import type { OriginalSelectionResult } from "@/src/server/contracts/originals";
 import {
   alignmentFor,
@@ -306,6 +307,7 @@ export function OriginalPanel({ bookSlug, chapter, selectionVerses, translationN
             <div className={styles.versionRow}>
               <b>{rtl ? "Hebraico · MorphHB" : "Grego · SBLGNT"}</b>
               <span>{verse.canonicalRef}</span>
+              <SpeakText text={verse.tokens.map((token) => token.normalized).join(" ")} target={rtl ? "hbo" : "grc"} label="Ouvir o original" />
               <p lang={rtl ? "he" : "grc"} dir={rtl ? "rtl" : "ltr"} className={styles.originalWords}>
                 {verse.tokens.map((token) => {
                   const group = originalGroupAt(token.position, groups);

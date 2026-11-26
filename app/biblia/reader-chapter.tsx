@@ -3,6 +3,7 @@
 import { useRef, type ReactNode } from "react";
 import { useReader } from "./reader-state";
 import { ChapterContext } from "./chapter-context";
+import { ReadChapterAloud } from "./speech";
 
 export type ChapterVerse = {
   readonly id: string;
@@ -60,6 +61,7 @@ export function ReaderChapter({
       </h1>
       <ChapterContext bookName={bookName} />
       {navigation}
+      <ReadChapterAloud verses={verses} />
       <div className="chapterRule" />
       {verses.map((verse) => {
         const selected = selection.has(verse.number);

@@ -3,6 +3,7 @@ import { maskEmail, roleLabel } from "@/src/domain/account-access";
 import { getAccountSession } from "@/src/server/auth/runtime";
 import { requestDeletionAction, signOutAction } from "../_actions/account-access";
 import styles from "./page.module.css";
+import { OfflineUpdateWatch } from "../biblia/offline-update-watch";
 
 export const metadata = {
   title: "Conta | Bíblia Bereana",
@@ -44,10 +45,12 @@ export default async function ContaPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const session = await getAccountSession();
-  const deletion = (await searchParams).exclusao;
+  const params = await searchParams;
+  const deletion = params.exclusao;
 
   return (
     <main className={styles.page} data-compact-page="account">
+      {params.login === "concluido" && (session.state === "authenticated" || session.state === "degraded") ? <OfflineUpdateWatch trigger="login" /> : null}
       {deletion === "solicitada" ? (
         <p className={styles.alert} role="status">
           <strong>Pedido de exclusão registrado.</strong> Sua sessão foi encerrada em todos os dispositivos. A

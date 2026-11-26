@@ -1,0 +1,62 @@
+/* Controles de Bíblia offline. Segue o leitor: escuro por padrão, claro por
+   `html[data-reader-theme="light"]`, como os outros módulos de /biblia. */
+
+.root{display:grid;gap:12px;background:#1f2021;border:1px solid #2e2f31;border-radius:12px;padding:20px 18px;color:#e8e4dc;font:15px/1.6 Arial,sans-serif;max-width:640px}
+.root h2{margin:0;font:1.25rem Georgia,serif}
+
+.state{margin:0}
+.state strong{font-weight:700}
+.muted{margin:0;color:#a8a39a;font-size:13.5px}
+.fine{margin:0;color:#8e897c;font-size:12.5px;line-height:1.55}
+.fine a{color:#7fb3cf}
+
+.warning{margin:0;background:#2a2622;border:1px solid #4a3f2e;border-radius:8px;padding:10px 12px;font-size:13.5px;color:#e6dcc6}
+.failure{margin:0;background:#2b2122;border:1px solid #5a3236;border-radius:8px;padding:10px 12px;font-size:13.5px;color:#f0d8d8}
+.notice{margin:0;background:#1e2622;border:1px solid #2f4a3c;border-radius:8px;padding:10px 12px;font-size:13.5px;color:#cfe6d9}
+
+.progress{display:grid;gap:8px}
+.progress p{margin:0;font-size:13.5px;color:#cfcbc2}
+.bar{height:8px;border-radius:999px;background:#2e2f31;overflow:hidden}
+.bar span{display:block;height:100%;background:#7fb3cf;transition:width 200ms ease}
+
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.actions button{border:1px solid #3a3b3d;background:#26282a;color:#e8e4dc;border-radius:999px;padding:10px 16px;font:600 14px Arial,sans-serif;cursor:pointer;min-height:44px}
+.actions button:hover{background:#30322e}
+.actions button:focus-visible{outline:2px solid #7fb3cf;outline-offset:2px}
+.primary{background:#2f6e8f!important;border-color:#2f6e8f!important;color:#fff!important}
+.primary:hover{background:#38809f!important}
+
+/* Em telefone os botões ocupam a largura: alvo de toque maior e sem linha
+   com três botões apertados.
+   Limite em px, não em rem: a raiz do app não fixa `font-size`, então o valor
+   vem da configuração do navegador de quem lê — no Chrome usado para conferir
+   esta tela ela é 12px, e `30rem` virava 360px em vez de 480px, deixando a
+   regra sem efeito num telefone de 390px. O resto do projeto já usa px. */
+@media (max-width:480px){
+  .root{padding:16px 14px;border-radius:10px}
+  .actions{display:grid}
+  .actions button{width:100%}
+}
+
+:global(html[data-reader-theme="light"]) .root{background:#fffdf7;border-color:#e0dad0;color:#22201c}
+:global(html[data-reader-theme="light"]) .muted{color:#6b665d}
+:global(html[data-reader-theme="light"]) .fine{color:#6f7a71}
+:global(html[data-reader-theme="light"]) .fine a{color:#2f6e8f}
+:global(html[data-reader-theme="light"]) .warning{background:#fbf3e2;border-color:#e2d3ae;color:#5c4b22}
+:global(html[data-reader-theme="light"]) .failure{background:#fdeeee;border-color:#e6c2c2;color:#6d2b2b}
+:global(html[data-reader-theme="light"]) .notice{background:#eef7f1;border-color:#c6ddcd;color:#235239}
+:global(html[data-reader-theme="light"]) .progress p{color:#4a463f}
+:global(html[data-reader-theme="light"]) .bar{background:#e8e2d7}
+:global(html[data-reader-theme="light"]) .actions button{background:#f1ece2;border-color:#ddd5c8;color:#29332d}
+:global(html[data-reader-theme="light"]) .actions button:hover{background:#e8e2d7}
+
+@media (prefers-reduced-motion:reduce){.bar span{transition:none}}
+
+/* Entrada para esta página dentro das Configurações de leitura. A classe vive
+   aqui, e não em `reader-tools.module.css`, para não editar o estilo de outra
+   frente: `.choices` daquele módulo só estiliza `button`, e este é um link de
+   verdade — com semântica de link, foco e clique do meio. */
+.sheetLink{display:block;min-height:36px;border:1px solid #494a4c;background:#292a2c;border-radius:8px;padding:9px;color:#f1eee9;font:.78rem/1.15 Arial,Helvetica,sans-serif;text-align:center;text-decoration:none}
+.sheetLink:hover{background:#30322e}
+.sheetLink:focus-visible{outline:2px solid #264d3a;outline-offset:2px}
+:global([data-reader-theme="light"]) .sheetLink{background:#fffdf7;border-color:#cfc6b8;color:#26332c}

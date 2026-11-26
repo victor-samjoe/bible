@@ -54,7 +54,7 @@ export async function GET(request: Request): Promise<Response> {
   const authCode = params.get("code") ?? "";
   if (authCode) {
     const result = await confirmOAuthCode(authCode, verifier);
-    const response = seeOther(result.ok ? "/conta" : "/entrar?erro=google");
+    const response = seeOther(result.ok ? "/conta?login=concluido" : "/entrar?erro=google");
     return clearVerifier(response, request);
   }
   const tokenHash = params.get("token_hash") ?? "";
@@ -65,5 +65,5 @@ export async function GET(request: Request): Promise<Response> {
   if (!result.ok) {
     return seeOther(result.reason === "unavailable" ? "/entrar" : "/entrar?erro=link");
   }
-  return seeOther("/conta");
+  return seeOther("/conta?login=concluido");
 }

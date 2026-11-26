@@ -31,4 +31,5 @@ data/sources/originals/
 # versionado e o registro em src/domain/lexicon/source-registry.ts e a
 # proveniencia em docs/LEXICON_PIPELINE.md.
 data/sources/lexicons/
+data/sources/theology/
 data/generated/lexicons/

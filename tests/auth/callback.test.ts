@@ -41,7 +41,7 @@ describe("retorno de autenticação", () => {
       headers: { cookie: "other=1; samjoe_oauth_verifier=verifier" },
     }));
     expect(confirmOAuthCode).toHaveBeenCalledWith("abc", "verifier");
-    expect(response.headers.get("location")).toBe("/conta");
+    expect(response.headers.get("location")).toBe("/conta?login=concluido");
     expect(response.headers.get("set-cookie")).toContain("Max-Age=0");
   });
 
@@ -49,6 +49,6 @@ describe("retorno de autenticação", () => {
     vi.mocked(confirmEmailLink).mockResolvedValue({ ok: true });
     const response = await GET(new Request("https://example.test/auth/callback?token_hash=hash&type=email"));
     expect(confirmEmailLink).toHaveBeenCalledWith("hash", "email");
-    expect(response.headers.get("location")).toBe("/conta");
+    expect(response.headers.get("location")).toBe("/conta?login=concluido");
   });
 });

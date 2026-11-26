@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Leitura offline · Bíblia Bereana</title>
+<!--
+  Casca de leitura offline.
+
+  Serve capítulos que estão de fato gravados no aparelho. O service worker
+  responde com este arquivo quando uma navegação para /biblia/... falha, e o
+  caminho original continua na barra de endereço — por isso a casca descobre o
+  livro e o capítulo lendo `location.pathname`.
+
+  É um arquivo estático e autossuficiente de propósito: servir uma página do
+  Next para uma rota que não é a dela faria o roteador tentar buscar o RSC da
+  rota original, o que falha justamente por não haver rede. Aqui não há
+  framework, nenhuma requisição e nenhuma hidratação.
+
+  O que esta página promete é só o que ela tem: o texto da tradução que foi
+  baixada. Originais, léxico, notas pessoais e outras traduções não estão no
+  pacote, e a página diz isso em vez de deixar a pessoa procurando.
+-->
+<style>
+  :root { color-scheme: dark; --fundo: #191a1b; --papel: #1f2021; --texto: #e8e4dc; --suave: #a8a39a; --linha: #2e2f31; --acento: #7fb3cf; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fundo); color: var(--texto); font-family: Georgia, "Times New Roman", serif; line-height: 1.7; }
+  .faixa { background: #202122; border-bottom: 1px solid var(--linha); padding: 10px 16px; font-family: system-ui, sans-serif; font-size: 13px; color: var(--suave); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .faixa b { color: var(--texto); font-weight: 600; }
+  main { max-width: 38rem; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  .ref { font-family: system-ui, sans-serif; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--suave); margin: 0 0 20px; }
+  ol { list-style: none; margin: 0; padding: 0; }
+  li { margin: 0 0 14px; display: flex; gap: 10px; }
+  li > span { font-family: system-ui, sans-serif; font-size: 11px; color: var(--suave); min-width: 1.6em; text-align: right; padding-top: .35em; }
+  nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 32px; font-family: system-ui, sans-serif; font-size: 14px; }
+  nav a { color: var(--acento); text-decoration: none; padding: 8px 2px; }
+  nav a:focus-visible, .faixa a:focus-visible, footer a:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; border-radius: 3px; }
+  footer { max-width: 38rem; margin: 0 auto; padding: 0 16px 48px; font-family: system-ui, sans-serif; font-size: 12px; color: var(--suave); }
+  footer p { margin: 0 0 10px; }
+  footer a { color: var(--acento); }
+  .aviso { background: var(--papel); border: 1px solid var(--linha); border-radius: 8px; padding: 14px 16px; font-family: system-ui, sans-serif; font-size: 14px; }
+  .aviso h2 { margin: 0 0 8px; font-size: 1rem; }
+  .aviso ul { margin: 8px 0 0; padding-left: 1.2em; }
+  @media (prefers-color-scheme: light) {
+    :root { color-scheme: light; --fundo: #f7f4ec; --papel: #fffdf7; --texto: #22201c; --suave: #6b665d; --linha: #e0dad0; --acento: #2f6e8f; }
+    .faixa { background: #efe9dd; }
+  }
+</style>
+</head>
+<body>
+<div class="faixa"><b>Sem conexão</b><span id="estado">lendo o que está salvo neste aparelho…</span></div>
+<main id="conteudo" aria-live="polite"></main>
+<footer id="rodape"></footer>
+<script>
+(function () {
+  "use strict";
+  var BANCO = "samjoe-offline";
+  var conteudo = document.getElementById("conteudo");
+  var rodape = document.getElementById("rodape");
+  var estado = document.getElementById("estado");
+
+  function texto(tag, valor, classe) {
+    var el = document.createElement(tag);
+    el.textContent = valor;
+    if (classe) el.className = classe;
+    return el;
+  }
+
+  function aviso(titulo, paragrafos) {
+    conteudo.textContent = "";
+    var caixa = document.createElement("div");
+    caixa.className = "aviso";
+    caixa.appendChild(texto("h2", titulo));
+    paragrafos.forEach(function (p) { caixa.appendChild(texto("p", p)); });
+    var voltar = document.createElement("p");
+    var link = document.createElement("a");
+    link.href = location.pathname;
+    link.textContent = "Tentar de novo";
+    voltar.appendChild(link);
+    caixa.appendChild(voltar);
+    conteudo.appendChild(caixa);
+  }
+
+  // Abre sem informar versão para não criar estrutura por engano. Se o banco
+  // não existir, `open` cria um banco vazio na versão 1 — e aí o aplicativo
+  // nunca criaria os repositórios, porque não haveria mais upgrade pendente.
+  // Por isso um banco sem os repositórios esperados é apagado aqui.
+  function abrir() {
+    return new Promise(function (resolve, reject) {
+      var req = indexedDB.open(BANCO);
+      req.onsuccess = function () {
+        var db = req.result;
+        if (!db.objectStoreNames.contains("meta") || !db.objectStoreNames.contains("chapters")) {
+          db.close();
+          indexedDB.deleteDatabase(BANCO);
+          resolve(null);
+          return;
+        }
+        resolve(db);
+      };
+      req.onerror = function () { reject(req.error); };
+      req.onblocked = function () { reject(new Error("banco bloqueado por outra aba")); };
+    });
+  }
+
+  function ler(db, repositorio, chave) {
+    return new Promise(function (resolve, reject) {
+      var req = db.transaction(repositorio, "readonly").objectStore(repositorio).get(chave);
+      req.onsuccess = function () { resolve(req.result || null); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+
+  function alvo(manifesto) {
+    var partes = location.pathname.replace(/\/+$/, "").split("/").filter(Boolean);
+    // /biblia → primeiro livro, capítulo 1
+    if (partes.length <= 1) return { arquivo: manifesto.files[0], capitulo: 1 };
+    var slug = decodeURIComponent(partes[1]);
+    var arquivo = null;
+    for (var i = 0; i < manifesto.files.length; i += 1) {
+      if (manifesto.files[i].slug === slug) { arquivo = manifesto.files[i]; break; }
+    }
+    if (!arquivo) return null;
+    var numero = partes.length > 2 ? parseInt(partes[2], 10) : 1;
+    if (!Number.isInteger(numero) || numero < 1 || numero > arquivo.chapters) return { arquivo: arquivo, capitulo: null };
+    return { arquivo: arquivo, capitulo: numero };
+  }
+
+  function vizinho(manifesto, arquivo, capitulo, direcao) {
+    if (direcao < 0) {
+      if (capitulo > 1) return { slug: arquivo.slug, nome: arquivo.name, capitulo: capitulo - 1 };
+      var anterior = manifesto.files[arquivo.order - 2];
+      return anterior ? { slug: anterior.slug, nome: anterior.name, capitulo: anterior.chapters } : null;
+    }
+    if (capitulo < arquivo.chapters) return { slug: arquivo.slug, nome: arquivo.name, capitulo: capitulo + 1 };
+    var proximo = manifesto.files[arquivo.order];
+    return proximo ? { slug: proximo.slug, nome: proximo.name, capitulo: 1 } : null;
+  }
+
+  function montarRodape(manifesto) {
+    rodape.textContent = "";
+    var credito = texto("p", manifesto.edition.attribution);
+    rodape.appendChild(credito);
+    var versao = texto("p", "Pacote offline " + manifesto.edition.abbreviation + ", versão da fonte " + manifesto.edition.sourceSignedAt + ". " + manifesto.edition.license + ".");
+    rodape.appendChild(versao);
+
+    var limite = document.createElement("p");
+    limite.appendChild(document.createTextNode("Offline, esta página mostra apenas o texto desta tradução. "));
+    limite.appendChild(document.createTextNode("Idiomas originais, léxico, notas pessoais, marcações, progresso de leitura e outras traduções não fazem parte do pacote e voltam quando houver conexão."));
+    rodape.appendChild(limite);
+  }
+
+  // Mesma regra de leitura pública de src/server/contracts/bible.ts. O pacote
+  // preserva a fonte íntegra; notas e marcas não devem aparecer como versículo.
+  function limparUsfm(valor) {
+    return valor
+      .replace(/\\(?:f|x)\b[\s\S]*?\\(?:f|x)\*/g, " ")
+      .replace(/\\add\*?/g, "")
+      .replace(/\\[a-z0-9]+\*?(?:\s+)?/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function render(manifesto, arquivo, capitulo, versiculos) {
+    conteudo.textContent = "";
+    conteudo.appendChild(texto("h1", arquivo.name + " " + capitulo));
+    conteudo.appendChild(texto("p", "salvo neste aparelho · " + manifesto.edition.abbreviation, "ref"));
+
+    var lista = document.createElement("ol");
+    versiculos.forEach(function (verso, indice) {
+      var item = document.createElement("li");
+      item.appendChild(texto("span", String(indice + 1)));
+      item.appendChild(texto("p", limparUsfm(verso)));
+      lista.appendChild(item);
+    });
+    conteudo.appendChild(lista);
+
+    var nav = document.createElement("nav");
+    nav.setAttribute("aria-label", "Navegação de capítulos");
+    var anterior = vizinho(manifesto, arquivo, capitulo, -1);
+    var proximo = vizinho(manifesto, arquivo, capitulo, 1);
+    if (anterior) {
+      var a = document.createElement("a");
+      a.href = "/biblia/" + anterior.slug + "/" + anterior.capitulo;
+      a.textContent = "← " + anterior.nome + " " + anterior.capitulo;
+      nav.appendChild(a);
+    } else { nav.appendChild(document.createElement("span")); }
+    if (proximo) {
+      var p = document.createElement("a");
+      p.href = "/biblia/" + proximo.slug + "/" + proximo.capitulo;
+      p.textContent = proximo.nome + " " + proximo.capitulo + " →";
+      nav.appendChild(p);
+    }
+    conteudo.appendChild(nav);
+    montarRodape(manifesto);
+    document.title = arquivo.name + " " + capitulo + " · offline";
+  }
+
+  abrir().then(function (db) {
+    if (!db) {
+      estado.textContent = "sem pacote salvo neste aparelho";
+      aviso("A Bíblia não está baixada neste aparelho", [
+        "Nenhum capítulo foi encontrado no armazenamento local, então não há o que mostrar sem conexão.",
+        "Quando a rede voltar, é possível baixar a Bíblia em Configurações de leitura → Bíblia offline.",
+      ]);
+      return;
+    }
+    return ler(db, "meta", "installation").then(function (instalacao) {
+      if (!instalacao || !instalacao.manifest || !instalacao.version) {
+        estado.textContent = "sem pacote salvo neste aparelho";
+        aviso("A Bíblia não está baixada neste aparelho", [
+          "O armazenamento local existe, mas não há pacote instalado.",
+          "Quando a rede voltar, é possível baixar a Bíblia em Configurações de leitura → Bíblia offline.",
+        ]);
+        return;
+      }
+      var manifesto = instalacao.manifest;
+      var destino = alvo(manifesto);
+      if (!destino) {
+        estado.textContent = "capítulo fora do pacote";
+        montarRodape(manifesto);
+        aviso("Este livro não está no pacote", [
+          "O endereço aberto não corresponde a nenhum livro do pacote salvo.",
+        ]);
+        return;
+      }
+      if (destino.capitulo === null) {
+        estado.textContent = "capítulo fora do pacote";
+        montarRodape(manifesto);
+        aviso("Este capítulo não está no pacote", [
+          destino.arquivo.name + " tem " + destino.arquivo.chapters + " capítulos no pacote salvo.",
+        ]);
+        return;
+      }
+      return ler(db, "chapters", instalacao.version + ":" + destino.arquivo.book + ":" + destino.capitulo).then(function (registro) {
+        if (!registro || !Array.isArray(registro.verses) || registro.verses.length === 0) {
+          estado.textContent = "capítulo não salvo";
+          montarRodape(manifesto);
+          aviso("Este capítulo não foi salvo", [
+            "O pacote está instalado, mas este capítulo não está gravado. Isso indica instalação incompleta: baixar de novo quando houver conexão resolve.",
+          ]);
+          return;
+        }
+        estado.textContent = "lendo o pacote salvo neste aparelho";
+        render(manifesto, destino.arquivo, destino.capitulo, registro.verses);
+      });
+    });
+  }).catch(function (erro) {
+    estado.textContent = "não foi possível ler o armazenamento";
+    aviso("Não foi possível ler o pacote", [
+      "O armazenamento local não respondeu. Em janela privada, ou com dados de site bloqueados, o pacote não fica disponível.",
+      String((erro && erro.message) || erro),
+    ]);
+  });
+
+  // Ao reconectar, a página recarrega para voltar ao leitor completo — com
+  // originais, léxico e notas, que não existem offline.
+  window.addEventListener("online", function () { location.reload(); });
+})();
+</script>
+</body>
+</html>
