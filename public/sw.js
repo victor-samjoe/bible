@@ -1,4 +1,4 @@
-const CACHE = "samjoe-static-shell-v3";
+const CACHE = "samjoe-static-shell-v4";
 
 // Toda URL listada aqui precisa existir: cache.addAll rejeita em qualquer 404 e,
 // com isso, a instalacao do service worker falha inteira. /apple-icon.svg foi
@@ -56,7 +56,10 @@ self.addEventListener("fetch", (event) => {
         // direto para /offline deixaria a pessoa presa mesmo tendo o texto.
         if (path !== CONTROLS_PATH && READER_PATH.test(path)) {
           const reader = await caches.match("/leitor-offline.html");
-          if (reader) return reader;
+          // A hospedagem pode redirecionar .html para a URL sem extensao.
+          // Uma resposta redirecionada nao pode ser entregue diretamente a
+          // uma navegacao offline; recriar a resposta remove esse estado.
+          if (reader) return new Response(reader.body, { headers: { "Content-Type": "text/html; charset=utf-8" } });
         }
         return (await caches.match("/offline")) || Response.error();
       }),
