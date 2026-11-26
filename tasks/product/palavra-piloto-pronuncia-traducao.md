@@ -106,3 +106,10 @@ a tradução não é aplicada. Não houve nova tabela nem consulta ao Supabase. 
 normalização da chave Strong também preserva sufixos de homógrafos, e a página
 avisa quando um código reúne mais de um verbete. A distinção completa dos
 homógrafos na importação ainda requer revisão e reprocessamento adequado.
+
+Publicado em 26/11/2026 no Worker `ff830dfc-4eec-4143-a55b-14adb6c33706`.
+Build OpenNext, ESLint direcionado e testes focados passaram. Chromium no site
+público confirmou H1254, H216 e H7121, aviso de rascunho, inglês acessível e
+aviso de homógrafos; ausência de rolagem horizontal em 390 px para H1254.
+Algumas definições de cabeçalho ainda permanecem em inglês. A publicação não
+inclui o offline ou o índice completo, ainda pendentes de correções e revisão.
