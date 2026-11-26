@@ -26,6 +26,9 @@ const server = createServer(async (req, res) => {
     if (path === "/test.js") { res.setHeader("Content-Type", "text/javascript"); res.end(js.contents); return; }
     if (path === "/offline") { res.end("Sem conexão"); return; }
     if (path === "/icon.svg") { res.setHeader("Content-Type", "image/svg+xml"); res.end('<svg xmlns="http://www.w3.org/2000/svg"/>'); return; }
+    // A Cloudflare redireciona a URL .html para a rota sem extensão.
+    if (path === "/leitor-offline.html") { res.writeHead(308, { Location: "/leitor-offline" }); res.end(); return; }
+    if (path === "/leitor-offline") { res.setHeader("Content-Type", "text/html"); res.end(await readFile(resolve(root, "leitor-offline.html"))); return; }
     if (path.startsWith("/biblia-offline/") && path.endsWith(".json") && !path.endsWith("manifest.json")) {
       bookRequests += 1;
       if (bookRequests > failAfter) { res.statusCode = 503; res.end(); return; }
@@ -52,8 +55,10 @@ try {
   assert.equal(bookRequests, 66);
   assert.equal(apiRequests, 0);
   await context.setOffline(true);
+  await page.waitForFunction(() => !navigator.onLine);
   await page.goto(`${origin}/biblia/genesis/1`, { waitUntil: "load" });
   await page.getByText("No princípio criou Deus os céus e a terra.").waitFor({ timeout: 30000 });
+  await page.waitForTimeout(1000);
   await page.goto(`${origin}/biblia/joao/1`, { waitUntil: "load" });
   await page.getByText("No princípio era a Palavra, e a Palavra estava junto de Deus, e a Palavra era Deus.").waitFor({ timeout: 30000 });
   assert.equal((await page.locator("body").innerText()).includes("\\fr"), false, "marcas de nota apareceram na leitura offline");
