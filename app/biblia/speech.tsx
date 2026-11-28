@@ -27,6 +27,9 @@ type State = "parado" | "falando" | "pausado";
 // iniciou a fala pode cancelá-la ao desmontar ou terminar.
 let activeStop: (() => void) | null = null;
 
+/** Pausa a leitura atual quando outra fonte de áudio começa no leitor. */
+export function stopActiveSpeech() { activeStop?.(); }
+
 /** Fila de falas: uma de cada vez, com parar/pausar, e cancela ao sair da tela. */
 function useSpeaker(voice: SpeechSynthesisVoice | null) {
   const [state, setState] = useState<State>("parado");
@@ -47,6 +50,7 @@ function useSpeaker(voice: SpeechSynthesisVoice | null) {
   }, [stop]);
   const play = useCallback((queue: readonly Utterance[]) => {
     if (!voice || !queue.length) return;
+    window.dispatchEvent(new Event("reader-speech-start"));
     if (activeStop) activeStop();
     activeStop = stop;
     const id = ++run.current;
