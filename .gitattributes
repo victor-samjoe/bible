@@ -1,0 +1,3 @@
+# Os hashes do manifesto dependem dos bytes exatos em qualquer plataforma.
+public/word-study/**/*.ndjson text eol=lf
+public/word-study/**/manifest.json text eol=lf

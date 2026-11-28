@@ -238,6 +238,24 @@ describe("serviço de usos — os quatro estados que o item 3 manda distinguir",
     if (result.status === "error") expect(result.reason).toContain("difere");
   });
 
+  it("verifica hash assíncrono e rejeita falha na função de hash", async () => {
+    const index = buildIndex([occurrence("853", "GEN 1:1", 4, "a")]);
+    const service = createWordStudyService({ ...portsFor(index), versification: WORD_STUDY_VERSIFICATION,
+      digest: async (body) => createHash("sha256").update(body).digest("hex") });
+    expect((await service.findUses({ language: "hbo", strong: "853" })).status).toBe("partial");
+    const failed = createWordStudyService({ ...portsFor(index), versification: WORD_STUDY_VERSIFICATION,
+      digest: async () => { throw new Error("falha no navegador"); } });
+    expect((await failed.findUses({ language: "hbo", strong: "853" })).status).toBe("error");
+  });
+
+  it("recusa posição negativa mesmo se o JSON for válido", async () => {
+    const index = buildIndex([occurrence("853", "GEN 1:1", 4, "a")]);
+    const service = createWordStudyService({ manifest: { read: async () => index.manifest },
+      partitions: { read: async (file) => (index.bodies.get(file) ?? "").replace(",4]", ",-4]") },
+      versification: WORD_STUDY_VERSIFICATION });
+    expect((await service.findUses({ language: "hbo", strong: "853" })).status).toBe("error");
+  });
+
   it("vazio NÃO exaustivo: cobertura parcial não autoriza dizer que a palavra não ocorre", async () => {
     const index = buildIndex([occurrence("853", "GEN 1:1", 4, "a")]);
     const service = createWordStudyService({

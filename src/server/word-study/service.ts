@@ -58,7 +58,7 @@ export type PartitionPort = {
 };
 
 /** Hash injetado para que o serviço continue sem `node:crypto`. */
-export type DigestPort = (body: string) => string;
+export type DigestPort = (body: string) => string | Promise<string>;
 
 export type WordStudyServiceOptions = {
   readonly manifest: ManifestPort;
@@ -134,7 +134,9 @@ export function createWordStudyService(options: WordStudyServiceOptions): WordSt
       }
 
       if (digest) {
-        const actual = digest(body);
+        let actual: string;
+        try { actual = await digest(body); }
+        catch { return { status: "error", reason: "não foi possível verificar a integridade da partição" }; }
         if (actual !== partition.sha256) {
           // Falha fechada. Conteúdo que não confere com o manifesto pode ser
           // de outra versão do índice, e servir referência de versão
@@ -253,13 +255,21 @@ function findPosting(body: string, identity: { readonly key: string }): Posting 
     const record = parsed as { k?: unknown; n?: unknown; r?: unknown };
     if (record.k !== identity.key) continue;
     if (!Array.isArray(record.r)) throw new Error("postagem sem vetor de ocorrências");
-    const encoded = record.r.filter((item): item is number => typeof item === "number");
+    const encoded = record.r.filter((item): item is number => typeof item === "number" && Number.isSafeInteger(item) && item >= 0);
     if (encoded.length !== record.r.length) {
       throw new Error("vetor de ocorrências com valor não numérico");
     }
+    if (encoded.length === 0 || encoded.length % 2 !== 0 || encoded[0] === 0) throw new Error("vetor de ocorrências inválido");
+    let lastPosition = 0;
+    for (let index = 0; index < encoded.length; index += 2) {
+      const delta = encoded[index] ?? 0, position = encoded[index + 1] ?? 0;
+      if (delta !== 0) lastPosition = 0;
+      if (position !== 0 && position < lastPosition) throw new Error("posições fora de ordem");
+      lastPosition = position || Number.MAX_SAFE_INTEGER;
+    }
     const occurrences = decodeOccurrences(encoded);
     if (occurrences === null) throw new Error("vetor de ocorrências inválido");
-    if (typeof record.n === "number" && record.n !== occurrences.length) {
+    if (!Number.isSafeInteger(record.n) || record.n !== occurrences.length) {
       // `n` é redundante com `r` de propósito: discordarem denuncia arquivo
       // corrompido ou truncado que ainda assim é JSON válido.
       throw new Error(`contagem declarada ${record.n} difere de ${occurrences.length} decodificada(s)`);

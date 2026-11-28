@@ -17,6 +17,7 @@ import { hebrewVariantWarning } from "@/src/domain/transliteration/hebrew-varian
 import { OccurrenceForm } from "./occurrence-form";
 import { draftSense, hasDraftEntry } from "./draft-translations";
 import { senseOriginal } from "@/src/domain/word-study/senses";
+import { WordUsesIndex } from "./word-uses-index";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Estudo de palavra | Bíblia Bereana" };
@@ -201,6 +202,7 @@ export default async function WordStudy({ searchParams }: { readonly searchParam
             })}</ol>
             {rows.length > 100 ? <p>Mostrando até 100 ocorrências disponíveis.</p> : null}
           </> : null}
+        {valid && typeof language === "string" ? <WordUsesIndex key={`${language}:${strong}`} language={language} strong={strong} /> : null}
       </section>
     </main>
   );
