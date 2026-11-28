@@ -33,3 +33,5 @@ data/sources/originals/
 data/sources/lexicons/
 data/sources/theology/
 data/generated/lexicons/
+# Áudio de avaliação pessoal não deve entrar no histórico nem em deploy público.
+data/generated/audio-evaluation/
