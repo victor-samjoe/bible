@@ -6,6 +6,7 @@ import { WORD_STUDY_VERSIFICATION } from "@/src/domain/word-study/versification"
 import { createWordStudyService, type WordStudyService } from "@/src/server/word-study/service";
 import type { VerseUses } from "@/src/domain/word-study/query";
 import styles from "./palavra.module.css";
+import { VersePreview } from "./verse-preview";
 
 // O caminho contém a versão do conteúdo: um manifesto novo não pode apontar
 // acidentalmente para uma partição antiga ainda guardada no cache da CDN.
@@ -72,8 +73,7 @@ export function WordUsesIndex({ language, strong }: { readonly language: string;
     {started ? <>
       <p>Ocorrências da fonte para este código Strong: {total}. A cobertura não foi certificada e outras formas da palavra podem usar códigos diferentes.</p>
       {groups.length ? <ol className={styles.indexResults}>{groups.map((group) => <li key={group.sourceRefCode}>
-        <b>{group.sourceRef}</b>{group.occurrences > 1 ? ` · ${group.occurrences} ocorrências` : ""}
-        {group.versification !== "identical" ? <small> · numeração da fonte; confira na Bíblia</small> : null}
+        <VersePreview group={group} strong={strong} />
       </li>)}</ol> : <p>Nenhuma ocorrência para este código no índice disponível.</p>}
       <details className={styles.source}><summary>Fontes das ocorrências</summary>
         <p><a href="https://github.com/Clear-Bible/macula-hebrew">MACULA Hebrew</a> e <a href="https://github.com/Clear-Bible/macula-greek">MACULA Greek</a>, Clear Bible, Inc., <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. A Bíblia Bereana selecionou e organizou as referências e posições em um índice; as referências seguem a numeração das fontes.</p>

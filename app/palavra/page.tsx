@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { and, asc, eq, or } from "drizzle-orm";
 import { lexemeOccurrences, originalEditions, originalTokens, originalVerses } from "@/drizzle/schema";
 import { getDatabaseAsync } from "@/src/server/db/client";
@@ -18,6 +17,8 @@ import { OccurrenceForm } from "./occurrence-form";
 import { draftSense, hasDraftEntry } from "./draft-translations";
 import { senseOriginal } from "@/src/domain/word-study/senses";
 import { WordUsesIndex } from "./word-uses-index";
+import { VersePreview } from "./verse-preview";
+import { knownWordHighlights } from "@/src/domain/lexicon/verse-highlight";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Estudo de palavra | Bíblia Bereana" };
@@ -180,9 +181,15 @@ export default async function WordStudy({ searchParams }: { readonly searchParam
               const match = /^GEN 1:(\d+)$/u.exec(reference);
               const verse = match ? Number(match[1]) : null;
               const verseText = verse === null ? undefined : portuguese.get(verse);
+              const verifiedForms = verse !== null && forms.every((row) => {
+                const original = row.wordPosition !== null ? originals.get(`${verse}:${row.wordPosition}`) : undefined;
+                return original && occurrenceMatchesSurface(row.surface, original.surface) && row.wordPosition !== null &&
+                  !hebrewVariantWarning(original.code, original.version, `Gen 1:${verse}`, row.wordPosition);
+              });
+              const highlights = verseText && verse !== null && verifiedForms
+                ? knownWordHighlights(verse, strong, verseText, forms.length) : [];
               return <li key={reference}>
-                {match ? <Link href="/biblia/genesis/1">Gênesis 1:{match[1]}</Link> : <span>{reference}</span>}
-                {forms.length > 1 ? <small>{forms.length} ocorrências</small> : null}
+                <VersePreview strong={verifiedForms ? strong : undefined} group={{ sourceRef: reference, readerRef: reference, sourceRefCode: 0, versification: match ? "identical" : "unverified", positions: [], positionsUnknown: true, occurrences: forms.length }} />
                 <div className={styles.occurrences}>{forms.map((row, index) => {
                   const original = verse !== null && row.wordPosition !== null ? originals.get(`${verse}:${row.wordPosition}`) : undefined;
                   const verified = original && occurrenceMatchesSurface(row.surface, original.surface) && verse !== null && row.wordPosition !== null &&
@@ -196,7 +203,9 @@ export default async function WordStudy({ searchParams }: { readonly searchParam
                     surface={verified ? original.surface : row.surface} rtl={rtl} verified={Boolean(verified)} excerpt={excerpt} />;
                 })}</div>
                 {match && portuguese.has(Number(match[1])) ? <p className={styles.context}>
-                  <b>Bíblia Livre:</b> {portuguese.get(Number(match[1]))}
+                  <b>Bíblia Livre:</b>{" "}{highlights.length ? <>{highlights.map((part, index) => <span key={part.start}>
+                    {verseText!.slice(index ? highlights[index - 1]!.end : 0, part.start)}<strong>{verseText!.slice(part.start, part.end)}</strong>
+                  </span>)}{verseText!.slice(highlights[highlights.length - 1]!.end)}</> : verseText}
                 </p> : null}
               </li>;
             })}</ol>

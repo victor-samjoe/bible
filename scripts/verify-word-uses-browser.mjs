@@ -9,7 +9,7 @@ const bundle = await build({ stdin: { contents: 'import React from "react"; impo
 const js = bundle.outputFiles.find((file) => file.path.endsWith(".js"));
 assert(js);
 const root = resolve("public");
-let files = 0, api = 0;
+let files = 0, bibleFiles = 0, api = 0;
 const server = createServer(async (req, res) => {
   try {
     const path = new URL(req.url ?? "/", "http://localhost").pathname;
@@ -19,6 +19,7 @@ const server = createServer(async (req, res) => {
     const file = resolve(root, `.${path}`);
     if (!file.startsWith(root + sep)) { res.writeHead(403).end(); return; }
     if (path.startsWith("/word-study/")) files += 1;
+    if (path.startsWith("/biblia-offline/")) bibleFiles += 1;
     res.end(await readFile(file));
   } catch { res.writeHead(404).end(); }
 });
@@ -29,14 +30,23 @@ try {
   await page.goto(`http://127.0.0.1:${server.address().port}/`);
   assert.equal(files, 0, "o índice deve ser carregado apenas após ação da pessoa");
   await page.getByRole("button", { name: "Buscar ocorrências em outros livros" }).click();
-  await page.getByText(/GEN 1:5/).waitFor({ timeout: 30000 });
+  await page.getByRole("button", { name: "Gênesis 1:5" }).waitFor({ timeout: 30000 });
   assert.equal(await page.getByText(/cobertura não foi certificada/i).count(), 1);
   assert.equal(files, 2, "manifesto e apenas uma partição");
   assert.equal(api, 0);
+  await page.getByRole("button", { name: "Gênesis 1:5" }).click();
+  await page.getByRole("region", { name: "Prévia de Gênesis 1:5" }).getByText(/E chamou Deus à luz Dia/).waitFor({ timeout: 30000 });
+  assert.equal(await page.getByRole("region", { name: "Prévia de Gênesis 1:5" }).locator("strong").count(), 2);
+  assert.equal(bibleFiles, 2, "prévia baixa somente manifesto e livro solicitado");
+  await page.getByRole("button", { name: "Gênesis 1:5" }).click();
+  assert.equal(await page.getByRole("region", { name: "Prévia de Gênesis 1:5" }).count(), 0);
   const firstCount = await page.locator("ol li").count();
   await page.getByRole("button", { name: "Ver mais ocorrências" }).click();
   await page.waitForFunction((count) => document.querySelectorAll("ol li").length > count, firstCount);
   assert.equal(files, 2, "paginação deve reutilizar a partição já carregada");
+  await page.getByRole("button", { name: "Gênesis 2:19" }).click();
+  await page.getByRole("region", { name: "Prévia de Gênesis 2:19" }).getByText(/Deus/).waitFor({ timeout: 30000 });
+  assert.equal(bibleFiles, 2, "prévia no mesmo livro reutiliza os dados");
   assert.equal(api, 0);
   console.log(`Chromium: H7121, paginação e aviso de cobertura; ${files} arquivos, nenhuma API — OK`);
 } finally { await browser.close(); await new Promise((done) => server.close(done)); }
